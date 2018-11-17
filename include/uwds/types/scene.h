@@ -141,6 +141,16 @@ namespace uwds {
         nodes_->update(root_node);
       }
 
+      /** @brief
+       * Lock the scene.
+       */
+      void lock() {nodes_->lock();}
+
+      /** @brief
+       * Unlock the scene.
+       */
+      void unlock() {nodes_->unlock();}
+
       std::vector<Node> getParents(const std::string& node_id)
       {
         Node current_parent;

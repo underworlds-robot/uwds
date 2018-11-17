@@ -116,6 +116,16 @@ namespace uwds {
       }
 
       /** @brief
+       * Lock the timeline.
+       */
+      void lock() {situations_->lock();}
+
+      /** @brief
+       * Unlock the timeline.
+       */
+      void unlock() {situations_->unlock();}
+
+      /** @brief
        * Returns the size on the timeline.
        */
       uint size()

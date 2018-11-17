@@ -56,22 +56,28 @@ namespace uwds
   bool UwdsServerNodelet::getTopology(uwds_msgs::GetTopology::Request &req,
                    				uwds_msgs::GetTopology::Response &res)
   {
-  	NODELET_INFO("[%s] Request uwds/get_topology", nodelet_name_.c_str());
+  	if(verbose_)NODELET_INFO("[%s] Request uwds/get_topology", nodelet_name_.c_str());
   	try {
+      topology().lock();
       for (auto world : topology().worlds())
       {
         res.worlds.push_back(world);
       }
+      topology().unlock();
+      topology().clients().lock();
       for (auto client : topology().clients())
       {
         res.clients.push_back(*client);
       }
+      topology().clients().unlock();
+      topology().client_interactions().lock();
       for (auto interactions : topology().client_interactions())
       {
         for (auto interaction : *interactions) {
           res.client_interactions.push_back(interaction);
         }
       }
+      topology().client_interactions().unlock();
   		res.success = true;
   	} catch(const std::exception& e) {
       	NODELET_ERROR("[%s] Exception occured : %s", nodelet_name_.c_str(), e.what());
@@ -93,10 +99,12 @@ namespace uwds
     	auto& scene = worlds()[req.ctxt.world].scene();
       uint i=0;
       NODELET_INFO("[%s] %d nodes in the scene", nodelet_name_.c_str(), (uint)scene.nodes().size());
-    	for (auto node : scene.nodes())
+      scene.lock();
+      for (auto node : scene.nodes())
     	{
     		res.nodes.push_back(*node);
     	}
+      scene.unlock();
     	res.root_id = scene.rootID();
     	res.success = true;
     	res.error = "";
@@ -123,11 +131,12 @@ namespace uwds
     	std::vector<uwds_msgs::Situation> situations;
       if(timeline.size() > 0)
       {
-
+        timeline.lock();
         for (const auto& situation : timeline.situations())
       	{
       		situations.push_back(*situation);
       	}
+        timeline.unlock();
       }
     	res.situations = situations;
     	res.origin = timeline.origin();
