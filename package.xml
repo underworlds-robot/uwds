@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>uwds</name>
+  <version>0.0.0</version>
+  <description>The uwds package</description>
+
+  <maintainer email="yoan.sallami@laas.fr">Yoan Sallami</maintainer>
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>LAAS-CNRS(2012-2018)</license>
+  <license>Plymouth University(2015-2018)</license>
+  <license>Bristol Robotics Lab(2018)</license>
+
+  <url type="repository">https://github.com/underworlds-robot</url>
+
+  <author email="yoan.sallami@laas.fr">Yoan Sallami</author>
+  <author email="severin.lemaignan@uwe.ac.uk">Severin Lemaignan</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>pluginlib</depend>
+  <depend>nodelet</depend>
+  <depend>uwds_msgs</depend>
+  <depend>tf</depend>
+  <depend>rostime</depend>
+  <depend>pose_cov_ops</depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+    <nodelet plugin="${prefix}/libuwds.xml" />
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+</package>

@@ -1,2 +1,2 @@
-# uwds-core
-This ROS package contain the core components of Underworlds
+# uwds
+This ROS package contains the core components of Underworlds

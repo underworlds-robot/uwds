@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="output" default="screen"/>
+  <arg name="respawn" default="false"/>
+  <arg name="start_manager" default="true"/>
+  <arg name="start_server" default="false"/>
+  <arg name="nodelet_manager" default="uwds_nodelet_manager"/>
+  <arg name="launch-prefix" default=""/>
+
+  <node name="$(arg nodelet_manager)"
+        pkg="nodelet" type="nodelet"
+        args="manager"
+        respawn="$(arg respawn)"
+        output="$(arg output)"
+        launch-prefix="$(arg launch-prefix)"
+        if="$(arg start_manager)"/>
+
+  <node name="uwds_server"
+        pkg="nodelet" type="nodelet"
+        args="load uwds/UwdsServerNodelet $(arg nodelet_manager)"
+        respawn="$(arg respawn)"
+        output="$(arg output)"
+        launch-prefix="$(arg launch-prefix)"/>
+</launch>
