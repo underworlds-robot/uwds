@@ -399,7 +399,7 @@ namespace uwds
         scale.push_back(sphere->radius);
         scale.push_back(sphere->radius);
         scale.push_back(sphere->radius);
-        loadMeshes(primitives_folder+"sphere.blend",
+        loadMeshes(primitives_folder+"/3ds/sphere.3ds",
                    scale,
                    meshes,
                    aabb);
@@ -411,7 +411,7 @@ namespace uwds
         scale.push_back(box->dim.x);
         scale.push_back(box->dim.y);
         scale.push_back(box->dim.z);
-        loadMeshes(primitives_folder+"box.blend",
+        loadMeshes(primitives_folder+"/3ds/box.3ds",
                    scale,
                    meshes,
                    aabb);
@@ -423,7 +423,7 @@ namespace uwds
         scale.push_back(cylinder->radius);
         scale.push_back(cylinder->radius);
         scale.push_back(cylinder->length);
-        loadMeshes(primitives_folder+"cylinder.blend",
+        loadMeshes(primitives_folder+"/3ds/cylinder.3ds",
                    scale,
                    meshes,
                    aabb);

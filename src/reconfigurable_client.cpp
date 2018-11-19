@@ -196,7 +196,7 @@ namespace uwds
   bool ReconfigurableClient::reconfigureInputs(uwds_msgs::ReconfigureInputs::Request &req,
                                                uwds_msgs::ReconfigureInputs::Response &res)
   {
-    NODELET_INFO("[%s] Service '~reconfigure_inputs' requested", nodelet_name_.c_str());
+    if(verbose_)NODELET_INFO("[%s] Service '~reconfigure_inputs' requested", nodelet_name_.c_str());
     try
     {
       res.success = reconfigure(req.inputs);
@@ -350,7 +350,7 @@ namespace uwds
         added = true;
     }
     if (added)
-      NODELET_INFO("[%s] Changes subscriber for world <%s> created", nodelet_name_.c_str(), world.c_str());
+      if(verbose_)NODELET_INFO("[%s] Changes subscriber for world <%s> created", nodelet_name_.c_str(), world.c_str());
   }
 
   void ReconfigurableClient::removeChangesSubscriber(const std::string& world)
@@ -370,6 +370,6 @@ namespace uwds
       }
     }
     if (removed)
-      NODELET_INFO("[%s] Remove changes subscriber for world <%s>", nodelet_name_.c_str(), world.c_str());
+      if(verbose_)NODELET_INFO("[%s] Remove changes subscriber for world <%s>", nodelet_name_.c_str(), world.c_str());
   }
 }

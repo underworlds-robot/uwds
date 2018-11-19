@@ -9,6 +9,11 @@ namespace uwds
 		DynamicConnectionBasedNodelet::onInit();
 		// General service
 		client_id_ = NEW_UUID;
+
+		pnh_->param<bool>("use_scene", use_scene_, true);
+		pnh_->param<bool>("use_timeline", use_timeline_, true);
+		pnh_->param<bool>("use_meshes", use_meshes_, true);
+
 		get_topology_service_client_ = nh_->serviceClient<uwds_msgs::GetTopology>("uwds/get_topology", true);
 		NODELET_DEBUG("[%s] Service client 'uwds/get_topology' created", nodelet_name_.c_str());
 		// Nodes related service
@@ -23,26 +28,19 @@ namespace uwds
 		// Changes publisher
 		changes_publisher_ = boost::make_shared<ros::Publisher>(nh_->advertise<uwds_msgs::ChangesInContextStamped>("uwds/changes", publisher_buffer_size_));
 		NODELET_DEBUG("[%s] Publisher 'uwds/changes' created", nodelet_name_.c_str());
-
-		pnh_->param<bool>("use_scene", use_scene_, true);
-		pnh_->param<bool>("use_timeline", use_timeline_, true);
-		pnh_->param<bool>("use_meshes", use_meshes_, true);
 	}
 
 	void UwdsClientNodelet::sendWorldChanges(const std::string world,
 																					 const std_msgs::Header header,
 																					 const uwds_msgs::Changes changes)
 	{
-		// Create and fill the context header
-		uwds_msgs::Context ctxt;
-		ctxt.client.name = nodelet_name_;
-		ctxt.client.id = client_id_;
-		ctxt.client.type = client_type_;
-		ctxt.world = world;
 		// Prepare the message to be send
 		ChangesInContextStampedPtr msg = boost::make_shared<uwds_msgs::ChangesInContextStamped>();
+		msg->ctxt.client.name = nodelet_name_;
+		msg->ctxt.client.id = client_id_;
+		msg->ctxt.client.type = client_type_;
+		msg->ctxt.world = world;
 		msg->header = header;
-		msg->ctxt = ctxt;
 		msg->changes = changes;
 	  // Update if not active the output connection
 		addOutputWorld(world);
@@ -82,7 +80,7 @@ namespace uwds
 	{
 		if(!use_scene_)
 		{
-			NODELET_WARN("[%s] Trying to request service 'uwds/get_scene' while '~scene_prefilter' parameter is activated. Skip the request.", nodelet_name_.c_str());
+			NODELET_WARN("[%s] Trying to request service 'uwds/get_scene' while '~use_scene' parameter is desactivated. Skip the request.", nodelet_name_.c_str());
 			return;
 		}
 		// Create and fill the request
@@ -137,7 +135,7 @@ namespace uwds
 	{
 		if(!use_timeline_) // Check the prefilter
 		{
-			NODELET_WARN("[%s] Trying to request service 'uwds/get_timeline' while '~timeline_prefilter' parameter is activated. Skip the request.", nodelet_name_.c_str());
+			NODELET_WARN("[%s] Trying to request service 'uwds/get_timeline' while '~use_timeline' parameter is desactivated. Skip the request.", nodelet_name_.c_str());
 			return;
 		}
 		// Create and fill the request

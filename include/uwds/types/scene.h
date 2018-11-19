@@ -218,14 +218,14 @@ namespace uwds {
         return final_pose;
       }
 
-      geometry_msgs::Pose lookUpPose(const std::string& source_node, const std::string& target_node)
+      geometry_msgs::Pose lookUpPose(const std::string& source_node_id, const std::string& target_node_id)
       {
         geometry_msgs::Pose pose;
         //TODO
         return pose;
       }
 
-      geometry_msgs::PoseWithCovariance lookUpPoseWithCovariance(const std::string& source_node, const std::string& target_node)
+      geometry_msgs::PoseWithCovariance lookUpPoseWithCovariance(const std::string& source_node_id, const std::string& target_node_id)
       {
         geometry_msgs::PoseWithCovariance pose;
         //TODO
