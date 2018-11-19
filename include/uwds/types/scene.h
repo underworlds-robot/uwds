@@ -2,7 +2,8 @@
 #define SCENE_HPP
 
 #include "nodes.h"
-#include<queue>
+#include <queue>
+#include <pose_cov_ops/pose_cov_ops.h>
 
 namespace uwds {
 
@@ -151,85 +152,74 @@ namespace uwds {
        */
       void unlock() {nodes_->unlock();}
 
+      /** @brief
+       * Get the given node parents.
+       *
+       * @param node_id The node ID
+       * @return The parents of the node
+       */
       std::vector<Node> getParents(const std::string& node_id)
       {
-        Node current_parent;
+        Node current_node;
         std::vector<Node> parents;
         std::queue<Node> fifo;
-
         if (nodes()[node_id].parent != "")
         {
           fifo.push(nodes()[nodes()[node_id].parent]);
           do {
-            current_parent = fifo.front();
+            current_node = fifo.front();
             fifo.pop();
-            parents.push_back(current_parent);
-            if(current_parent.parent!="")
-              fifo.push(nodes()[current_parent.parent]);
+            parents.push_back(current_node);
+            if(current_node.parent!="")
+              fifo.push(nodes()[current_node.parent]);
           } while(!fifo.empty());
         }
         return parents;
       }
 
-      // std::vector<Node> getParents(const Node& node)
-      // {
-      //   return getParents(node.id);
-      // }
-
-      // std::vector<Node> getParents(const NodesConstPtr& node)
-      // {
-      //   return getParents(node->id);
-      // }
-
       geometry_msgs::Pose getWorldPose(const std::string& node_id)
       {
         Node current_node;
         geometry_msgs::Pose final_pose;
-        geometry_msgs::Pose current_pose;
-        tf::Transform current_transform;
-        current_transform.setIdentity();
         std::queue<Node> fifo;
-        do {
-          current_node = fifo.front();
-          fifo.pop();
-          //current_pose = current_node.position.pose;
-          //TODO compose the poses
-
-        } while(!fifo.empty());
+        final_pose = nodes()[node_id].position.pose;
+        if (nodes()[node_id].parent != "")
+        {
+          fifo.push(nodes()[nodes()[node_id].parent]);
+          do {
+            current_node = fifo.front();
+            fifo.pop();
+            pose_cov_ops::compose(current_node.position.pose, final_pose, final_pose);
+            if(current_node.parent!="")
+              fifo.push(nodes()[current_node.parent]);
+          } while(!fifo.empty());
+        }
         return final_pose;
       }
-      //
-      // tf::Pose getWorldPose(const std::string& node_id)
-      // {
-      //   tf::Pose final_pose;
-      //   return final_pose;
-      // }
 
       geometry_msgs::PoseWithCovariance getWorldPoseWithCovariance(const std::string& node_id)
       {
         Node current_node;
         geometry_msgs::PoseWithCovariance final_pose;
-        geometry_msgs::PoseWithCovariance current_pose;
         std::queue<Node> fifo;
-
-        do {
-          //current_pose = nodes[]
-        } while(!fifo.empty());
+        final_pose = nodes()[node_id].position;
+        if (nodes()[node_id].parent != "")
+        {
+          fifo.push(nodes()[nodes()[node_id].parent]);
+          do {
+            current_node = fifo.front();
+            fifo.pop();
+            pose_cov_ops::compose(current_node.position, final_pose, final_pose);
+            if(current_node.parent!="")
+              fifo.push(nodes()[current_node.parent]);
+          } while(!fifo.empty());
+        }
         return final_pose;
       }
 
-      geometry_msgs::Pose lookUpPose(const std::string& source_node_id, const std::string& target_node_id)
+      bool has(const std::string id)
       {
-        geometry_msgs::Pose pose;
-        //TODO
-        return pose;
-      }
-
-      geometry_msgs::PoseWithCovariance lookUpPoseWithCovariance(const std::string& source_node_id, const std::string& target_node_id)
-      {
-        geometry_msgs::PoseWithCovariance pose;
-        //TODO
-        return pose;
+        return nodes().has(id);
       }
 
       size_t size()

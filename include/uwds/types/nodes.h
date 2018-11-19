@@ -82,24 +82,36 @@ namespace uwds {
         }
       }
 
+      std::string getNodeProperty(const std::string& node_id, const std::string& property_name)
+      {
+        this->lock();
+        for(const auto& property : (*this)[node_id].properties)
+        {
+          if (property.name == property_name)
+          {
+            this->unlock();
+            return property.data;
+          }
+        }
+        this->unlock();
+        return "";
+      }
+
        /** @brief
         * Returns the nodes by name
         *
         * @param property_name The property name to test
         */
-       std::vector<NodePtr> by_property(const std::string& property_name)
+       std::vector<NodePtr> byProperty(const std::string& property_name)
        {
          std::vector<NodePtr> nodes;
+         std::string property;
          this->lock();
          for(const auto node : *this)
          {
-           for(const auto property : node->properties)
-           {
-             if(property.name == property_name)
-             {
-               nodes.push_back(node);
-             }
-           }
+           property = getNodeProperty(node->id, property_name);
+           if(property != "")
+             nodes.push_back(node);
          }
          this->unlock();
          return nodes;
@@ -111,19 +123,16 @@ namespace uwds {
         * @param property_name The property name to test
         * @param property_data The property data to test
         */
-       std::vector<NodePtr> by_property(const std::string& property_name, const std::string& property_data)
+       std::vector<NodePtr> byProperty(const std::string& property_name, const std::string& property_data)
        {
          std::vector<NodePtr> nodes;
+         std::string property;
          this->lock();
          for(const auto node : *this)
          {
-           for(const auto property : node->properties)
-           {
-             if(property.name == property_name && property.data == property_data)
-             {
-               nodes.push_back(node);
-             }
-           }
+           property = getNodeProperty(node->id, property_name);
+           if(property == property_data)
+             nodes.push_back(node);
          }
          this->unlock();
          return nodes;
@@ -134,7 +143,7 @@ namespace uwds {
         *
         * @param name The name to test
         */
-       std::vector<NodePtr> by_name(const std::string& name)
+       std::vector<NodePtr> byName(const std::string& name)
        {
          std::vector<NodePtr> nodes;
          this->lock();
@@ -154,7 +163,7 @@ namespace uwds {
         *
         * @param type The type to test
         */
-       std::vector<NodePtr> by_type(const NodeType& type)
+       std::vector<NodePtr> byType(const NodeType& type)
        {
          std::vector<NodePtr> nodes;
          this->lock();

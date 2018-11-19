@@ -83,24 +83,36 @@ namespace uwds {
         }
       }
 
+      std::string getSituationProperty(const std::string& situation_id, const std::string& property_name)
+      {
+        this->lock();
+        for(const auto& property : (*this)[situation_id].properties)
+        {
+          if(property.name == property_name)
+          {
+            this->unlock();
+            return property.data;
+          }
+        }
+        this->unlock();
+        return "";
+      }
+
       /** @brief
        * Returns the situations by property
        *
        * @param property_name The property name to test
        */
-      std::vector<SituationPtr> by_property(const std::string& property_name)
+      std::vector<SituationPtr> byProperty(const std::string& property_name)
       {
         std::vector<SituationPtr> situations;
+        std::string property;
         this->lock();
         for(const auto situation : *this)
         {
-          for(const auto property : situation->properties)
-          {
-            if(property.name == property_name)
-            {
-              situations.push_back(situation);
-            }
-          }
+          property = getSituationProperty(situation->id, property_name);
+          if(property != "")
+            situations.push_back(situation);
         }
         this->unlock();
         return situations;
@@ -112,19 +124,16 @@ namespace uwds {
        * @param property_name The property name to test
        * @param property_data The property data to test
        */
-      std::vector<SituationPtr> by_property(const std::string& property_name, const std::string& property_data)
+      std::vector<SituationPtr> byProperty(const std::string& property_name, const std::string& property_data)
       {
         std::vector<SituationPtr> situations;
+        std::string property;
         this->lock();
         for(const auto& situation : *this)
         {
-          for(const auto& property : situation->properties)
-          {
-            if(property.name == property_name && property.data == property_data)
-            {
-              situations.push_back(situation);
-            }
-          }
+          std::string property = getSituationProperty(situation->id, property_name);
+          if(property == property_data)
+            situations.push_back(situation);
         }
         this->unlock();
         return situations;

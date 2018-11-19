@@ -109,6 +109,7 @@ class Timeline(object):
         self.origin = rospy.Time.now()
         self.situations = {}
 
+
 class World(object):
     """
     The Underworlds world data structure
@@ -154,11 +155,10 @@ class Topology(object):
 
     def update(ctxt, interaction_type):
 
-    def update():
-        pass
 
     def reset(worlds, clients, client_interactions):
         pass
+
 
 class UwdsBase(object):
     """The Underworlds base data structure
