@@ -13,41 +13,11 @@ This package provide the server that distribute and store the data and abstract 
 
 ### Data structure
 
-The underworlds data structure is composed by a set of worlds, each world have his own timeline and scene tree. Meshes are centrally stored and distributed on-demand to the clients.
+The **Underworlds** data structure is composed by a set of worlds, each world have his own timeline and scene tree. Meshes are centrally stored and distributed on-demand to the clients.
 
 ![data_structure](img/uwds_data_structure.png)
 
-In a user point of view, **Underworlds** can be viewed as a dynamically reconfigurable reasoning pipeline of clients that read/write into worlds.
-### Nodelets
-
-##### UwdsServerNodelet
-
-This nodelet allow to centralize and broadcast the changes while serving Underworlds data structures to the clients for initialization.
-
-###### Parameters
-
- - `~clean_up_timer_duration` duration of the clean up timer (default : 5)
- - `~situations_buffer_size` duration of the situations buffer (default : 300)
- - `~use_multithread_callback` if true use multithread callback (default : true)
- - `~publisher_buffer_size` the publishers buffer size (default : 10)
- - `~subscriber_buffer_size` the subscribers buffer size (default : 10)
- - `~time_synchronizer_buffer_size` the time sync buffer size (default : 10)
-
-###### Subscribed topics
-
-- `uwds/changes` allow to receive the changes from clients
-
-###### Publisher topics
-
-- publish to the `[world]/changes` of the worlds
-
-###### Advertised services
-
-- `uwds/get_topology` allow to fetch the clients topology
-- `uwds/get_scene` allow to fetch the scene
-- `uwds/get_mesh` allow to fetch the meshes
-- `~input_worlds` list the input worlds
-- `~output_world` list the output worlds
+In a user point of view, **Underworlds** can be viewed as a dynamically reconfigurable reasoning pipeline of clients that read/write into worlds. Allowing to design and integrate the reasonners quickly.
 
 ### Installation instructions
 
