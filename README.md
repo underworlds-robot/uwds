@@ -12,6 +12,7 @@ A Docker for uwds is available [here](https://github.com/underworlds-robot/uwds_
 Install the dependencies with :
 ```
 sudo apt-get install assimp-utils ros-kinetic-pose-cov-ops
+sudo pip install pygraphiz uuid
 ```
 Then clone and build the catkin package :
 ```
