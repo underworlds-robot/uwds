@@ -1,5 +1,6 @@
-# uwds
 This ROS package contains the core components of **Underworlds**
+
+## Introduction
 
 **Underworlds** is a distributed and lightweight framework that aims at *sharing
 between clients parallel models of the physical world surrounding a robot*.
@@ -9,6 +10,37 @@ The clients can be geometric reasoners (that compute topological relations betwe
 One of the main specific feature of **Underworlds** is the ability to store many parallel worlds: past models of the environment, future models, models with some objects filtered out, models that are physically consistent, etc.
 
 This package provide the server that distribute and store the data and abstract classes for clients. So it is needed to develop your own clients (support **C++** and **Python**).
+
+### Data structure
+
+![data_structure](img/uwds_data_struture.png)
+
+### Nodelets
+
+##### UwdsServerNodelet
+
+This nodelet allow to centralize and broadcast the changes while serving Underworlds data structures to the clients for initialization.
+
+###### Parameters
+ - `~clean_up_timer_duration` duration of the clean up timer (default : 5)
+ - `~situations_buffer_size` duration of the situations buffer (default : 300)
+ - `~use_multithread_callback` if true use multithread callback (default : true)
+ - `~publisher_buffer_size` the publishers buffer size (default : 10)
+ - `~subscriber_buffer_size` the subscribers buffer size (default : 10)
+ - `~time_synchronizer_buffer_size` the time sync buffer size (default : 10)
+
+###### Subscribed topics
+- `uwds/changes` allow to receive the changes from clients
+
+###### Publisher topics
+- publish to the `[world]/changes` of the worlds
+
+###### Advertised services
+- `uwds/get_topology` allow to fetch the clients topology
+- `uwds/get_scene` allow to fetch the scene
+- `uwds/get_mesh` allow to fetch the meshes
+- `~input_worlds` list the input worlds
+- `~output_world` list the output worlds
 
 ### Installation instructions
 
