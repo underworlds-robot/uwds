@@ -14,11 +14,11 @@ This package provide only the server that distribute and store the data, the dat
 
 ### Uncertainty
 
-Uncertainty is stored differently in the scene that in the timeline. In the scene tree it is represented by the node pose with covariance relative to parent. In the timeline the uncertainty of a situation is represented by its confidence. The composition of the poses with uncertainty in the scene tree is handled by the [pose_cov_ops ROS package](https://wiki.ros.org/pose_cov_ops) used in the scene class.
+Uncertainty is stored differently in the scene that in the timeline. In the scene tree it is represented by the node pose with covariance relative to parent. In the timeline the uncertainty of a situation is represented by its confidence. The composition of the poses with uncertainty in the scene tree is handled by the [pose_cov_ops package](https://wiki.ros.org/pose_cov_ops) used in the scene class.
 
 ### Worlds data structure
 
-The **Underworlds** data structure is composed by a set of worlds, each world have its own timeline and scene tree. Meshes are centrally stored and distributed on-demand to the clients.
+The **Underworlds** data-structure is composed by a set of worlds, each world have its own timeline and its own scene tree. Meshes are centrally stored and distributed on-demand to the clients.
 
 ![data_structure](img/uwds_data_structure.png)
 
