@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from reconfigurable_client import ReconfigurableClient
-from uwds_msgs.srv import GetTopology, GetScene, GetTimeline, PushMesh, GetMesh
+import rospy
+from dynamic_connection_based_node import DynamicConnectionBasedNode
+from uwds_msgs.srv import GetTopology, GetScene, GetTimeline, GetMesh
+from uwds_msgs.msg import Context, ChangesInContextStamped
+from pyuwds.uwds import World
 
 DEFAULT_PUBLISHER_BUFFER_SIZE = 10
 
 
-class UwdsClient(DynamicConnectionBased):
+class UwdsClient(DynamicConnectionBasedNode):
     """
     The Underworlds client
 
@@ -47,20 +50,18 @@ class UwdsClient(DynamicConnectionBased):
         rospy.logdebug("[%s] Service client 'uwds/get_topology' created", self.node_name)
         # Nodes related service
         self.get_scene_service_client = rospy.ServiceProxy("uwds/get_scene", GetScene, persistent=True)
-        rospy.logdebug("[%s] Service client 'uwds/get_scene' created", self.node_name))
+        rospy.logdebug("[%s] Service client 'uwds/get_scene' created", self.node_name)
         # Situations related service
         self.get_timeline_service_client = rospy.ServiceProxy("uwds/get_timeline", GetTimeline, persistent=True)
-        rospy.logdebug("[%s] Service client 'uwds/get_timeline' created", self.node_name))
+        rospy.logdebug("[%s] Service client 'uwds/get_timeline' created", self.node_name)
         # Meshes related service
-        self.push_mesh_service_client = rospy.ServiceProxy("uwds/push_mesh", PushMesh, persistent=True)
-        rospy.logdebug("[%s] Service client 'uwds/push_mesh' created", self.node_name))
         self.get_mesh_service_client = rospy.ServiceProxy("uwds/get_mesh", GetMesh, persistent=True)
-        rospy.logdebug("[%s] Service client 'uwds/get_mesh' created", self.node_name))
+        rospy.logdebug("[%s] Service client 'uwds/get_mesh' created", self.node_name)
         # Changes publisher
-        self.changes_publisher = rospy.Publisher("uwds/changes", uwds_msgs.msg.ChangesInContextStamped, queue_size=DEFAULT_PUBLISHER_BUFFER_SIZE)
-        rospy.logdebug("[%s] Publisher 'uwds/changes' created", self.node_name))
+        self.changes_publisher = rospy.Publisher("uwds/changes", ChangesInContextStamped, queue_size=DEFAULT_PUBLISHER_BUFFER_SIZE)
+        rospy.logdebug("[%s] Publisher 'uwds/changes' created", self.node_name)
 
-    def sendWorldChanges(world_name, header, changes):
+    def sendWorldChanges(self, world_name, header, changes):
         """
         Send changes to Underworlds server
 
@@ -71,7 +72,7 @@ class UwdsClient(DynamicConnectionBased):
         @typedef changes: Changes
         @param changes: The changes to send
         """
-        ChangesInContextStamped msg;
+        msg = ChangesInContextStamped()
         msg.header = header
         msg.ctxt.world = world_name
         msg.ctxt.client.name = self.node_name
@@ -86,22 +87,22 @@ class UwdsClient(DynamicConnectionBased):
     def getTopologyFromRemote():
         """
         """
-        Context ctxt
+        ctxt = Context()
         ctxt.client = self.node_name
         rospy.wait_for_service("uwds/get_topology")
         try:
             res = self.get_timeline_service_client(ctxt)
-            if(!response.success):
+            if(not response.success):
                 rospy.logerr("[%s] Error occured while processing 'uwds/get_topology' : %s", self.node_name, res.error)
                 return
             # TODO update the topology
         except rospy.ServiceException, e:
             rospy.logerr("[%s] Service 'uwds/get_topology' call failed: %s", self.node_name, e)
 
-    def getSceneFromRemote(world_name):
+    def getSceneFromRemote(self, world_name):
         if(not self.use_scene):
             rospy.logwarn("[%s] Trying to request service 'uwds/get_scene' while '~use_scene' parameter is desactivated. Skip the request.", self.node_name)
-        Context ctxt
+        ctxt = Context()
         ctxt.client.id = self.client_id
         ctxt.client.type = self.client_type
         ctxt.client.name = self.node_name
@@ -109,25 +110,25 @@ class UwdsClient(DynamicConnectionBased):
         rospy.wait_for_service("uwds/get_scene")
         try:
             res = self.get_scene_service_client(ctxt)
-            if(!response.success):
+            if(not response.success):
                 rospy.logerr("[%s] Error occured while processing 'uwds/get_scene' : %s", self.node_name, res.error)
                 return
             worlds[world_name] = World(world_name, self.meshes)
             worlds[world_name].reset(res.root_id)
             for node in res.nodes:
                 if(self.use_meshes):
-                    getNodeMeshes(node.id)
+                    self.getNodeMeshes(node.id)
                 worlds[world_name].scene.nodes[node.id] = node
         except rospy.ServiceException, e:
             rospy.logerr("[%s] Service 'uwds/get_scene' call failed: %s", self.node_name, e)
 
 
-    def getTimelineFromRemote(world_name):
+    def getTimelineFromRemote(self, world_name):
         """
         """
         if(not self.use_timeline):
             rospy.logwarn("[%s] Trying to request service 'uwds/get_timeline' while '~use_timeline' parameter is desactivated. Skip the request.", self.node_name)
-        Context ctxt
+        ctxt = Context()
         ctxt.client.id = self.client_id
         ctxt.client.type = self.client_type
         ctxt.client.name = self.node_name
@@ -135,7 +136,7 @@ class UwdsClient(DynamicConnectionBased):
         rospy.wait_for_service("uwds/get_timeline")
         try:
             res = self.get_timeline_service_client(ctxt)
-            if(!response.success):
+            if(not response.success):
                 rospy.logerr("[%s] Error occured while processing 'uwds/get_timeline' : %s", self.node_name, res.error)
                 return
             if world_name not in worlds:
@@ -146,8 +147,7 @@ class UwdsClient(DynamicConnectionBased):
         except rospy.ServiceException, e:
             rospy.logerr("[%s] Service 'uwds/get_timeline' call failed: %s", self.node_name, e)
 
-
-    def initializeWorld(world_name):
+    def initializeWorld(self, world_name):
         """
         @typedef world_name: string
         @param world_name: The world name to update
@@ -155,14 +155,14 @@ class UwdsClient(DynamicConnectionBased):
         self.getSceneFromRemote()
         self.getTimelineFromRemote()
 
-    def getMeshFromRemote(mesh_id):
+    def getMeshFromRemote(self, mesh_id):
         """
         @typedef mesh_id: string
         @param mesh_id: The ID of the mesh to fetch
         """
         if(not self.use_timeline):
             rospy.logwarn("[%s] Trying to request service 'uwds/get_mesh' while '~use_meshes' parameter is desactivated.", self.node_name)
-        Context ctxt
+        ctxt = Context()
         ctxt.client.id = self.client_id
         ctxt.client.type = self.client_type
         ctxt.client.name = self.node_name
@@ -170,23 +170,23 @@ class UwdsClient(DynamicConnectionBased):
         rospy.wait_for_service("uwds/get_mesh")
         try:
             res = self.get_mesh_service_client(ctxt, mesh_id)
-            if(!res.success):
+            if(not res.success):
                 rospy.logerr("[%s] Error occured while processing 'uwds/get_mesh' : %s", self.node_name, res.error)
             else:
-                meshes[mesh.id] = res.mesh
+                self.meshes[mesh.id] = res.mesh
         except rospy.ServiceException, e:
             rospy.logerr("[%s] Service 'uwds/get_mesh' call failed: %s", self.node_name, e)
 
-    def getNodeMeshes(node):
+    def getNodeMeshes(self, node):
         """
         @typedef node: Node
         @param node: The given node
         """
-        meshe_ids = []
+        mesh_ids = []
         for property in node.properties:
             if property.name == "meshes":
-                meshe_ids = property.data.split(",")
-                for mesh_id in mesh_id:
-                    if getMesh(mesh_id):
+                mesh_ids = property.data.split(",")
+                for mesh_id in mesh_ids:
+                    if self.getMesh(mesh_id):
                         mesh_ids.append(mesh_id)
         return mesh_ids

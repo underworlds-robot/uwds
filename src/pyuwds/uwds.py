@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import uuid
 from uwds_msgs.msg import *
 from uwds_msgs.srv import *
-
+from enum import Enum
 
 class NodeType(Enum):
     UNDEFINED = 0
@@ -57,7 +58,6 @@ class Scene(object):
         self.nodes = {}
         self.nodes[self.root_id] = root_node
 
-
     def update(nodes):
         for node in nodes:
             self.nodes[node.id] = node
@@ -85,10 +85,6 @@ class Scene(object):
         self.nodes[self.root_id] = root_node
 
     def getWorldPose(node_id):
-        # TODO:
-        raise NotImplementedError
-
-    def lookUpPose(source_node_id, target_node_id):
         # TODO:
         raise NotImplementedError
 
@@ -154,7 +150,7 @@ class Topology(object):
         self.client_interactions = {}
 
     def update(ctxt, interaction_type):
-
+        pass
 
     def reset(worlds, clients, client_interactions):
         pass

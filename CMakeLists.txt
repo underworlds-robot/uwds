@@ -23,6 +23,8 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 find_package(Assimp REQUIRED COMPONENTS system)
 
+catkin_python_setup()
+
 ###################################
 ## catkin specific configuration ##
 ###################################
