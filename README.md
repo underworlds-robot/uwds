@@ -53,7 +53,7 @@ rosrun uwds view_topology.py
 evince topology.pdf
 ```
 
-If you want to inspect the scene graph of a world use the command :
+If you want to inspect the scene tree of a world use the command :
 ```
 rosrun uwds view_scene.py [world]
 evince scene.pdf
