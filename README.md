@@ -11,13 +11,13 @@ One of the main specific feature of **Underworlds** is the ability to store many
 
 This package provide the server that distribute and store the data and abstract classes for clients. So it is needed to develop your own clients (support **C++** and **Python**).
 
-### Data structure
+### Worlds data structure
 
 The **Underworlds** data structure is composed by a set of worlds, each world have his own timeline and scene tree. Meshes are centrally stored and distributed on-demand to the clients.
 
 ![data_structure](img/uwds_data_structure.png)
 
-In a user point of view, **Underworlds** can be viewed as a dynamically reconfigurable reasoning pipeline of clients that read/write into worlds. Allowing to design and integrate the reasonners quickly.
+In a user point of view, **Underworlds** can be viewed as a dynamically reconfigurable reasoning pipeline of clients that read/write into worlds. Allowing to design and integrate the reasoners quickly.
 
 ### Installation instructions
 
