@@ -6,7 +6,7 @@ from uwds_client import UwdsClient
 from dynamic_connection_based_node import ConnectionStatus
 from uwds_msgs.srv import ReconfigureInputs
 from uwds_msgs.msg import Changes, ChangesInContextStamped
-
+from types import *
 
 class ReconfigurableClient(UwdsClient):
     """
@@ -21,10 +21,7 @@ class ReconfigurableClient(UwdsClient):
         """
         UwdsClient.__init__(self, node_name, client_type)
 
-        if rospy.has_param("~synchronized"):
-            self.syncronized = rospy.get_param("~syncronized")
-        else:
-            self.syncronized = False
+        self.synchronized = rospy.get_param("~synchronized", False)
         self.ever_connected = False
 
         if rospy.has_param("~default_inputs"):
@@ -51,11 +48,11 @@ class ReconfigurableClient(UwdsClient):
     def reconfigure(self, new_input_world_names):
         """
         """
-        self.connection_mutex.aquire()
-        if new_input_world_names.length() == 0:
+        self.connection_mutex.acquire()
+        if len(new_input_world_names) == 0:
             if self.connection_status == ConnectionStatus.CONNECTED:
                 rospy.logwarn("[%s] Disconnecting the node", self.node_name)
-                if(self.syncronized):
+                if(self.synchronized):
                     self.active_sync_connection = None
                 for input_world in self.input_worlds:
                     self.removeChangesPublisher(input_world)
@@ -66,8 +63,8 @@ class ReconfigurableClient(UwdsClient):
             self.connection_mutex.release()
             return(True)
         self.connection_status = ConnectionStatus.CONNECTING
-        if self.synchronized:
-            if(new_input_world_names.length() > 8 or new_input_world_names.length() < 2):
+        if self.synchronized is True:
+            if(len(new_input_world_names) > 8 or len(new_input_world_names) < 2):
                 self.connection_mutex.release()
                 raise ValueError("Incorrect number of inputs specified")
                 return(False)
@@ -80,30 +77,30 @@ class ReconfigurableClient(UwdsClient):
             self.initializeWorld(new_input_world)
             self.addChangesSubscriber(new_input_world)
             self.onSubscribeChanges(new_input_world)
-        if self.syncronized:
-            if new_input_world_names.length() == 2:
+        if self.synchronized:
+            if len(new_input_world_names) == 2:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
                     [self.sync_changes_subscribers_map[new_input_world_names[0]],
                      self.sync_changes_subscribers_map[new_input_world_names[1]]], self.time_synchronizer_buffer_size)
-            if new_input_world_names.length() == 3:
+            if len(new_input_world_names) == 3:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
                     [self.sync_changes_subscribers_map[new_input_world_names[0]],
                      self.sync_changes_subscribers_map[new_input_world_names[1]],
                      self.sync_changes_subscribers_map[new_input_world_names[2]]], self.time_synchronizer_buffer_size)
-            if new_input_world_names.length() == 4:
+            if len(new_input_world_names) == 4:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
                     [self.sync_changes_subscribers_map[new_input_world_names[0]],
                      self.sync_changes_subscribers_map[new_input_world_names[1]],
                      self.sync_changes_subscribers_map[new_input_world_names[2]],
                      self.sync_changes_subscribers_map[new_input_world_names[3]]], self.time_synchronizer_buffer_size)
-            if new_input_world_names.length() == 5:
+            if len(new_input_world_names) == 5:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
                     [self.sync_changes_subscribers_map[new_input_world_names[0]],
                      self.sync_changes_subscribers_map[new_input_world_names[1]],
                      self.sync_changes_subscribers_map[new_input_world_names[2]],
                      self.sync_changes_subscribers_map[new_input_world_names[3]],
                      self.sync_changes_subscribers_map[new_input_world_names[4]]], self.time_synchronizer_buffer_size)
-            if new_input_world_names.length() == 6:
+            if len(new_input_world_names) == 6:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
                     [self.sync_changes_subscribers_map[new_input_world_names[0]],
                      self.sync_changes_subscribers_map[new_input_world_names[1]],
@@ -111,7 +108,7 @@ class ReconfigurableClient(UwdsClient):
                      self.sync_changes_subscribers_map[new_input_world_names[3]],
                      self.sync_changes_subscribers_map[new_input_world_names[4]],
                      self.sync_changes_subscribers_map[new_input_world_names[5]]], self.time_synchronizer_buffer_size)
-            if new_input_world_names.length() == 7:
+            if len(new_input_world_names) == 7:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
                     [self.sync_changes_subscribers_map[new_input_world_names[0]],
                      self.sync_changes_subscribers_map[new_input_world_names[1]],
@@ -120,7 +117,7 @@ class ReconfigurableClient(UwdsClient):
                      self.sync_changes_subscribers_map[new_input_world_names[4]],
                      self.sync_changes_subscribers_map[new_input_world_names[5]],
                      self.sync_changes_subscribers_map[new_input_world_names[6]]], self.time_synchronizer_buffer_size)
-            if new_input_world_names.length() == 8:
+            if len(new_input_world_names) == 8:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
                  [self.sync_changes_subscribers_map[new_input_world_names[0]],
                   self.sync_changes_subscribers_map[new_input_world_names[1]],
@@ -163,7 +160,7 @@ class ReconfigurableClient(UwdsClient):
         @param changes_list: The message list received
         """
         for changes_in_ctxt in changes_list:
-            invalidations = worlds()[changes_in_ctxt.ctxt.world].applyChanges(changes_in_ctxt.header, changes_in_ctxt.changes)
+            invalidations = self.worlds[changes_in_ctxt.ctxt.world].applyChanges(changes_in_ctxt.header, changes_in_ctxt.changes)
             self.onChanges(changes_in_ctxt.ctxt.world, changes_in_ctxt.header, invalidations)
 
     def onReconfigure(self, world_names):
@@ -420,7 +417,7 @@ class ReconfigurableClient(UwdsClient):
         """
         self.addInputWorld(world)
         added = False
-        if self.syncronized:
+        if self.synchronized:
             if world not in self.sync_changes_subscribers_map:
                 self.sync_changes_subscribers_map[world] = \
                     message_filters.Subscriber(
@@ -442,7 +439,7 @@ class ReconfigurableClient(UwdsClient):
         @param world: The world to unsubscribe
         """
         removed = False
-        if self.syncronized:
+        if self.synchronized:
             if world in self.sync_changes_subscribers_map:
                 del self.sync_changes_subscribers_map[world]
                 removed = True

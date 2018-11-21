@@ -4,7 +4,7 @@ import rospy
 from threading import Lock
 from uwds_msgs.srv import List
 from enum import Enum
-from pyuwds import UwdsBase
+from types import *
 
 DEFAULT_PUBLISHER_BUFFER_SIZE = 10
 DEFAULT_SUBSCRIBER_BUFFER_SIZE = 10
@@ -30,15 +30,13 @@ class DynamicConnectionBasedNode(UwdsBase):
         self.input_worlds = []
         self.ouput_worlds = []
         self.node_name = node_name
-        rospy.get_param("~verbose", self.verbose, True)
-        rospy.get_param("~publisher_buffer_size",
-                        self.publiser_buffer_size,
+        self.verbose = rospy.get_param("~verbose", True)
+        self.publiser_buffer_size = rospy.get_param("~publisher_buffer_size",
                         DEFAULT_PUBLISHER_BUFFER_SIZE)
-        rospy.get_param("~subscriber_buffer_size",
-                        self.publiser_buffer_size,
+        self.publiser_buffer_size = rospy.get_param("~subscriber_buffer_size",
                         DEFAULT_SUBSCRIBER_BUFFER_SIZE)
-        rospy.get_param("~time_synchronizer_buffer_size",
-                        self.time_synchronizer_buffer_size,
+
+        self.time_synchronizer_buffer_size = rospy.get_param("~time_synchronizer_buffer_size",
                         DEFAULT_TIME_SYNCHRONIZER_BUFFER_SIZE)
 
         self.list_input_worlds_server = rospy.Service("~input_worlds",
@@ -54,12 +52,12 @@ class DynamicConnectionBasedNode(UwdsBase):
         self.changes_subscriber_map = {}
         self.sync_changes_subscribers_map = {}
 
-    def resetInputWorldsList(self):
+    def resetInputWorlds(self):
         """
         """
         self.input_worlds = []
 
-    def resetOutputWorldsList(self):
+    def resetOutputWorlds(self):
         """
         """
         self.ouput_worlds = []
@@ -93,7 +91,7 @@ class DynamicConnectionBasedNode(UwdsBase):
             rospy.logerr("[%s] Error occured when calling '~input_worlds'",
                          self.node_name)
 
-    def listOutputWorld(self, req):
+    def listOutputWorlds(self, req):
         """
         """
         try:

@@ -9,41 +9,33 @@ from uwds_msgs.srv import *
 from enum import Enum
 
 
-class NodeType(Enum):
-    UNDEFINED = 0
-    ENTITY = 1
-    MESH = 2
-    CAMERA = 3
-
+UNDEFINED = 0
+ENTITY = 1
+MESH = 2
+CAMERA = 3
 
 NodeTypeNames = {0: "undefined", 1: "entity", 2: "mesh", 3: "camera"}
 
 
-class SituationType(Enum):
-    GENERIC = 0
-    FACT = 1
-    ACTION = 2
-    INTERNAL = 3
-
+GENERIC = 0
+FACT = 1
+ACTION = 2
+INTERNAL = 3
 
 NodeTypeNames = {0: "generic", 1: "fact", 2: "action", 3: "internal"}
 
 
-class ClientInteractionType(Enum):
-    READ = 0
-    WRITE = 1
-
+READ = 0
+WRITE = 1
 
 ClientInteractionTypeNames = {0: "read", 1: "write"}
 
 
-class ClientType(Enum):
-    UNDEFINED = 0
-    READER = 1
-    MONITOR = 2
-    PROVIDER = 3
-    FILTER = 4
-
+UNDEFINED = 0
+READER = 1
+MONITOR = 2
+PROVIDER = 3
+FILTER = 4
 
 ClientTypeNames = {0: "reader", 1: "provider", 2: "filter"}
 
@@ -53,13 +45,13 @@ class Scene(object):
     The Underworlds scene data structure
     """
     def __init__(self):
-        self.root_id = str(uuid.uuid4())
+        self.rootID = str(uuid.uuid4())
         root_node = Node()
-        root_node.id = self.root_id
+        root_node.id = self.rootID
         root_node.name = "root"
         root_node.position.pose.orientation.w = 1.0
         self.nodes = {}
-        self.nodes[self.root_id] = root_node
+        self.nodes[self.rootID] = root_node
 
     def update(nodes):
         for node in nodes:
@@ -69,23 +61,23 @@ class Scene(object):
         for node_id in nodes:
             del self.nodes[node_id]
 
-    def reset(self, root_id):
-        self.root_id = root_id
+    def reset(self, rootID):
+        self.rootID = rootID
         root_node = Node()
-        root_node.id = self.root_id
+        root_node.id = self.rootID
         root_node.name = "root"
         root_node.position.pose.orientation.w = 1.0
         self.nodes = {}
-        self.nodes[self.root_id] = root_node
+        self.nodes[self.rootID] = root_node
 
-    def reset(self):
-        self.root_id = str(uuid.uuid4())
-        root_node = Node()
-        root_node.id = self.root_id
-        root_node.name = "root"
-        root_node.position.pose.orientation.w = 1.0
-        self.nodes = {}
-        self.nodes[self.root_id] = root_node
+    # def reset(self):
+    #     self.rootID = str(uuid.uuid4())
+    #     root_node = Node()
+    #     root_node.id = self.rootID
+    #     root_node.name = "root"
+    #     root_node.position.pose.orientation.w = 1.0
+    #     self.nodes = {}
+    #     self.nodes[self.rootID] = root_node
 
     def getWorldPose(node_id):
         # TODO:
@@ -119,9 +111,9 @@ class Timeline(object):
         self.origin = origin
         self.situations = {}
 
-    def reset(self):
-        self.origin = rospy.Time.now()
-        self.situations = {}
+    # def reset(self):
+    #     self.origin = rospy.Time.now()
+    #     self.situations = {}
 
     def getSituationProperty(self, situation_id, property_name):
         if situation_id in self.situations:

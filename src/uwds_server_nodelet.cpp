@@ -98,7 +98,7 @@ namespace uwds
     	addChangesPublisher(req.ctxt.world);
     	auto& scene = worlds()[req.ctxt.world].scene();
       uint i=0;
-      NODELET_INFO("[%s] %d nodes in the scene", nodelet_name_.c_str(), (uint)scene.nodes().size());
+      if(verbose_)NODELET_INFO("[%s] %d nodes in the scene", nodelet_name_.c_str(), (uint)scene.nodes().size());
       scene.lock();
       for (auto node : scene.nodes())
     	{
