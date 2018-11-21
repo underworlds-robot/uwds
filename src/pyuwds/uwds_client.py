@@ -4,7 +4,7 @@ import rospy
 from dynamic_connection_based_node import DynamicConnectionBasedNode
 from uwds_msgs.srv import GetTopology, GetScene, GetTimeline, GetMesh
 from uwds_msgs.msg import Context, ChangesInContextStamped
-from pyuwds.uwds import World
+from pyuwds import World
 
 DEFAULT_PUBLISHER_BUFFER_SIZE = 10
 
@@ -140,10 +140,10 @@ class UwdsClient(DynamicConnectionBasedNode):
                 rospy.logerr("[%s] Error occured while processing 'uwds/get_timeline' : %s", self.node_name, res.error)
                 return
             if world_name not in worlds:
-                worlds[world_name] = World(world_name, self.meshes)
-            worlds[world_name].reset(res.origin)
+                self.worlds[world_name] = World(world_name, self.meshes)
+            self.worlds[world_name].reset(res.origin)
             for situation in res.situations:
-                worlds[world_name].timeline.situations[node.id] = situation
+                self.worlds[world_name].timeline.situations[node.id] = situation
         except rospy.ServiceException, e:
             rospy.logerr("[%s] Service 'uwds/get_timeline' call failed: %s", self.node_name, e)
 
@@ -162,14 +162,9 @@ class UwdsClient(DynamicConnectionBasedNode):
         """
         if(not self.use_timeline):
             rospy.logwarn("[%s] Trying to request service 'uwds/get_mesh' while '~use_meshes' parameter is desactivated.", self.node_name)
-        ctxt = Context()
-        ctxt.client.id = self.client_id
-        ctxt.client.type = self.client_type
-        ctxt.client.name = self.node_name
-        ctxt.world = world_name
         rospy.wait_for_service("uwds/get_mesh")
         try:
-            res = self.get_mesh_service_client(ctxt, mesh_id)
+            res = self.get_mesh_service_client(mesh_id)
             if(not res.success):
                 rospy.logerr("[%s] Error occured while processing 'uwds/get_mesh' : %s", self.node_name, res.error)
             else:

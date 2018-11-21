@@ -3,9 +3,8 @@
 import rospy
 from threading import Lock
 from uwds_msgs.srv import List
-from uwds_msgs.msg import *
 from enum import Enum
-from uwds import UwdsBase
+from pyuwds import UwdsBase
 
 DEFAULT_PUBLISHER_BUFFER_SIZE = 10
 DEFAULT_SUBSCRIBER_BUFFER_SIZE = 10
@@ -68,14 +67,14 @@ class DynamicConnectionBasedNode(UwdsBase):
     def addInputWorld(self, world):
         """
         """
-        if connection not in self.input_worlds:
-            self.input_worlds.append(connection)
+        if world not in self.input_worlds:
+            self.input_worlds.append(world)
 
     def addOutputWorld(self, world):
         """
         """
-        if connection not in self.ouput_worlds:
-            self.ouput_worlds.append(connection)
+        if world not in self.ouput_worlds:
+            self.ouput_worlds.append(world)
 
     def listInputWorlds(self, req):
         """
