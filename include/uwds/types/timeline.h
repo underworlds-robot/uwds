@@ -39,81 +39,102 @@ namespace uwds {
        * This method update a situation (or create one if new)
        *
        * @param situation The situation to update
+       * @return The situation id updated
        */
-      void update(const SituationPtr situation)
+      std::string update(const SituationPtr situation)
       {
         situations_->update(situation);
+        return situation->id;
       }
 
       /** @brief
        * This method update a situation (or create one if new)
        *
        * @param situation The situation to update
+       * @return The situation id updated
        */
-      void update(const Situation situation)
+      std::string update(const Situation situation)
       {
         situations_->update(situation);
+        return situation.id;
       }
 
       /** @brief
        * This method update a set of situations (or create them if new)
        *
        * @param situations The situations to update
+       * @return The situation ids updated
        */
-      void update(const std::vector<Situation> situations)
+      std::vector<std::string> update(const std::vector<Situation> situations)
       {
-        situations_->update(situations);
+        std::vector<std::string> situation_ids;
+        for (const auto& situation : situations)
+          situation_ids.push_back(this->update(situation));
+        return situation_ids;
       }
 
       /** @brief
        * This method update a set of situations (or create them if new)
        *
        * @param situations The situations to update
+       * @return The situation ids updated
        */
-      void update(const std::vector<SituationPtr> situations)
+      std::vector<std::string> update(const std::vector<SituationPtr> situations)
       {
-        situations_->update(situations);
+        std::vector<std::string> situation_ids;
+        for (const auto& situation : situations)
+          situation_ids.push_back(this->update(situation));
+        return situation_ids;
       }
 
       /** @brief
        * This method remove a situation
        *
        * @param id The situation id to delete
+       * @return The situation id deleted
        */
-      void remove(const std::string id)
+      std::string remove(const std::string id)
       {
         situations_->remove(id);
+        return id;
       }
 
       /** @brief
        * This method remove a set of situations
        *
        * @param ids The situation ids to delete
+       * @return The situation ids deleted
        */
-      void remove(const std::vector<std::string> ids)
+      std::vector<std::string> remove(const std::vector<std::string> ids)
       {
         situations_->remove(ids);
+        return ids;
       }
 
       /** @brief
       * This method reset the timeline with the given origin
       *
       * @param origin The origin of the timeline
+      * @return The situation ids deleted
       */
-      void reset(ros::Time origin)
+      std::vector<std::string> reset(ros::Time origin)
       {
+        std::vector<std::string> situation_ids;
+        for (const auto& situation : situations())
+          situation_ids.push_back(situation->id);
         situations_->reset();
         origin_.data = origin;
+        return situation_ids;
       }
 
       /** @brief
       * This method reset the timeline
       */
-      void reset()
-      {
-        situations_->reset();
-        origin_.data = ros::Time::now();
-      }
+      // void reset()
+      // {
+      //   situations_->reset();
+      //   origin_.data = ros::Time::now();
+      // }
 
       /** @brief
        * Lock the timeline.

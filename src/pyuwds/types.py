@@ -1,20 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# pyuwds is a light version of Underworlds without
+
 import rospy
 import uuid
-from uwds_msgs.msg import *
-from uwds_msgs.srv import *
-from enum import Enum
+from uwds_msgs.msg import Node, Invalidations
 
 
-UNDEFINED = 0
-ENTITY = 1
-MESH = 2
-CAMERA = 3
+ENTITY = 0
+MESH = 1
+CAMERA = 2
 
-NodeTypeNames = {0: "undefined", 1: "entity", 2: "mesh", 3: "camera"}
+NodeTypeNames = {0: "entity", 1: "mesh", 2: "camera"}
 
 
 GENERIC = 0
@@ -53,15 +49,23 @@ class Scene(object):
         self.nodes = {}
         self.nodes[self.rootID] = root_node
 
-    def update(nodes):
+    def update(self, nodes):
+        node_ids = []
         for node in nodes:
             self.nodes[node.id] = node
+            if node.name !="root":
+                node_ids.append(node.id)
+        return node_ids
 
-    def remove(node_ids):
-        for node_id in nodes:
+    def remove(self, node_ids):
+        for node_id in node_ids:
             del self.nodes[node_id]
+        return node_ids
 
     def reset(self, rootID):
+        node_ids = []
+        for node_id in self.nodes.keys():
+            node_ids.append(node_id)
         self.rootID = rootID
         root_node = Node()
         root_node.id = self.rootID
@@ -69,21 +73,13 @@ class Scene(object):
         root_node.position.pose.orientation.w = 1.0
         self.nodes = {}
         self.nodes[self.rootID] = root_node
+        return node_id
 
-    # def reset(self):
-    #     self.rootID = str(uuid.uuid4())
-    #     root_node = Node()
-    #     root_node.id = self.rootID
-    #     root_node.name = "root"
-    #     root_node.position.pose.orientation.w = 1.0
-    #     self.nodes = {}
-    #     self.nodes[self.rootID] = root_node
-
-    def getWorldPose(node_id):
+    def getWorldPose(self, node_id):
         # TODO:
         raise NotImplementedError
 
-    def getWorldPoseWithCovariance(node_id):
+    def getWorldPoseWithCovariance(self, node_id):
         # TODO:
         raise NotImplementedError
 
@@ -104,16 +100,24 @@ class Timeline(object):
         self.situations = {}
 
     def update(self, situations):
+        situation_ids = []
         for situation in situations:
+            situation_ids.append(situation.id)
             self.situations[situation.id] = situation
+        return situation_ids
+
+    def remove(self, situation_ids):
+        for situation_id in situation_ids:
+            del self.nodes[situation_id]
+        return situation_ids
 
     def reset(self, origin):
+        situation_ids = []
+        for situation_id in self.situations.keys():
+            node_ids.append(situation_id)
         self.origin = origin
         self.situations = {}
-
-    # def reset(self):
-    #     self.origin = rospy.Time.now()
-    #     self.situations = {}
+        return situation_ids
 
     def getSituationProperty(self, situation_id, property_name):
         if situation_id in self.situations:
@@ -136,17 +140,15 @@ class World(object):
     def applyChanges(self, header, changes):
         invalidations = Invalidations()
 
-        invalidations.node_ids_deleted = changes.nodes_to_delete
-        self.scene.update(changes.nodes_to_update)
-        for node in changes.nodes_to_update:
-            invalidations.node_ids_updated.append(node.id)
+        invalidations.node_ids_deleted = self.scene.remove(changes.nodes_to_delete)
+        invalidations.node_ids_updated = self.scene.update(changes.nodes_to_update)
 
-        invalidations.situation_ids_deleted = changes.situations_to_delete
-        self.timeline.update(changes.situations_to_update)
-        for situation in changes.situations_to_update:
-            invalidations.situation_ids_updated.append(situation.id)
+        invalidations.situation_ids_deleted = self.timeline.remove(changes.situations_to_delete)
+        invalidations.situation_ids_updated = self.timeline.remove(changes.situations_to_update)
 
-        invalidations.mesh_ids_deleted = changes.meshes_to_delete
+        for mesh_id in changes.meshes_to_delete:
+            del self.meshes[mesh_id]
+            invalidations.mesh_ids_deleted.append(mesh_id)
         for mesh in changes.meshes_to_update:
             self.meshes[mesh.id] = mesh
             invalidations.mesh_ids_updated.append(mesh.id)

@@ -3,10 +3,11 @@
 import rospy
 import message_filters
 from uwds_client import UwdsClient
-from dynamic_connection_based_node import ConnectionStatus
+from dynamic_connection_based_node import CONNECTED, NOT_CONNECTED, CONNECTING
 from uwds_msgs.srv import ReconfigureInputs
-from uwds_msgs.msg import Changes, ChangesInContextStamped
-from types import *
+from uwds_msgs.msg import ChangesInContextStamped, Invalidations
+from std_msgs.msg import Header
+
 
 class ReconfigurableClient(UwdsClient):
     """
@@ -26,21 +27,22 @@ class ReconfigurableClient(UwdsClient):
 
         if rospy.has_param("~default_inputs"):
             default_inputs = rospy.get_param("~default_inputs")
+            rospy.loginfo("[%s::init] Connecting the node to default inputs : %s", self.node_name, default_inputs)
             default_inputs_list = default_inputs.split(" ")
             try:
                 self.reconfigure(default_inputs_list)
-                self.connection_status = ConnectionStatus.NOT_CONNECTED
+                self.connection_status = NOT_CONNECTED
             except Exception as e:
-                rospy.logerr("[%s] Error occured : %s", self.node_name, str(e))
-                self.connection_status = ConnectionStatus.NOT_CONNECTED
+                rospy.logerr("[%s::reconfigure] Error occured : %s", self.node_name, str(e))
+                self.connection_status = NOT_CONNECTED
         else:
-            self.connection_status = ConnectionStatus.NOT_CONNECTED
+            self.connection_status = NOT_CONNECTED
 
         self.reconfigure_service_server = rospy.Service("~reconfigure_inputs",
                                                         ReconfigureInputs,
                                                         self.reconfigureInputs)
         if(self.verbose):
-            rospy.loginfo("[%s] Service '~reconfigure_inputs' advertised",
+            rospy.loginfo("[%s::init] Service '~reconfigure_inputs' advertised",
                           self.node_name)
         self.active_sync_connection = None
         self.time_synchronizer = None
@@ -48,10 +50,14 @@ class ReconfigurableClient(UwdsClient):
     def reconfigure(self, new_input_world_names):
         """
         """
+        header = Header()
+        header.frame_id = self.global_frame_id
+        header.stamp = rospy.Time()
+        rospy.loginfo("[%s::reconfigure] Reconfiguring", self.node_name)
         self.connection_mutex.acquire()
         if len(new_input_world_names) == 0:
-            if self.connection_status == ConnectionStatus.CONNECTED:
-                rospy.logwarn("[%s] Disconnecting the node", self.node_name)
+            if self.connection_status == CONNECTED:
+                rospy.logwarn("[%s::reconfigure] Disconnecting the node", self.node_name)
                 if(self.synchronized):
                     self.active_sync_connection = None
                 for input_world in self.input_worlds:
@@ -59,24 +65,30 @@ class ReconfigurableClient(UwdsClient):
                     self.onUnsubscribeChanges(input_world)
                 self.resetInputWorlds()
                 self.resetOutputWorlds()
-                self.connection_status = ConnectionStatus.NOT_CONNECTED
+                self.connection_status = NOT_CONNECTED
             self.connection_mutex.release()
             return(True)
-        self.connection_status = ConnectionStatus.CONNECTING
+        self.connection_status = CONNECTING
         if self.synchronized is True:
             if(len(new_input_world_names) > 8 or len(new_input_world_names) < 2):
                 self.connection_mutex.release()
                 raise ValueError("Incorrect number of inputs specified")
                 return(False)
+        rospy.loginfo("[%s::reconfigure] Remove old connections if any", self.node_name)
         for input_world in self.input_worlds:
             self.removeChangesSubscriber(input_world)
             self.onUnsubscribeChanges(input_world)
         self.resetInputWorlds()
         self.resetOutputWorlds()
+        rospy.loginfo("[%s::reconfigure] Add new connections", self.node_name)
         for new_input_world in new_input_world_names:
-            self.initializeWorld(new_input_world)
+            rospy.loginfo("[%s::reconfigure] Initialize world <%s>", self.node_name, new_input_world)
+            invalidations = self.initializeWorld(new_input_world)
             self.addChangesSubscriber(new_input_world)
             self.onSubscribeChanges(new_input_world)
+            rospy.loginfo("[%s::reconfigure] make changes for world <%s>", self.node_name, new_input_world)
+            self.onChanges(new_input_world, header, invalidations)
+        self.onReconfigure(new_input_world_names)
         if self.synchronized:
             if len(new_input_world_names) == 2:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
@@ -127,8 +139,7 @@ class ReconfigurableClient(UwdsClient):
                   self.sync_changes_subscribers_map[new_input_world_names[5]],
                   self.sync_changes_subscribers_map[new_input_world_names[6]],
                   self.sync_changes_subscribers_map[new_input_world_names[7]]], self.time_synchronizer_buffer_size)
-        self.onReconfigure(new_input_world_names)
-        self.connection_status = ConnectionStatus.CONNECTED
+        self.connection_status = CONNECTED
         if self.ever_connected is False:
             self.ever_connected = True
         self.connection_mutex.release()
@@ -143,12 +154,12 @@ class ReconfigurableClient(UwdsClient):
         """
         if self.verbose:
             rospy.loginfo(
-                "[%s] Service ~reconfigure_inputs requested",
+                "[%s::reconfigureInputs] Service ~reconfigure_inputs requested",
                 self.node_name)
         try:
             self.reconfigure(req.inputs)
         except Exception as e:
-            rospy.logerr("[%s] Error occured : %s", self.node_name, str(e))
+            rospy.logerr("[%s::reconfigureInputs] Error occured : %s", self.node_name, str(e))
             return(False, e)
         return(True, "")
 
@@ -159,6 +170,7 @@ class ReconfigurableClient(UwdsClient):
         @typedef changes_list: ChangesInContextStampedConstPtr
         @param changes_list: The message list received
         """
+        rospy.loginfo("[%s::applyChanges] Received changes from server", self.node_name)
         for changes_in_ctxt in changes_list:
             invalidations = self.worlds[changes_in_ctxt.ctxt.world].applyChanges(changes_in_ctxt.header, changes_in_ctxt.changes)
             self.onChanges(changes_in_ctxt.ctxt.world, changes_in_ctxt.header, invalidations)
@@ -408,30 +420,30 @@ class ReconfigurableClient(UwdsClient):
         changes_list.append(msg7)
         self.applyChanges(changes_list)
 
-    def addChangesSubscriber(self, world):
+    def addChangesSubscriber(self, world_name):
         """
         This method is called to subscribe to the given world changes.
 
         @typedef world: string
         @param world: The world to subscribe
         """
-        self.addInputWorld(world)
+        self.addInputWorld(world_name)
         added = False
         if self.synchronized:
-            if world not in self.sync_changes_subscribers_map:
-                self.sync_changes_subscribers_map[world] = \
+            if world_name not in self.sync_changes_subscribers_map:
+                self.sync_changes_subscribers_map[world_name] = \
                     message_filters.Subscriber(
-                    world+"/changes", ChangesInContextStamped)
+                    "/"+world+"/changes", ChangesInContextStamped)
                 added = True
         else:
-            if world not in self.changes_subscriber_map:
-                self.changes_subscriber_map[world] = \
-                    rospy.Subscriber(world+"/changes", ChangesInContextStamped)
+            if world_name not in self.changes_subscriber_map:
+                self.changes_subscriber_map[world_name] = \
+                    rospy.Subscriber("/"+world_name+"/changes", ChangesInContextStamped)
                 added = True
         if added and self.verbose:
-            rospy.logdebug("Remove changes subscriber for world <%s>" % world)
+            rospy.loginfo("[%s::addChangesSubscriber] Add changes subscriber for world <%s>", self.node_name, world_name)
 
-    def removeChangesSubscriber(self, world):
+    def removeChangesSubscriber(self, world_name):
         """
         This method is called to remove the given world changes subscriber.
 
@@ -440,12 +452,12 @@ class ReconfigurableClient(UwdsClient):
         """
         removed = False
         if self.synchronized:
-            if world in self.sync_changes_subscribers_map:
-                del self.sync_changes_subscribers_map[world]
+            if world_name in self.sync_changes_subscribers_map:
+                del self.sync_changes_subscribers_map[world_name]
                 removed = True
         else:
-            if world not in self.changes_subscriber_map:
-                del self.changes_subscriber_map[world]
+            if world_name not in self.changes_subscriber_map:
+                del self.changes_subscriber_map[world_name]
                 removed = True
         if removed and self.verbose:
-            rospy.logdebug("Remove changes subscriber for world <%s>" % world)
+            rospy.loginfo("[%s::removeChangesSubscriber] Remove changes subscriber for world <%s>", self.node_name, world_name)

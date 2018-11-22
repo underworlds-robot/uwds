@@ -7,6 +7,7 @@ namespace uwds
 
   void DynamicConnectionBasedNodelet::onInit()
   {
+    //ros::param::param<std::string>("global_frame_id", global_frame_id_, "map");
     ros::param::param<bool>("~verbose", verbose_, true);
     connection_status_ = NOT_INITIALIZED;
     bool use_multithread;

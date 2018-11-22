@@ -36,6 +36,9 @@ namespace uwds
   bool ReconfigurableClient::reconfigure(const std::vector<std::string>& new_input_worlds)
   {
     connection_mutex_.lock();
+    std_msgs::Header header;
+    header.stamp = ros::Time::now();
+    header.frame_id = global_frame_id_;
     if (new_input_worlds.size()==0)
     {
       //disconnect the nodelet
@@ -75,13 +78,17 @@ namespace uwds
     // Then we reset the input worlds & output world track lists
     resetInputWorlds();
     resetOutputWorlds();
+
     // To finally subscribe to new inputs
+    Invalidations invalidations;
     for (const auto& new_input_world : new_input_worlds)
     {
-      initializeWorld(new_input_world);
+      invalidations = initializeWorld(new_input_world);
       addChangesSubscriber(new_input_world);
       onSubscribeChanges(new_input_world);
+      onChanges(new_input_world, header, invalidations);
     }
+    onReconfigure(new_input_worlds);
 
     if (synchronized_)
     {
@@ -185,7 +192,6 @@ namespace uwds
           break;
       }
     }
-    onReconfigure(new_input_worlds);
     connection_status_ = CONNECTED;
     if (ever_connected_ == false)
       ever_connected_ = true;

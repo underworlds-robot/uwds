@@ -44,60 +44,82 @@ namespace uwds {
        * This method update a node (or create one if new)
        *
        * @param node The node to update
+       * @return The node id updated
        */
-      void update(const NodePtr node)
+      std::string update(const NodePtr node)
       {
         nodes_->update(node);
+        return node->id;
       }
 
       /** @brief
        * This method update a node (or create one if new)
        *
        * @param node The node to update
+       * @return The node id updated
        */
-      void update(const Node node)
+      std::string update(const Node node)
       {
         nodes_->update(node);
+        return node.id;
       }
 
       /** @brief
        * This method update a set of nodes (or create them if new)
        *
        * @param nodes The nodes to update
+       * @return The node ids updated
        */
-      void update(const std::vector<Node> nodes)
+      std::vector<std::string> update(const std::vector<Node> nodes)
       {
-        nodes_->update(nodes);
+        std::vector<std::string> node_ids;
+        for (const auto& node : nodes)
+        {
+          node_ids.push_back(node.id);
+          nodes_->update(node);
+        }
+        return node_ids;
       }
 
       /** @brief
        * This method update a set of nodes (or create them if new)
        *
        * @param nodes The nodes to update
+       * @return The node ids updated
        */
-      void update(const std::vector<NodePtr> nodes)
+      std::vector<std::string> update(const std::vector<NodePtr> nodes)
       {
-        nodes_->update(nodes);
+        std::vector<std::string> node_ids;
+        for (const auto& node : nodes)
+        {
+          node_ids.push_back(node->id);
+          nodes_->update(node);
+        }
+        return node_ids;
       }
 
       /** @brief
        * This method remove a node
        *
        * @param id The node id to delete
+       * @return The node id deleted
        */
-      void remove(const std::string id)
+      std::string remove(const std::string id)
       {
         nodes_->remove(id);
+        return id;
       }
 
       /** @brief
        * This method remove a set of nodes
        *
        * @param ids The node ids to delete
+       * @return The node ids deleted
        */
-      void remove(const std::vector<std::string> ids)
+      std::vector<std::string> remove(const std::vector<std::string> ids)
       {
         nodes_->remove(ids);
+        return ids;
       }
 
       /** @brief
@@ -121,8 +143,16 @@ namespace uwds {
        */
       Nodes& nodes() {return * nodes_;}
 
-      void reset(const std::string& new_root_id)
+      /** @brief
+       * This method reset the scene.
+       *
+       * @return The nodes ids deleted
+       */
+      std::vector<std::string> reset(const std::string& new_root_id)
       {
+        std::vector<std::string> node_ids;
+        for (const auto& node : nodes())
+          node_ids.push_back(node->id);
         nodes_->reset();
         uwds_msgs::Node root_node;
         root_node.id = new_root_id;
@@ -130,17 +160,18 @@ namespace uwds {
         root_node.position.pose.orientation.w = 1.0;
         setRootID(new_root_id);
         nodes_->update(root_node);
+        return node_ids;
       }
 
-      void reset()
-      {
-        nodes_->reset();
-        uwds_msgs::Node root_node;
-        root_node.id = root_id_;
-        root_node.name = "root";
-        root_node.position.pose.orientation.w = 1.0;
-        nodes_->update(root_node);
-      }
+      // void reset()
+      // {
+      //   nodes_->reset();
+      //   uwds_msgs::Node root_node;
+      //   root_node.id = root_id_;
+      //   root_node.name = "root";
+      //   root_node.position.pose.orientation.w = 1.0;
+      //   nodes_->update(root_node);
+      // }
 
       /** @brief
        * Lock the scene.

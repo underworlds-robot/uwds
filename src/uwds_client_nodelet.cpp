@@ -9,10 +9,11 @@ namespace uwds
 		DynamicConnectionBasedNodelet::onInit();
 		// General service
 		client_id_ = NEW_UUID;
-
 		pnh_->param<bool>("use_scene", use_scene_, true);
 		pnh_->param<bool>("use_timeline", use_timeline_, true);
 		pnh_->param<bool>("use_meshes", use_meshes_, true);
+
+		nh_->param<std::string>("global_frame_id", global_frame_id_, "map");
 
 		get_topology_service_client_ = nh_->serviceClient<uwds_msgs::GetTopology>("uwds/get_topology", true);
 		NODELET_DEBUG("[%s] Service client 'uwds/get_topology' created", nodelet_name_.c_str());
@@ -76,12 +77,13 @@ namespace uwds
 		}
 	}
 
-	void UwdsClientNodelet::getSceneFromRemote(const std::string& world)
+	uwds_msgs::Invalidations UwdsClientNodelet::getSceneFromRemote(const std::string& world)
 	{
+		uwds_msgs::Invalidations invalidations;
 		if(!use_scene_)
 		{
 			NODELET_WARN("[%s] Trying to request service 'uwds/get_scene' while '~use_scene' parameter is desactivated. Skip the request.", nodelet_name_.c_str());
-			return;
+			return invalidations;
 		}
 		// Create and fill the request
 		uwds_msgs::GetScene get_scene_srv;
@@ -89,6 +91,7 @@ namespace uwds
 		get_scene_srv.request.ctxt.client.id = client_id_;
 		get_scene_srv.request.ctxt.client.type = client_type_;
 	  get_scene_srv.request.ctxt.world = world;
+
 		// Test the connection to 'uwds/get_scene'
 		if(!get_scene_service_client_.exists())
 		{
@@ -101,7 +104,7 @@ namespace uwds
 			if(!get_scene_service_client_.exists())
 			{
 				NODELET_ERROR("[%s] Connection to 'uwds/get_scene' failed, skip the request", nodelet_name_.c_str());
-				return;
+				return invalidations;
 			}
 		}
 		// Make the request to the server
@@ -111,15 +114,17 @@ namespace uwds
 			{
 				// If the service request is a success
 				// We reset the scene with the correct rootnode ID (the one set by the server)
-				worlds()[world].scene().reset(get_scene_srv.response.root_id);
+				invalidations.node_ids_deleted = worlds()[world].scene().reset(get_scene_srv.response.root_id);
 				// And update the nodes received
 				for(auto& node : get_scene_srv.response.nodes)
 				{
 					if (use_meshes_)
 					{ //fetch the meshes of the node
-						getNodeMeshes(node);
+						std::vector<std::string> mesh_ids = getNodeMeshes(node);
+						for(const auto& mesh_id : mesh_ids)
+							invalidations.mesh_ids_updated.push_back(mesh_id);
 					}
-					worlds()[world].scene().nodes().update(node);
+					invalidations.node_ids_updated.push_back(worlds()[world].scene().update(node));
 				}
 			} else {
 				// Prompt error message if service failed
@@ -129,14 +134,16 @@ namespace uwds
 										 get_scene_srv.response.error.c_str());
 			}
 	  }
+		return invalidations;
 	}
 
-	void UwdsClientNodelet::getTimelineFromRemote(const std::string& world)
+	uwds_msgs::Invalidations UwdsClientNodelet::getTimelineFromRemote(const std::string& world)
 	{
+		uwds_msgs::Invalidations invalidations;
 		if(!use_timeline_) // Check the prefilter
 		{
 			NODELET_WARN("[%s] Trying to request service 'uwds/get_timeline' while '~use_timeline' parameter is desactivated. Skip the request.", nodelet_name_.c_str());
-			return;
+			return invalidations;
 		}
 		// Create and fill the request
 		uwds_msgs::GetTimeline get_timeline_srv;
@@ -157,7 +164,7 @@ namespace uwds
 			if(!get_timeline_service_client_.exists())
 			{
 				NODELET_ERROR("[%s] Connection to 'uwds/get_timeline' failed, skip the request", nodelet_name_.c_str());
-				return;
+				return invalidations;
 			}
 		}
 		// Make the request to the server
@@ -167,8 +174,8 @@ namespace uwds
 			{
 				// If the service request is a success
 				// We reset the timeline with the correct origin (the one set by the server)
-				worlds()[world].timeline().reset(get_timeline_srv.response.origin.data);
-				worlds()[world].timeline().situations().update(get_timeline_srv.response.situations);
+				invalidations.situation_ids_deleted = worlds()[world].timeline().reset(get_timeline_srv.response.origin.data);
+				invalidations.situation_ids_updated = worlds()[world].timeline().update(get_timeline_srv.response.situations);
 			} else {
 				// Prompt error message if service failed
 				NODELET_ERROR("[%s] Error occured when processing uwds/get_timeline for world <%s> : %s",
@@ -177,12 +184,23 @@ namespace uwds
 										 get_timeline_srv.response.error.c_str());
 			}
 	  }
+		return invalidations;
 	}
 
-	void UwdsClientNodelet::initializeWorld(const std::string& world)
+	uwds_msgs::Invalidations UwdsClientNodelet::initializeWorld(const std::string& world)
 	{
-		getSceneFromRemote(world);
-		getTimelineFromRemote(world);
+		uwds_msgs::Invalidations scene_invalidations;
+		uwds_msgs::Invalidations timeline_invalidations;
+		uwds_msgs::Invalidations world_invalidations;
+		scene_invalidations = getSceneFromRemote(world);
+		world_invalidations.node_ids_updated = scene_invalidations.node_ids_updated;
+		world_invalidations.node_ids_deleted = scene_invalidations.node_ids_deleted;
+		world_invalidations.mesh_ids_updated = scene_invalidations.mesh_ids_updated;
+		world_invalidations.mesh_ids_deleted = scene_invalidations.mesh_ids_deleted;
+		timeline_invalidations = getTimelineFromRemote(world);
+		world_invalidations.situation_ids_deleted = timeline_invalidations.situation_ids_deleted;
+		world_invalidations.situation_ids_deleted = timeline_invalidations.situation_ids_updated;
+		return world_invalidations;
 	}
 
 	bool UwdsClientNodelet::getMeshFromRemote(const std::string& mesh_id)
@@ -195,7 +213,7 @@ namespace uwds
 		get_mesh_srv.request.mesh_id = mesh_id;
 
 		if (meshes().has(mesh_id)){
-			return true;
+			return false;
 		} else {
 
 			if(!get_mesh_service_client_.exists())

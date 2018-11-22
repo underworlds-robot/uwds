@@ -11,11 +11,11 @@ DEFAULT_SUBSCRIBER_BUFFER_SIZE = 10
 DEFAULT_TIME_SYNCHRONIZER_BUFFER_SIZE = 10
 
 
-class ConnectionStatus(Enum):
-    NOT_INITIALIZED = 0
-    NOT_CONNECTED = 1
-    CONNECTING = 2
-    CONNECTED = 3
+
+NOT_INITIALIZED = 0
+NOT_CONNECTED = 1
+CONNECTING = 2
+CONNECTED = 3
 
 
 class DynamicConnectionBasedNode(UwdsBase):
@@ -26,7 +26,7 @@ class DynamicConnectionBasedNode(UwdsBase):
         """
         """
         UwdsBase.__init__(self)
-        self.connection_status = ConnectionStatus.NOT_INITIALIZED
+        self.connection_status = NOT_INITIALIZED
         self.input_worlds = []
         self.ouput_worlds = []
         self.node_name = node_name
@@ -80,11 +80,11 @@ class DynamicConnectionBasedNode(UwdsBase):
         try:
             rospy.logdebug("[%s] Service '~input_worlds' requested",
                            self.node_name)
-            if self.connection_status == ConnectionStatus.NOT_INITIALIZED:
+            if self.connection_status == NOT_INITIALIZED:
                 return [], False, "Node not initialized, try later !"
-            if self.connection_status == ConnectionStatus.NOT_CONNECTED:
+            if self.connection_status == NOT_CONNECTED:
                 return [], False, "Node not connected, try to reconfigure it !"
-            if self.connection_status == ConnectionStatus.CONNECTING:
+            if self.connection_status == CONNECTING:
                 return [], False, "Node currently connecting, try later !"
             return self.input_worlds, True, ""
         except Exception as e:
@@ -97,11 +97,11 @@ class DynamicConnectionBasedNode(UwdsBase):
         try:
             rospy.logdebug("[%s] Service '~output_worlds' requested",
                            self.node_name)
-            if self.connection_status == ConnectionStatus.NOT_INITIALIZED:
+            if self.connection_status == NOT_INITIALIZED:
                 return [], False, "Node not initialized, try later !"
-            if self.connection_status == ConnectionStatus.NOT_CONNECTED:
+            if self.connection_status == NOT_CONNECTED:
                 return [], False, "Node not connected, try to reconfigure it !"
-            if self.connection_status == ConnectionStatus.CONNECTING:
+            if self.connection_status == CONNECTING:
                 return [], False, "Node currently connecting, try later !"
             return self.output_worlds, True, ""
         except Exception as e:

@@ -63,21 +63,11 @@ namespace uwds {
       {
         Invalidations invalidations;
 
-        scene_->remove(changes.nodes_to_delete);
-        invalidations.node_ids_deleted = changes.nodes_to_delete;
-        for (const auto& node : changes.nodes_to_update)
-        {
-          scene_->update(node);
-          invalidations.node_ids_updated.push_back(node.id);
-        }
+        invalidations.node_ids_deleted = scene_->remove(changes.nodes_to_delete);
+        invalidations.node_ids_updated = scene_->update(changes.nodes_to_update);
 
-        timeline_->remove(changes.situations_to_delete);
-        invalidations.situation_ids_deleted = changes.situations_to_delete;
-        for (const auto& situation : changes.situations_to_update)
-        {
-          timeline_->update(situation);
-          invalidations.situation_ids_updated.push_back(situation.id);
-        }
+        invalidations.situation_ids_deleted = timeline_->remove(changes.situations_to_delete);
+        invalidations.situation_ids_updated = timeline_->update(changes.situations_to_update);
 
         meshes_->remove(changes.meshes_to_delete);
         invalidations.mesh_ids_deleted = changes.meshes_to_delete;
@@ -94,8 +84,8 @@ namespace uwds {
        */
       void reset()
       {
-        scene().reset();
-        timeline().reset();
+        scene().reset(scene().rootID());
+        timeline().reset(timeline().origin().data);
         meshes().reset();
       }
 

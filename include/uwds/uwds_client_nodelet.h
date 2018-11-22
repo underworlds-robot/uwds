@@ -80,21 +80,21 @@ namespace uwds
      *
      * @param world The world to connect
      */
-    void getSceneFromRemote(const std::string& world);
+    uwds_msgs::Invalidations getSceneFromRemote(const std::string& world);
 
     /** @brief
      * This method is called to request the Underworlds timeline.
      *
      * @param world The world to connect
      */
-    void getTimelineFromRemote(const std::string& world);
+    uwds_msgs::Invalidations getTimelineFromRemote(const std::string& world);
 
     /** @brief
      * This method is called when a world is initialized.
      *
      * @param world The world to initialize
      */
-    void initializeWorld(const std::string& world);
+    uwds_msgs::Invalidations initializeWorld(const std::string& world);
 
     /** @brief
      * This method is called to request a mesh from the server.
@@ -113,6 +113,8 @@ namespace uwds
 
 
   protected:
+
+    std::string global_frame_id_;
     /** @brief
      * A flag to know if the scene is used,
      * or not.
