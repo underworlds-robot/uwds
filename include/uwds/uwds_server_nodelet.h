@@ -58,6 +58,10 @@ namespace uwds
 
   protected:
 
+    //virtual bool onClientConnection();
+
+    //virtual bool onClientDisconnection();
+
     /** @brief
      * This method is called by clients when request topology.
      *

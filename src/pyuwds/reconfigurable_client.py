@@ -81,6 +81,7 @@ class ReconfigurableClient(UwdsClient):
         self.resetInputWorlds()
         self.resetOutputWorlds()
         rospy.loginfo("[%s::reconfigure] Add new connections", self.node_name)
+        self.onReconfigure(new_input_world_names)
         for new_input_world in new_input_world_names:
             rospy.loginfo("[%s::reconfigure] Initialize world <%s>", self.node_name, new_input_world)
             invalidations = self.initializeWorld(new_input_world)
@@ -88,7 +89,7 @@ class ReconfigurableClient(UwdsClient):
             self.onSubscribeChanges(new_input_world)
             rospy.loginfo("[%s::reconfigure] make changes for world <%s>", self.node_name, new_input_world)
             self.onChanges(new_input_world, header, invalidations)
-        self.onReconfigure(new_input_world_names)
+        #self.onReconfigure(new_input_world_names)
         if self.synchronized:
             if len(new_input_world_names) == 2:
                 self.time_synchronizer = message_filters.TimeSynchronizer(
@@ -170,7 +171,7 @@ class ReconfigurableClient(UwdsClient):
         @typedef changes_list: ChangesInContextStampedConstPtr
         @param changes_list: The message list received
         """
-        rospy.loginfo("[%s::applyChanges] Received changes from server", self.node_name)
+        #rospy.loginfo("[%s::applyChanges] Received changes from server", self.node_name)
         for changes_in_ctxt in changes_list:
             invalidations = self.worlds[changes_in_ctxt.ctxt.world].applyChanges(changes_in_ctxt.header, changes_in_ctxt.changes)
             self.onChanges(changes_in_ctxt.ctxt.world, changes_in_ctxt.header, invalidations)
@@ -212,7 +213,7 @@ class ReconfigurableClient(UwdsClient):
         """
         raise NotImplementedError
 
-    def changesCallback(self, msg):
+    def changesCallback0(self, msg):
         """
         This method is called when a changes in a world are received.
 
@@ -225,7 +226,7 @@ class ReconfigurableClient(UwdsClient):
         changes_list.append(msg)
         self.applyChanges(changes_list)
 
-    def changesCallback(self, msg0, msg1):
+    def changesCallback1(self, msg0, msg1):
         """
         This method is called when a changes in a world are received.
 
@@ -241,7 +242,7 @@ class ReconfigurableClient(UwdsClient):
         changes_list.append(msg1)
         self.applyChanges(changes_list)
 
-    def changesCallback(self, msg0, msg1, msg2):
+    def changesCallback2(self, msg0, msg1, msg2):
         """
         This method is called when a changes in a world are received.
 
@@ -260,7 +261,7 @@ class ReconfigurableClient(UwdsClient):
         changes_list.append(msg2)
         self.applyChanges(changes_list)
 
-    def changesCallback(self, msg0, msg1, msg2, msg3):
+    def changesCallback3(self, msg0, msg1, msg2, msg3):
         """
         This method is called when a changes in a world are received.
 
@@ -283,7 +284,7 @@ class ReconfigurableClient(UwdsClient):
         self.applyChanges(changes_list)
         raise NotImplementedError
 
-    def changesCallback(self, msg0, msg1, msg2, msg3, msg4):
+    def changesCallback4(self, msg0, msg1, msg2, msg3, msg4):
         """
         This method is called when a changes in a world are received.
 
@@ -306,7 +307,7 @@ class ReconfigurableClient(UwdsClient):
         changes_list.append(msg4)
         self.applyChanges(changes_list)
 
-    def changesCallback(self, msg0, msg1, msg2, msg3, msg4):
+    def changesCallback5(self, msg0, msg1, msg2, msg3, msg4):
         """
         This method is called when a changes in a world are received.
 
@@ -331,7 +332,7 @@ class ReconfigurableClient(UwdsClient):
         changes_list.append(msg4)
         self.applyChanges(changes_list)
 
-    def changesCallback(self, msg0, msg1, msg2, msg3, msg4, msg5):
+    def changesCallback6(self, msg0, msg1, msg2, msg3, msg4, msg5):
         """
         This method is called when a changes in a world are received.
 
@@ -359,7 +360,7 @@ class ReconfigurableClient(UwdsClient):
         changes_list.append(msg5)
         self.applyChanges(changes_list)
 
-    def changesCallback(self, msg0, msg1, msg2, msg3, msg4, msg5, msg6):
+    def changesCallback7(self, msg0, msg1, msg2, msg3, msg4, msg5, msg6):
         """
         This method is called when a changes in a world are received.
 
@@ -388,7 +389,7 @@ class ReconfigurableClient(UwdsClient):
         changes_list.append(msg6)
         self.applyChanges(changes_list)
 
-    def changesCallback(self, msg0, msg1, msg2, msg3, msg4, msg5, msg6, msg7):
+    def changesCallback8(self, msg0, msg1, msg2, msg3, msg4, msg5, msg6, msg7):
         """
         This method is called when a changes in a world are received.
 
@@ -432,13 +433,12 @@ class ReconfigurableClient(UwdsClient):
         if self.synchronized:
             if world_name not in self.sync_changes_subscribers_map:
                 self.sync_changes_subscribers_map[world_name] = \
-                    message_filters.Subscriber(
-                    "/"+world+"/changes", ChangesInContextStamped)
+                    message_filters.Subscriber(world_name+"/changes", ChangesInContextStamped)
                 added = True
         else:
             if world_name not in self.changes_subscriber_map:
                 self.changes_subscriber_map[world_name] = \
-                    rospy.Subscriber("/"+world_name+"/changes", ChangesInContextStamped)
+                    rospy.Subscriber(world_name+"/changes", ChangesInContextStamped, self.changesCallback0)
                 added = True
         if added and self.verbose:
             rospy.loginfo("[%s::addChangesSubscriber] Add changes subscriber for world <%s>", self.node_name, world_name)

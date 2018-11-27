@@ -44,9 +44,9 @@ namespace uwds {
         ros::Time current_time = ros::Time::now();
         if(std::find(worlds_.begin(), worlds_.end(), ctxt.world) == worlds_.end())
         {
-          this->lock();
+          //this->lock();
           worlds_.push_back(ctxt.world);
-          this->unlock();
+          //this->unlock();
         }
         if(!clients_.has(ctxt.client.id))
           clients_.update(ctxt.client.id, ctxt.client);

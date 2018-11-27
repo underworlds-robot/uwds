@@ -19,25 +19,25 @@ namespace uwds
     get_topology_service_server_ = nh_->advertiseService("uwds/get_topology",
                                                          &UwdsServerNodelet::getTopology,
                                                          this);
-    if(verbose_)NODELET_INFO("[%s] Service server 'uwds/get_topology' created", nodelet_name_.c_str());
+    if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/get_topology' created", nodelet_name_.c_str());
   	// Nodes related service
     // Service called to load the scene
     get_scene_service_server_ = nh_->advertiseService("uwds/get_scene",
                                                       &UwdsServerNodelet::getScene,
                                                       this);
-    if(verbose_)NODELET_INFO("[%s] Service server 'uwds/get_scene' created", nodelet_name_.c_str());
+    if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/get_scene' created", nodelet_name_.c_str());
     // Situations related service
     // Service called to load previous situations
     get_timeline_service_server_ = nh_->advertiseService("uwds/get_timeline",
                                                          &UwdsServerNodelet::getTimeline,
                                                          this);
-    if(verbose_)NODELET_INFO("[%s] Service server 'uwds/get_timeline' created", nodelet_name_.c_str());
+    if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/get_timeline' created", nodelet_name_.c_str());
     // Meshes related service
     // Service called to load the meshes
     get_mesh_service_server_ = nh_->advertiseService("uwds/get_mesh",
                                       &UwdsServerNodelet::getMesh,
                                       this);
-    if(verbose_)NODELET_INFO("[%s] Service server 'uwds/get_mesh' created",
+    if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/get_mesh' created",
                     nodelet_name_.c_str());
 
     // Timer to clean the situations ended over buffer size
@@ -49,56 +49,60 @@ namespace uwds
                                                           &UwdsServerNodelet::cleanUpTimerCallback,
                                                           this);
     // Server ready
-    NODELET_INFO("[%s] Server ready !", nodelet_name_.c_str());
+    NODELET_INFO("[%s::init] Server ready !", nodelet_name_.c_str());
     connection_status_ = CONNECTED;
   }
 
   bool UwdsServerNodelet::getTopology(uwds_msgs::GetTopology::Request &req,
                    				uwds_msgs::GetTopology::Response &res)
   {
-  	if(verbose_)NODELET_INFO("[%s] Request uwds/get_topology", nodelet_name_.c_str());
-  	try {
-      topology().lock();
-      for (auto world : topology().worlds())
-      {
-        res.worlds.push_back(world);
-      }
-      topology().unlock();
-      topology().clients().lock();
-      for (auto client : topology().clients())
-      {
-        res.clients.push_back(*client);
-      }
-      topology().clients().unlock();
-      topology().client_interactions().lock();
-      for (auto interactions : topology().client_interactions())
-      {
-        for (auto interaction : *interactions) {
-          res.client_interactions.push_back(interaction);
-        }
-      }
-      topology().client_interactions().unlock();
-  		res.success = true;
-  	} catch(const std::exception& e) {
-      	NODELET_ERROR("[%s] Exception occured : %s", nodelet_name_.c_str(), e.what());
-      	res.success = false;
-      	res.error = e.what();
-    }
+  	if(verbose_)NODELET_INFO("[%s::getTopology] Request uwds/get_topology", nodelet_name_.c_str());
+  	// try {
+    //   topology().lock();
+    //   for (auto world : topology().worlds())
+    //   {
+    //     res.worlds.push_back(world);
+    //   }
+    //   topology().unlock();
+    //   topology().clients().lock();
+    //   for (auto client : topology().clients())
+    //   {
+    //     res.clients.push_back(*client);
+    //   }
+    //   topology().clients().unlock();
+    //   topology().client_interactions().lock();
+    //   for (auto interactions : topology().client_interactions())
+    //   {
+    //     for (auto interaction : *interactions) {
+    //       res.client_interactions.push_back(interaction);
+    //     }
+    //   }
+    //   topology().client_interactions().unlock();
+  	// 	res.success = true;
+  	// } catch(const std::exception& e) {
+    //   	NODELET_ERROR("[%s::getTopology] Exception occured : %s", nodelet_name_.c_str(), e.what());
+    //   	res.success = false;
+    //   	res.error = e.what();
+    // }
+    std::string error = "Topology not available for now";
+    NODELET_ERROR("[%s::getTopology] Exception occured : %s", nodelet_name_.c_str(), error.c_str());
+    res.success = false;
+    res.error = error;
     return true;
   }
 
   bool UwdsServerNodelet::getScene(uwds_msgs::GetScene::Request &req,
                                    uwds_msgs::GetScene::Response &res)
   {
-  	if(verbose_)NODELET_INFO("[%s] Client <%s> request uwds/get_scene in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
+  	if(verbose_)NODELET_INFO("[%s::getScene] Client <%s> request uwds/get_scene in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
     try
     {
-      if (req.ctxt.client.id != "")
-        topology().update(req.ctxt, READ);
+      // if (req.ctxt.client.id != "")
+      //   topology().update(req.ctxt, READ);
     	addChangesPublisher(req.ctxt.world);
     	auto& scene = worlds()[req.ctxt.world].scene();
       uint i=0;
-      if(verbose_)NODELET_INFO("[%s] %d nodes in the scene", nodelet_name_.c_str(), (uint)scene.nodes().size());
+      //if(verbose_)NODELET_INFO("[%s::getScene] %d nodes in the scene", nodelet_name_.c_str(), (uint)scene.nodes().size());
       scene.lock();
       for (auto node : scene.nodes())
     	{
@@ -111,7 +115,7 @@ namespace uwds
     }
     catch(const std::exception& e)
     {
-    	NODELET_ERROR("[%s] Exception occured : %s", nodelet_name_.c_str(), e.what());
+    	NODELET_ERROR("[%s::getScene] Exception occured : %s", nodelet_name_.c_str(), e.what());
     	res.success = false;
     	res.error = e.what();
     }
@@ -121,11 +125,11 @@ namespace uwds
   bool UwdsServerNodelet::getTimeline(uwds_msgs::GetTimeline::Request &req,
                 uwds_msgs::GetTimeline::Response &res)
   {
-  	if(verbose_)NODELET_INFO("[%s] Client <%s> request 'uwds/get_timeline' in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
+  	if(verbose_)NODELET_INFO("[%s::getTimeline] Client <%s> request 'uwds/get_timeline' in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
     try
     {
-      if (req.ctxt.client.id != "")
-        topology().update(req.ctxt, READ);
+      // if (req.ctxt.client.id != "")
+      //   topology().update(req.ctxt, READ);
     	addChangesPublisher(req.ctxt.world);
     	auto& timeline = worlds()[req.ctxt.world].timeline();
     	std::vector<uwds_msgs::Situation> situations;
@@ -145,7 +149,7 @@ namespace uwds
     }
     catch(const std::exception& e)
     {
-    	NODELET_ERROR("[%s] Exception occured while sending timeline for world <%s> to client <%s> : %s", nodelet_name_.c_str(), req.ctxt.world.c_str(), req.ctxt.client.name.c_str(), e.what());
+    	NODELET_ERROR("[%s::getTimeline] Exception occured while sending timeline for world <%s> to client <%s> : %s", nodelet_name_.c_str(), req.ctxt.world.c_str(), req.ctxt.client.name.c_str(), e.what());
     	res.success = false;
     	res.error = e.what();
     }
@@ -155,7 +159,7 @@ namespace uwds
   bool UwdsServerNodelet::getMesh(uwds_msgs::GetMesh::Request &req,
                                   uwds_msgs::GetMesh::Response &res)
   {
-    if(verbose_)NODELET_INFO("[%s] Request 'uwds/get_mesh' <%s>", nodelet_name_.c_str(), req.mesh_id.c_str());
+    if(verbose_)NODELET_INFO("[%s::getMesh] Request 'uwds/get_mesh' <%s>", nodelet_name_.c_str(), req.mesh_id.c_str());
     try
     {
       if (meshes().has(req.mesh_id))
@@ -170,7 +174,7 @@ namespace uwds
     }
     catch(const std::exception& e)
     {
-      NODELET_ERROR("[%s] Exception occured while sending mesh <%s> : %s", nodelet_name_.c_str(), req.mesh_id.c_str(), e.what());
+      NODELET_ERROR("[%s::getMesh] Exception occured while sending mesh <%s> : %s", nodelet_name_.c_str(), req.mesh_id.c_str(), e.what());
       res.success = false;
       res.error = e.what();
     }
@@ -179,11 +183,12 @@ namespace uwds
 
   void UwdsServerNodelet::changesCallback(const uwds_msgs::ChangesInContextStampedPtr& msg)
   {
-  	if(verbose_)NODELET_INFO("[%s] Received changes from client <%s> in <%s> world", nodelet_name_.c_str(), msg->ctxt.client.name.c_str(), msg->ctxt.world.c_str());
+    float delay = (ros::Time::now() - msg->header.stamp).toSec();
+  	if(verbose_)NODELET_INFO("[%s::changesCallback] Received changes from client <%s> in <%s> world %f in the past", nodelet_name_.c_str(), msg->ctxt.client.name.c_str(), msg->ctxt.world.c_str(), delay);
     try
     {
-      if (msg->ctxt.client.id != "")
-        topology().update(msg->ctxt, WRITE);
+      //if (msg->ctxt.client.id != "")
+        //topology().update(msg->ctxt, WRITE);
     	addChangesPublisher(msg->ctxt.world);
 
     	auto& scene = worlds()[msg->ctxt.world].scene();
@@ -226,7 +231,7 @@ namespace uwds
           tf::poseTFToMsg(pose, pose_msg);
           // update the pose according
           node.position.pose = pose_msg;
-          // update the node
+          // update the node in the scene
       		scene.nodes().update(node);
         }
     	}
@@ -237,7 +242,7 @@ namespace uwds
     }
     catch(const std::exception& e)
     {
-    	NODELET_ERROR("[%s] Exception occured while distributing changes to clients : %s", nodelet_name_.c_str(), e.what());
+    	NODELET_ERROR("[%s::changesCallback] Exception occured while distributing changes to clients : %s", nodelet_name_.c_str(), e.what());
     }
   }
 
@@ -280,7 +285,7 @@ namespace uwds
 
   void UwdsServerNodelet::distributeChanges(const ChangesInContextStampedPtr& changes)
   {
-    if(verbose_)NODELET_INFO("[%s] Distribute changes to clients connected to world <%s>", nodelet_name_.c_str(), changes->ctxt.world.c_str());
+    if(verbose_)NODELET_INFO("[%s::distributeChanges] Distribute changes to clients connected to world <%s>", nodelet_name_.c_str(), changes->ctxt.world.c_str());
     changes_publishers_map_.at(changes->ctxt.world)->publish(changes);
   }
 
@@ -290,7 +295,7 @@ namespace uwds
   	if (changes_publishers_map_.count(world) == 0 )
   	{
   		changes_publishers_map_.emplace(world, boost::make_shared<ros::Publisher>(nh_->advertise<uwds_msgs::ChangesInContextStamped>(world+"/changes", DEFAULT_PUBLISHER_BUFFER_SIZE)));
-  		if(verbose_)NODELET_INFO("[%s] Changes publisher for world <%s> created", nodelet_name_.c_str(), world.c_str());
+  		if(verbose_)NODELET_INFO("[%s::addChangesPublisher] Changes publisher for world <%s> created", nodelet_name_.c_str(), world.c_str());
   	}
   }
 
@@ -299,7 +304,7 @@ namespace uwds
     if (changes_publishers_map_.count(world) > 0)
     {
       changes_publishers_map_.erase(world);
-      if(verbose_)NODELET_INFO("[%s] Remove changes publisher for world <%s>", nodelet_name_.c_str(), world.c_str());
+      if(verbose_)NODELET_INFO("[%s::removeChangesPublisher] Remove changes publisher for world <%s>", nodelet_name_.c_str(), world.c_str());
     }
   }
 
