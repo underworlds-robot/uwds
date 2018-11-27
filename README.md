@@ -10,7 +10,7 @@ The clients can be geometric reasoners (that compute topological relations betwe
 
 One of the main specific feature of **Underworlds** is the ability to store many parallel worlds: past models of the environment, future models, models with some objects filtered out, models that are physically consistent, etc.
 
-This package provide only the server that distribute and store the data, the data-structure and abstract classes for clients. So it is needed to develop your own clients (support **C++** and **Python**). A set of basic clients are provided in [this package](https://github.com/underworlds-robot/uwds_basic_clients).
+This package provide only the server that distribute and store the data, the data-structure and abstract classes for clients. So it is needed to develop your own clients (support **C++** and **Python**). A set of basic C++ clients are provided in [this package](https://github.com/underworlds-robot/uwds_basic_clients), Pyhton clients in [this one](https://github.com/underworlds-robot/uwds_physics_clients).
 
 ### Uncertainty
 
