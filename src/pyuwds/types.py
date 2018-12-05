@@ -59,7 +59,8 @@ class Scene(object):
 
     def remove(self, node_ids):
         for node_id in node_ids:
-            del self.nodes[node_id]
+            if node_id in self.nodes:
+                del self.nodes[node_id]
         return node_ids
 
     def reset(self, rootID):
@@ -108,7 +109,8 @@ class Timeline(object):
 
     def remove(self, situation_ids):
         for situation_id in situation_ids:
-            del self.nodes[situation_id]
+            if situation_id in self.situations:
+                del self.situations[situation_id]
         return situation_ids
 
     def reset(self, origin):
@@ -144,7 +146,7 @@ class World(object):
         invalidations.node_ids_updated = self.scene.update(changes.nodes_to_update)
 
         invalidations.situation_ids_deleted = self.timeline.remove(changes.situations_to_delete)
-        invalidations.situation_ids_updated = self.timeline.remove(changes.situations_to_update)
+        invalidations.situation_ids_updated = self.timeline.update(changes.situations_to_update)
 
         for mesh_id in changes.meshes_to_delete:
             del self.meshes[mesh_id]
@@ -154,9 +156,10 @@ class World(object):
             invalidations.mesh_ids_updated.append(mesh.id)
         return invalidations
 
-    def reset():
+    def reset(self):
         self.scene.reset()
         self.timeline.reset()
+
 
 class Worlds(object):
     """
@@ -164,6 +167,7 @@ class Worlds(object):
     def __init__(self, meshes):
         self.meshes = meshes
         self.worlds = {}
+
 
 class Topology(object):
     """

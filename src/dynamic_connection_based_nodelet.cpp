@@ -8,7 +8,7 @@ namespace uwds
   void DynamicConnectionBasedNodelet::onInit()
   {
     //ros::param::param<std::string>("global_frame_id", global_frame_id_, "map");
-    ros::param::param<bool>("~verbose", verbose_, true);
+    //ros::param::param<bool>("~verbose", verbose_, true);
     connection_status_ = NOT_INITIALIZED;
     bool use_multithread;
     ros::param::param<bool>("~use_multithread_callback", use_multithread, true);
@@ -23,6 +23,10 @@ namespace uwds
       nh_ = boost::make_shared<ros::NodeHandle>(getNodeHandle());
       pnh_ = boost::make_shared<ros::NodeHandle>(getPrivateNodeHandle());
     }
+    pnh_->param<bool>("verbose", verbose_, true);
+
+    pnh_->param<std::string>("output_world", output_world_, "");
+
     pnh_->param<int>("publisher_buffer_size", publisher_buffer_size_ , DEFAULT_PUBLISHER_BUFFER_SIZE);
     if (publisher_buffer_size_ == DEFAULT_PUBLISHER_BUFFER_SIZE)
       if(verbose_)NODELET_INFO("[%s] Using default '~publisher_buffer_size' : %d", nodelet_name_.c_str(), DEFAULT_PUBLISHER_BUFFER_SIZE);

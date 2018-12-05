@@ -83,6 +83,11 @@ namespace uwds {
         }
       }
 
+      void remove(const Context& ctxt, const ClientInteractionType& type)
+      {
+
+      }
+
       std::vector<std::string> worlds()
       {
         return worlds_;

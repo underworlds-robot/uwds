@@ -40,6 +40,30 @@ namespace uwds
     if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/get_mesh' created",
                     nodelet_name_.c_str());
 
+    connect_input_service_server_ = nh_->advertiseService("uwds/connect_input",
+                                      &UwdsServerNodelet::connectInput,
+                                      this);
+    if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/connect_input' created",
+                    nodelet_name_.c_str());
+
+    disconnect_input_service_server_ = nh_->advertiseService("uwds/disconnect_input",
+                                      &UwdsServerNodelet::disconnectInput,
+                                      this);
+    if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/disconnect_input' created",
+                    nodelet_name_.c_str());
+
+    connect_output_service_server_ = nh_->advertiseService("uwds/connect_output",
+                                      &UwdsServerNodelet::connectOutput,
+                                      this);
+    if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/connect_output' created",
+                    nodelet_name_.c_str());
+
+    disconnect_output_service_server_ = nh_->advertiseService("uwds/disconnect_output",
+                                      &UwdsServerNodelet::disconnectOutput,
+                                      this);
+    if(verbose_)NODELET_INFO("[%s::init] Service server 'uwds/disconnect_output' created",
+                    nodelet_name_.c_str());
+
     // Timer to clean the situations ended over buffer size
    float clean_up_timer_duration;
    pnh_->param<float>("clean_up_timer_duration",
@@ -57,33 +81,33 @@ namespace uwds
                    				uwds_msgs::GetTopology::Response &res)
   {
   	if(verbose_)NODELET_INFO("[%s::getTopology] Request uwds/get_topology", nodelet_name_.c_str());
-  	// try {
-    //   topology().lock();
-    //   for (auto world : topology().worlds())
-    //   {
-    //     res.worlds.push_back(world);
-    //   }
-    //   topology().unlock();
-    //   topology().clients().lock();
-    //   for (auto client : topology().clients())
-    //   {
-    //     res.clients.push_back(*client);
-    //   }
-    //   topology().clients().unlock();
-    //   topology().client_interactions().lock();
-    //   for (auto interactions : topology().client_interactions())
-    //   {
-    //     for (auto interaction : *interactions) {
-    //       res.client_interactions.push_back(interaction);
-    //     }
-    //   }
-    //   topology().client_interactions().unlock();
-  	// 	res.success = true;
-  	// } catch(const std::exception& e) {
-    //   	NODELET_ERROR("[%s::getTopology] Exception occured : %s", nodelet_name_.c_str(), e.what());
-    //   	res.success = false;
-    //   	res.error = e.what();
-    // }
+  	try {
+      topology().lock();
+      for (auto world : topology().worlds())
+      {
+        res.worlds.push_back(world);
+      }
+      topology().unlock();
+      topology().clients().lock();
+      for (auto client : topology().clients())
+      {
+        res.clients.push_back(*client);
+      }
+      topology().clients().unlock();
+      topology().client_interactions().lock();
+      for (auto interactions : topology().client_interactions())
+      {
+        for (auto interaction : *interactions) {
+          res.client_interactions.push_back(interaction);
+        }
+      }
+      topology().client_interactions().unlock();
+  		res.success = true;
+  	} catch(const std::exception& e) {
+      	NODELET_ERROR("[%s::getTopology] Exception occured : %s", nodelet_name_.c_str(), e.what());
+      	res.success = false;
+      	res.error = e.what();
+    }
     std::string error = "Topology not available for now";
     NODELET_ERROR("[%s::getTopology] Exception occured : %s", nodelet_name_.c_str(), error.c_str());
     res.success = false;
@@ -97,11 +121,12 @@ namespace uwds
   	if(verbose_)NODELET_INFO("[%s::getScene] Client <%s> request uwds/get_scene in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
     try
     {
-      // if (req.ctxt.client.id != "")
-      //   topology().update(req.ctxt, READ);
+      if(req.ctxt.world == "uwds")
+      {
+        throw std::runtime_error("<uwds> world namespace reserved. Please use another name.");
+      }
     	addChangesPublisher(req.ctxt.world);
     	auto& scene = worlds()[req.ctxt.world].scene();
-      uint i=0;
       //if(verbose_)NODELET_INFO("[%s::getScene] %d nodes in the scene", nodelet_name_.c_str(), (uint)scene.nodes().size());
       scene.lock();
       for (auto node : scene.nodes())
@@ -123,13 +148,15 @@ namespace uwds
   }
 
   bool UwdsServerNodelet::getTimeline(uwds_msgs::GetTimeline::Request &req,
-                uwds_msgs::GetTimeline::Response &res)
+                                      uwds_msgs::GetTimeline::Response &res)
   {
   	if(verbose_)NODELET_INFO("[%s::getTimeline] Client <%s> request 'uwds/get_timeline' in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
     try
     {
-      // if (req.ctxt.client.id != "")
-      //   topology().update(req.ctxt, READ);
+      if(req.ctxt.world == "uwds")
+      {
+        throw std::runtime_error("<uwds> world namespace reserved. Please use another name.");
+      }
     	addChangesPublisher(req.ctxt.world);
     	auto& timeline = worlds()[req.ctxt.world].timeline();
     	std::vector<uwds_msgs::Situation> situations;
@@ -181,14 +208,101 @@ namespace uwds
     return true;
   }
 
+  bool UwdsServerNodelet::connectInput(uwds_msgs::Connect::Request &req,
+                                       uwds_msgs::Connect::Response &res)
+  {
+    if(verbose_)NODELET_INFO("[%s::connectInput] Client <%s> requested 'uwds/connect_input' in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
+    try
+    {
+      if(req.ctxt.world == "uwds")
+      {
+        throw std::runtime_error("<uwds> world namespace reserved. Please use another name.");
+      }
+      topology().update(req.ctxt, READ);
+      addChangesPublisher(req.ctxt.world);
+    }
+    catch(const std::exception& e)
+    {
+      NODELET_ERROR("[%s::connectInput] Exception occured while advertasing the connection to <%s> : %s", nodelet_name_.c_str(), req.ctxt.world.c_str(), e.what());
+      res.success = false;
+      res.error = e.what();
+    }
+    return true;
+  }
+
+  bool UwdsServerNodelet::disconnectInput(uwds_msgs::Connect::Request &req,
+                                          uwds_msgs::Connect::Response &res)
+  {
+    if(verbose_)NODELET_INFO("[%s::disconnectInput] Client <%s> requested 'uwds/disconnect_input' in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
+    try
+    {
+      if(req.ctxt.world == "uwds")
+      {
+        throw std::runtime_error("world <uwds> reserved. Please use another name.");
+      }
+      topology().remove(req.ctxt, READ);
+    }
+    catch(const std::exception& e)
+    {
+      NODELET_ERROR("[%s::disconnectInput] Exception occured while advertasing the connection to <%s> : %s", nodelet_name_.c_str(), req.ctxt.world.c_str(), e.what());
+      res.success = false;
+      res.error = e.what();
+    }
+    return true;
+  }
+
+  bool UwdsServerNodelet::connectOutput(uwds_msgs::Connect::Request &req,
+                                       uwds_msgs::Connect::Response &res)
+  {
+    if(verbose_)NODELET_INFO("[%s::connectOutput] Client <%s> request 'uwds/connect_output' in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
+    try
+    {
+      if(req.ctxt.world == "uwds")
+      {
+        throw std::runtime_error("world <uwds> reserved. Please use another name.");
+      }
+      topology().update(req.ctxt, WRITE);
+    }
+    catch(const std::exception& e)
+    {
+      NODELET_ERROR("[%s::connectOutput] Exception occured while advertasing the connection to <%s> : %s", nodelet_name_.c_str(), req.ctxt.world.c_str(), e.what());
+      res.success = false;
+      res.error = e.what();
+    }
+    return true;
+  }
+
+  bool UwdsServerNodelet::disconnectOutput(uwds_msgs::Connect::Request &req,
+                                          uwds_msgs::Connect::Response &res)
+  {
+    if(verbose_)NODELET_INFO("[%s::disconnectOutput] Client <%s> request 'uwds/disconnect_output' in <%s> world", nodelet_name_.c_str(), req.ctxt.client.name.c_str(), req.ctxt.world.c_str());
+    try
+    {
+      if(req.ctxt.world == "uwds")
+      {
+        throw std::runtime_error("world <uwds> reserved. Please use another name.");
+      }
+      topology().remove(req.ctxt, WRITE);
+    }
+    catch(const std::exception& e)
+    {
+      NODELET_ERROR("[%s::connectInput] Exception occured while advertasing the connection to <%s> : %s", nodelet_name_.c_str(), req.ctxt.world.c_str(), e.what());
+      res.success = false;
+      res.error = e.what();
+    }
+    return true;
+  }
+
   void UwdsServerNodelet::changesCallback(const uwds_msgs::ChangesInContextStampedPtr& msg)
   {
     float delay = (ros::Time::now() - msg->header.stamp).toSec();
   	if(verbose_)NODELET_INFO("[%s::changesCallback] Received changes from client <%s> in <%s> world %f in the past", nodelet_name_.c_str(), msg->ctxt.client.name.c_str(), msg->ctxt.world.c_str(), delay);
     try
     {
-      //if (msg->ctxt.client.id != "")
-        //topology().update(msg->ctxt, WRITE);
+      if(msg->ctxt.world == "uwds")
+      {
+        throw std::runtime_error("world <uwds> reserved. Please use another name.");
+      }
     	addChangesPublisher(msg->ctxt.world);
 
     	auto& scene = worlds()[msg->ctxt.world].scene();
@@ -211,7 +325,7 @@ namespace uwds
             // reparent to rootnode if the parent don't exist
             node.parent = scene.rootID();
           }
-          // children are lazzely updated (rootnode included)
+          // children are lazzely updated (rootnode's children included)
           std::vector<std::string> parent_children = scene.nodes()[node.parent].children;
           if (std::find(parent_children.begin(), parent_children.end(), node.id) == parent_children.end())
             scene.nodes()[node.parent].children.push_back(node.id);

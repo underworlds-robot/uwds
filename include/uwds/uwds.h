@@ -21,6 +21,7 @@
 
 #include <uwds_msgs/Client.h>
 #include <uwds_msgs/ClientInteraction.h>
+#include <uwds_msgs/Connect.h>
 
 #include <uwds_msgs/Context.h>
 #include <uwds_msgs/Property.h>

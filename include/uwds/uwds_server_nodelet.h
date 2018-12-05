@@ -28,6 +28,10 @@ namespace uwds
     * - publish to the 'world/changes' of the worlds
     *
     * ### Advertised services
+    * - 'uwds/connect_input' allow to update the clients topology
+    * - 'uwds/disconnect_input' allow to update the clients topology
+    * - 'uwds/connect_output' allow to update the clients topology
+    * - 'uwds/disconnect_output' allow to update the clients topology
     * - 'uwds/get_topology' allow to fetch the clients topology
     * - 'uwds/get_scene' allow to fetch the scene
     * - 'uwds/get_mesh' allow to fetch the meshes
@@ -68,8 +72,8 @@ namespace uwds
      * @param req The service request
      * @param res The service response
      */
-    virtual bool getTopology(uwds_msgs::GetTopology::Request &req,
-                             uwds_msgs::GetTopology::Response &res);
+    virtual bool getTopology(uwds_msgs::GetTopology::Request& req,
+                             uwds_msgs::GetTopology::Response& res);
 
     // Nodes related services
     /** @brief
@@ -78,8 +82,8 @@ namespace uwds
      * @param req The service request
      * @param res The service response
      */
-    virtual bool getScene(uwds_msgs::GetScene::Request &req,
-                          uwds_msgs::GetScene::Response &res);
+    virtual bool getScene(uwds_msgs::GetScene::Request& req,
+                          uwds_msgs::GetScene::Response& res);
 
     /** @brief
      * This method is called when a client initialize a timeline.
@@ -87,8 +91,8 @@ namespace uwds
      * @param req The client request
      * @param res The server response
      */
-    virtual bool getTimeline(uwds_msgs::GetTimeline::Request &req,
-                             uwds_msgs::GetTimeline::Response &res);
+    virtual bool getTimeline(uwds_msgs::GetTimeline::Request& req,
+                             uwds_msgs::GetTimeline::Response& res);
 
     /** @brief
      * This method is called when a get mesh request is received.
@@ -96,8 +100,45 @@ namespace uwds
      * @param req The service request
      * @param res The service response
      */
-    bool getMesh(uwds_msgs::GetMesh::Request &req,
-                 uwds_msgs::GetMesh::Response &res);
+    bool getMesh(uwds_msgs::GetMesh::Request& req,
+                 uwds_msgs::GetMesh::Response& res);
+
+
+   /** @brief
+    * This method is called when a client connect to an input world.
+    *
+    * @param req The service request
+    * @param res The service response
+    */
+    bool connectInput(uwds_msgs::Connect::Request& req,
+                      uwds_msgs::Connect::Response& res);
+
+    /** @brief
+     * This method is called when a client disconnect from an input world.
+     *
+     * @param req The service request
+     * @param res The service response
+     */
+    bool disconnectInput(uwds_msgs::Connect::Request& req,
+                         uwds_msgs::Connect::Response& res);
+
+   /** @brief
+    * This method is called when a client connect to an output world.
+    *
+    * @param req The service request
+    * @param res The service response
+    */
+   bool connectOutput(uwds_msgs::Connect::Request& req,
+                      uwds_msgs::Connect::Response& res);
+
+   /** @brief
+    * This method is called when a client disconnect from an output world.
+    *
+    * @param req The service request
+    * @param res The service response
+    */
+   bool disconnectOutput(uwds_msgs::Connect::Request& req,
+                        uwds_msgs::Connect::Response& res);
 
     /** @brief
      * This method is called when a changes in a world are received.
@@ -120,6 +161,7 @@ namespace uwds
      * @param changes The changes to distribute
      */
     virtual void distributeChanges(const ChangesInContextStampedPtr& changes);
+
     /** @brief
      * This method is called periodically to clean up old data in the structure.
      *
@@ -167,6 +209,30 @@ namespace uwds
      * The get mesh service server
      */
     ros::ServiceServer get_mesh_service_server_;
+
+    /** @brief
+     * The connect input service server,
+     * allow the server to build the clients topology.
+     */
+    ros::ServiceServer connect_input_service_server_;
+
+    /** @brief
+     * The disconnect input service server,
+     * allow the server to build the clients topology.
+     */
+    ros::ServiceServer disconnect_input_service_server_;
+
+    /** @brief
+     * The connect input service server,
+     * allow the server to build the clients topology.
+     */
+    ros::ServiceServer connect_output_service_server_;
+
+    /** @brief
+     * The disconnect input service server,
+     * allow the server to build the clients topology.
+     */
+    ros::ServiceServer disconnect_output_service_server_;
   };
 }
 

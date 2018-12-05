@@ -84,6 +84,7 @@ namespace uwds
                                   uwds_msgs::List::Response &res);
 
 
+    std::string output_world_;
     /** @brief
      * A flag to know if verbose,
      * or not.
