@@ -57,11 +57,11 @@ namespace uwds {
    * The clients type enumeration
    */
   enum ClientType {
-    UNDEFINED = 0,
-    READER,
-    MONITOR,
-    PROVIDER,
-    FILTER
+    UNDEFINED = uwds_msgs::Client::UNDEFINED,
+    READER = uwds_msgs::Client::READER,
+    MONITOR = uwds_msgs::Client::MONITOR,
+    PROVIDER = uwds_msgs::Client::PROVIDER,
+    FILTER = uwds_msgs::Client::FILTER
   };
   /** @brief
    * The clients type names

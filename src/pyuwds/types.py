@@ -3,37 +3,40 @@
 
 import rospy
 import uuid
-from uwds_msgs.msg import Node, Invalidations
+from uwds_msgs.msg import Node, Situation, ClientInteraction, Client, Invalidations
 
-
-ENTITY = 0
-MESH = 1
-CAMERA = 2
+ENTITY = Node.ENTITY
+MESH = Node.MESH
+CAMERA = Node.CAMERA
 
 NodeTypeNames = {0: "entity", 1: "mesh", 2: "camera"}
 
+GENERIC = Situation.GENERIC
+FACT = Situation.FACT
+ACTION = Situation.ACTION
+INTERNAL = Situation.INTERNAL
 
-GENERIC = 0
-FACT = 1
-ACTION = 2
-INTERNAL = 3
+NodeTypeNames = {GENERIC: "generic",
+                 FACT: "fact",
+                 ACTION: "action",
+                 INTERNAL: "internal"}
 
-NodeTypeNames = {0: "generic", 1: "fact", 2: "action", 3: "internal"}
+READ = ClientInteraction.READ
+WRITE = ClientInteraction.WRITE
 
+ClientInteractionTypeNames = {READ: "read", WRITE: "write"}
 
-READ = 0
-WRITE = 1
+UNDEFINED = Client.UNDEFINED
+READER = Client.READER
+MONITOR = Client.MONITOR
+PROVIDER = Client.PROVIDER
+FILTER = Client.FILTER
 
-ClientInteractionTypeNames = {0: "read", 1: "write"}
-
-
-UNDEFINED = 0
-READER = 1
-MONITOR = 2
-PROVIDER = 3
-FILTER = 4
-
-ClientTypeNames = {0: "reader", 1: "provider", 2: "filter"}
+ClientTypeNames = {UNDEFINED: "undefined",
+                   READER: "reader",
+                   MONITOR: "monitor",
+                   PROVIDER: "provider",
+                   FILTER: "filter"}
 
 
 class Scene(object):

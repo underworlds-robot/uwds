@@ -20,5 +20,9 @@
         args="load uwds/UwdsServerNodelet $(arg nodelet_manager)"
         respawn="$(arg respawn)"
         output="$(arg output)"
-        launch-prefix="$(arg launch-prefix)"/>
+        launch-prefix="$(arg launch-prefix)">
+        <rosparam subst_value="true">
+      verbose: false
+    </rosparam>
+  </node>
 </launch>

@@ -19,10 +19,10 @@ namespace uwds {
    * The situation type enum
    */
   enum SituationType {
-    GENERIC = 0,
-    FACT,
-    ACTION,
-    INTERNAL
+    GENERIC = uwds_msgs::Situation::GENERIC,
+    FACT = uwds_msgs::Situation::FACT,
+    ACTION = uwds_msgs::Situation::ACTION,
+    INTERNAL = uwds_msgs::Situation::INTERNAL
   };
 
   static const std::array<std::string, 4> SituationTypeName{"generic",

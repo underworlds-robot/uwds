@@ -19,9 +19,9 @@ namespace uwds {
    * The node types enum
    */
   enum NodeType {
-    ENTITY = 0,
-    MESH,
-    CAMERA
+    ENTITY = uwds_msgs::Node::ENTITY,
+    MESH = uwds_msgs::Node::MESH,
+    CAMERA = uwds_msgs::Node::CAMERA
   };
   /** @brief
    * The types names corresponding
@@ -42,7 +42,6 @@ namespace uwds {
        *
        * @param node The node to update
        */
-
       void update(const NodePtr node) {
         update(node->id, node);
       }

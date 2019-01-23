@@ -22,8 +22,8 @@ namespace uwds {
    * Enum to represent the client interaction types
    */
   enum ClientInteractionType {
-    READ = 0,
-    WRITE
+    READ = uwds_msgs::ClientInteraction::READ,
+    WRITE = uwds_msgs::ClientInteraction::WRITE
   };
   /** @brief
    * The client interaction type names

@@ -52,7 +52,7 @@ class ReconfigurableClient(UwdsClient):
         """
         header = Header()
         header.frame_id = self.global_frame_id
-        header.stamp = rospy.Time()
+        header.stamp = rospy.Time.now()
         rospy.loginfo("[%s::reconfigure] Reconfiguring", self.node_name)
         self.connection_mutex.acquire()
         if len(new_input_world_names) == 0:
