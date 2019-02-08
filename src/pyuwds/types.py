@@ -55,6 +55,7 @@ class Scene(object):
     def update(self, nodes):
         node_ids = []
         for node in nodes:
+            node.last_update.data = rospy.Time.now()
             self.nodes[node.id] = node
             if node.name !="root":
                 node_ids.append(node.id)
@@ -107,6 +108,7 @@ class Timeline(object):
         situation_ids = []
         for situation in situations:
             situation_ids.append(situation.id)
+            situation.last_update.data = rospy.Time.now()
             self.situations[situation.id] = situation
         return situation_ids
 
