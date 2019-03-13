@@ -48,10 +48,7 @@ namespace uwds {
        */
       void reset()
       {
-        for(const auto& world_pair : worlds_)
-        {
-          world_pair.second->reset();
-        }
+        worlds_.clear();
       }
 
     private:

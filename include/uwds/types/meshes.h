@@ -45,12 +45,15 @@ namespace uwds {
        *
        * @param meshes The meshes to update
        */
-      void update(const std::vector<Mesh> meshes)
+      std::vector<std::string> update(const std::vector<Mesh> meshes)
       {
+        std::vector<std::string> mesh_ids;
         for(const auto& mesh : meshes)
         {
+          mesh_ids.push_back(mesh.id);
           update(mesh);
         }
+        return mesh_ids;
       }
 
       /** @brief
@@ -58,12 +61,15 @@ namespace uwds {
        *
        * @param meshes The meshes to update
        */
-      void update(const std::vector<MeshPtr> meshes)
+      std::vector<std::string> update(const std::vector<MeshPtr> meshes)
       {
+        std::vector<std::string> mesh_ids;
         for(const auto& mesh : meshes)
         {
+          mesh_ids.push_back(mesh->id);
           update(mesh);
         }
+        return mesh_ids;
       }
   };
 

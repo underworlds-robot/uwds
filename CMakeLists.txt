@@ -54,10 +54,8 @@ include_directories(
 ## Declare a C++ library
  add_library(${PROJECT_NAME}
    src/tools/model_loader.cpp
-   src/dynamic_connection_based_nodelet.cpp
-   src/uwds_server_nodelet.cpp
-   src/uwds_client_nodelet.cpp
-   src/reconfigurable_client.cpp
+   src/uwds.cpp
+   src/server.cpp
 )
 
 ## Specify libraries to link a library or executable target against
@@ -74,10 +72,10 @@ endif()
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_uwds_ros.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(${PROJECT_NAME}-test test/test.cpp)
+if(TARGET ${PROJECT_NAME}-test)
+  target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

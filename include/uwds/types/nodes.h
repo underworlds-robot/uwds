@@ -5,6 +5,8 @@
 #include<array>
 #include<map>
 #include<mutex>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 #include "concurrent_container.h"
 #include <uwds_msgs/Node.h>
@@ -36,7 +38,6 @@ namespace uwds {
     using ConcurrentContainer::update;
 
     public:
-
       /** @brief
        * This method update a node (or create one if new)
        *

@@ -1,7 +1,7 @@
 <library path="lib/libuwds">
-  <class name="uwds/UwdsServerNodelet"
-         type="uwds::UwdsServerNodelet"
+  <class name="uwds/UwdsServer"
+         type="uwds::UwdsServer"
          base_class_type="nodelet::Nodelet">
-    <description>The Underworlds server nodelet, allowing data distribution to clients</description>
+    <description>The Underworlds server, allowing to records the worlds history and distribute it on-demand</description>
   </class>
 </library>

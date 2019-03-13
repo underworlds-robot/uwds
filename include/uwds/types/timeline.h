@@ -7,6 +7,8 @@
 
 namespace uwds {
 
+  //using onEventFcn = void(*)(string);
+
   /** @brief
    * This class represent the timeline
    */
@@ -126,6 +128,11 @@ namespace uwds {
         origin_.data = origin;
         return situation_ids;
       }
+      //
+      // void connect(onEventFcn function, VoidConstPtr object)
+      // {
+      //
+      // }
 
       /** @brief
       * This method reset the timeline

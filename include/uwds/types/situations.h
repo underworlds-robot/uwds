@@ -7,6 +7,8 @@
 #include<array>
 #include<map>
 #include<mutex>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
 #include "concurrent_container.h"
 #include <uwds_msgs/Situation.h>
@@ -24,11 +26,13 @@ namespace uwds {
     ACTION = uwds_msgs::Situation::ACTION,
     INTERNAL = uwds_msgs::Situation::INTERNAL
   };
-
+  /** @brief
+   * The situation types names corresponding
+   */
   static const std::array<std::string, 4> SituationTypeName{"generic",
-                                                           "fact",
-                                                           "action",
-                                                           "internal"};
+                                                            "fact",
+                                                            "action",
+                                                            "internal"};
 
   /** @brief
    * This class represent the situations container

@@ -199,7 +199,7 @@ namespace uwds
                 const aiFace& assimp_triangle = assimp_mesh->mFaces[nb_triangle];
                 if (assimp_triangle.mNumIndices == 3)
                 {
-                  uwds_msgs::MeshTriangle t;
+                  shape_msgs::MeshTriangle t;
                   t.vertex_indices[0] = assimp_triangle.mIndices[0];
                   t.vertex_indices[1] = assimp_triangle.mIndices[1];
                   t.vertex_indices[2] = assimp_triangle.mIndices[2];
@@ -334,7 +334,7 @@ namespace uwds
           const aiFace& assimp_triangle = assimp_mesh->mFaces[nb_triangle];
           if (assimp_triangle.mNumIndices == 3)
           {
-            uwds_msgs::MeshTriangle t;
+            shape_msgs::MeshTriangle t;
             t.vertex_indices[0] = assimp_triangle.mIndices[0];
             t.vertex_indices[1] = assimp_triangle.mIndices[1];
             t.vertex_indices[2] = assimp_triangle.mIndices[2];
@@ -364,95 +364,95 @@ namespace uwds
     }
   }
 
-  bool ModelLoader::loadURDF(const std::string& filename,
-                             const std::string& primitives_folder,
-                             std::vector<Mesh>& meshes_imported,
-                             std::vector<Node>& nodes_imported)
-  {
-
-    urdf::Model model;
-
-    std::string root_link = model.root_link_->name;
-    if (!model.initFile(filename))
-    {
-      ROS_ERROR("Loading file '%s' failed", filename.c_str());
-      return false;
-    }
-    std::queue<urdf::Link> fifo;
-    urdf::Link link;
-    fifo.push(*model.getRoot());
-    do {
-      link = fifo.front();
-      fifo.pop();
-      uwds_msgs::Node new_node;
-      new_node.id = NEW_UUID;
-      new_node.name = link.name;
-      std::vector<double> aabb;
-      uwds_msgs::Mesh new_mesh;
-      new_mesh.id = NEW_UUID;
-      std::vector<uwds_msgs::Mesh> meshes;
-      if (link.visual->geometry->type == urdf::Geometry::SPHERE)
-      {
-
-        boost::shared_ptr<urdf::Sphere> sphere = boost::dynamic_pointer_cast<urdf::Sphere>(link.visual->geometry);
-        std::vector<double> scale;
-        scale.push_back(sphere->radius);
-        scale.push_back(sphere->radius);
-        scale.push_back(sphere->radius);
-        loadMeshes(primitives_folder+"/3ds/sphere.3ds",
-                   scale,
-                   meshes,
-                   aabb);
-      }
-      if (link.visual->geometry->type == urdf::Geometry::BOX)
-      {
-        boost::shared_ptr<urdf::Box> box = boost::dynamic_pointer_cast<urdf::Box>(link.visual->geometry);
-        std::vector<double> scale;
-        scale.push_back(box->dim.x);
-        scale.push_back(box->dim.y);
-        scale.push_back(box->dim.z);
-        loadMeshes(primitives_folder+"/3ds/box.3ds",
-                   scale,
-                   meshes,
-                   aabb);
-      }
-      if (link.visual->geometry->type == urdf::Geometry::CYLINDER)
-      {
-        boost::shared_ptr<urdf::Cylinder> cylinder = boost::dynamic_pointer_cast<urdf::Cylinder>(link.visual->geometry);
-        std::vector<double> scale;
-        scale.push_back(cylinder->radius);
-        scale.push_back(cylinder->radius);
-        scale.push_back(cylinder->length);
-        loadMeshes(primitives_folder+"/3ds/cylinder.3ds",
-                   scale,
-                   meshes,
-                   aabb);
-      }
-      if (link.visual->geometry->type == urdf::Geometry::MESH)
-      {
-        boost::shared_ptr<urdf::Mesh> mesh = boost::dynamic_pointer_cast<urdf::Mesh>(link.visual->geometry);
-        std::vector<double> scale;
-        scale.push_back(mesh->scale.x);
-        scale.push_back(mesh->scale.y);
-        scale.push_back(mesh->scale.z);
-        loadMeshes(mesh->filename,
-                   scale,
-                   meshes,
-                   aabb);
-      }
-
-      for (const auto& child_ptr : link.child_links)
-      {
-        fifo.push(*child_ptr);
-      }
-    } while (!fifo.empty());
-
-    for (const auto& link_pair : model.links_)
-    {
-      uwds_msgs::Node new_node;
-      new_node.name = link_pair.first;
-      new_node.id = NEW_UUID;
-    }
-    return true;
-  }
+  // bool ModelLoader::loadURDF(const std::string& filename,
+  //                            const std::string& primitives_folder,
+  //                            std::vector<Mesh>& meshes_imported,
+  //                            std::vector<Node>& nodes_imported)
+  // {
+  //
+  //   urdf::Model model;
+  //
+  //   std::string root_link = model.root_link_->name;
+  //   if (!model.initFile(filename))
+  //   {
+  //     ROS_ERROR("Loading file '%s' failed", filename.c_str());
+  //     return false;
+  //   }
+  //   std::queue<urdf::Link> fifo;
+  //   urdf::Link link;
+  //   fifo.push(*model.getRoot());
+  //   do {
+  //     link = fifo.front();
+  //     fifo.pop();
+  //     uwds_msgs::Node new_node;
+  //     new_node.id = NEW_UUID;
+  //     new_node.name = link.name;
+  //     std::vector<double> aabb;
+  //     uwds_msgs::Mesh new_mesh;
+  //     new_mesh.id = NEW_UUID;
+  //     std::vector<uwds_msgs::Mesh> meshes;
+  //     if (link.visual->geometry->type == urdf::Geometry::SPHERE)
+  //     {
+  //
+  //       boost::shared_ptr<urdf::Sphere> sphere = boost::dynamic_pointer_cast<urdf::Sphere>(link.visual->geometry);
+  //       std::vector<double> scale;
+  //       scale.push_back(sphere->radius);
+  //       scale.push_back(sphere->radius);
+  //       scale.push_back(sphere->radius);
+  //       loadMeshes(primitives_folder+"/3ds/sphere.3ds",
+  //                  scale,
+  //                  meshes,
+  //                  aabb);
+  //     }
+  //     if (link.visual->geometry->type == urdf::Geometry::BOX)
+  //     {
+  //       boost::shared_ptr<urdf::Box> box = boost::dynamic_pointer_cast<urdf::Box>(link.visual->geometry);
+  //       std::vector<double> scale;
+  //       scale.push_back(box->dim.x);
+  //       scale.push_back(box->dim.y);
+  //       scale.push_back(box->dim.z);
+  //       loadMeshes(primitives_folder+"/3ds/box.3ds",
+  //                  scale,
+  //                  meshes,
+  //                  aabb);
+  //     }
+  //     if (link.visual->geometry->type == urdf::Geometry::CYLINDER)
+  //     {
+  //       boost::shared_ptr<urdf::Cylinder> cylinder = boost::dynamic_pointer_cast<urdf::Cylinder>(link.visual->geometry);
+  //       std::vector<double> scale;
+  //       scale.push_back(cylinder->radius);
+  //       scale.push_back(cylinder->radius);
+  //       scale.push_back(cylinder->length);
+  //       loadMeshes(primitives_folder+"/3ds/cylinder.3ds",
+  //                  scale,
+  //                  meshes,
+  //                  aabb);
+  //     }
+  //     if (link.visual->geometry->type == urdf::Geometry::MESH)
+  //     {
+  //       boost::shared_ptr<urdf::Mesh> mesh = boost::dynamic_pointer_cast<urdf::Mesh>(link.visual->geometry);
+  //       std::vector<double> scale;
+  //       scale.push_back(mesh->scale.x);
+  //       scale.push_back(mesh->scale.y);
+  //       scale.push_back(mesh->scale.z);
+  //       loadMeshes(mesh->filename,
+  //                  scale,
+  //                  meshes,
+  //                  aabb);
+  //     }
+  //
+  //     for (const auto& child_ptr : link.child_links)
+  //     {
+  //       fifo.push(*child_ptr);
+  //     }
+  //   } while (!fifo.empty());
+  //
+  //   for (const auto& link_pair : model.links_)
+  //   {
+  //     uwds_msgs::Node new_node;
+  //     new_node.name = link_pair.first;
+  //     new_node.id = NEW_UUID;
+  //   }
+  //   return true;
+  // }
 }

@@ -127,7 +127,7 @@ namespace uwds {
        *
        * @param root_id The root node ID
        */
-      std::string setRootID(const std::string root_id) {root_id_=root_id;}
+      //std::string setRootID(const std::string& root_id) {root_id_=root_id;}
 
       /** @brief
        * This method return the root node
@@ -158,8 +158,9 @@ namespace uwds {
         root_node.id = new_root_id;
         root_node.name = "root";
         root_node.position.pose.orientation.w = 1.0;
-        setRootID(new_root_id);
         nodes_->update(root_node);
+        //setRootID(root_node.id);
+        root_id_ = new_root_id;
         return node_ids;
       }
 

@@ -9,105 +9,97 @@
 #include<ros/ros.h>
 
 #include "concurrent_container.h"
+#include <uwds_msgs/Connection.h>
 #include <uwds_msgs/Client.h>
 #include <uwds_msgs/ClientInteraction.h>
-
 #include <std_msgs/Time.h>
 
 using namespace uwds_msgs;
 
 namespace uwds {
 
+  typedef ConcurrentContainer<Client> Clients;
+  typedef boost::shared_ptr<Clients> ClientsPtr;
+
+  typedef ConcurrentContainer<ClientInteraction> ClientInteractions;
+  typedef boost::shared_ptr<ClientInteractions> ClientInteractionsPtr;
+
+  typedef ConcurrentContainer<ClientInteractions> ClientInteractionsByWorld;
+  typedef boost::shared_ptr<ClientInteractionsByWorld> ClientInteractionsByWorldPtr;
+
   /** @brief
-   * Enum to represent the client interaction types
+   * The interaction types.
    */
-  enum ClientInteractionType {
-    READ = uwds_msgs::ClientInteraction::READ,
-    WRITE = uwds_msgs::ClientInteraction::WRITE
+  enum ConnectionInteractionType {
+    READ = uwds_msgs::Connection::READ,
+    WRITE = uwds_msgs::Connection::WRITE
   };
+
   /** @brief
-   * The client interaction type names
+   * The connection actions types.
    */
-  static const std::array<std::string,2> ClientInteractionTypeName{"read",
-                                                                   "write"};
+  enum ConnectionActionType {
+    CONNECT = uwds_msgs::Connection::CONNECT,
+    DISCONNECT = uwds_msgs::Connection::DISCONNECT
+  };
+
   /** @brief
    * This class represent the Underworlds clients topology
    */
   class Topology {
     public:
-      Topology() {}
+      Topology()
+      {
+        clients_ = boost::make_shared<Clients>();
+        client_interactions_by_world_ = boost::make_shared<ClientInteractionsByWorld>();
+      }
 
       ~Topology() {}
 
-      void update(const Context& ctxt, const ClientInteractionType& type)
+      Clients& clients() {return *clients_;}
+
+      ClientInteractionsByWorld& clientsInteractions() {return *client_interactions_by_world_;}
+
+      ClientInteractions& clientInteractionsByWorld(const std::string& world_name)
       {
+        return (*client_interactions_by_world_)[world_name];
+      }
+
+      void update(const Context& ctxt,
+                  const ConnectionInteractionType& interaction_type,
+                  const ConnectionActionType& action_type)
+      {
+        this->lock();
         ros::Time current_time = ros::Time::now();
-        if(std::find(worlds_.begin(), worlds_.end(), ctxt.world) == worlds_.end())
-        {
-          //this->lock();
-          worlds_.push_back(ctxt.world);
-          //this->unlock();
-        }
-        if(!clients_.has(ctxt.client.id))
-          clients_.update(ctxt.client.id, ctxt.client);
 
-        if(!client_interactions_.has(ctxt.client.id))
+        if (action_type == CONNECT)
         {
-          uwds_msgs::ClientInteraction interaction_msg;
-          interaction_msg.client_id = ctxt.client.id;
-          interaction_msg.world = ctxt.world;
-          interaction_msg.type = type;
-          interaction_msg.last_activity.data = current_time;
-          std::vector<uwds_msgs::ClientInteraction> interactions;
-          interactions.push_back(interaction_msg);
-          client_interactions_.update(ctxt.client.id, interactions);
-        } else {
-          std::vector<ClientInteraction> interactions = client_interactions_[ctxt.client.id];
-          for (auto interaction : client_interactions_[ctxt.client.id])
+          clients_->update(ctxt.client.id, ctxt.client);
+
+          if(!client_interactions_by_world_->has(ctxt.world))
           {
-            if(interaction.client_id == ctxt.client.id
-                && interaction.world == ctxt.world
-                && interaction.type == type)
-            {
-              interaction.last_activity.data = current_time;
-            } else {
-              uwds_msgs::ClientInteraction interaction_msg;
-              interaction_msg.client_id = ctxt.client.id;
-              interaction_msg.world = ctxt.world;
-              interaction_msg.type = type;
-              interaction_msg.last_activity.data = current_time;
-              interactions.push_back(interaction_msg);
-            }
+            ClientInteractionsPtr interactions = boost::make_shared<ClientInteractions>();
+            client_interactions_by_world_->update(ctxt.world, interactions);
+            ClientInteraction interaction_msg;
+            interaction_msg.ctxt = ctxt;
+            interaction_msg.type = interaction_type;
+            clientInteractionsByWorld(interaction_msg.ctxt.world).update(interaction_msg.ctxt.client.id, interaction_msg);
+          } else {
+            uwds_msgs::ClientInteraction interaction_msg;
+            interaction_msg.ctxt = ctxt;
+            interaction_msg.type = interaction_type;
+            clientInteractionsByWorld(ctxt.world).update(interaction_msg.ctxt.client.id, interaction_msg);
           }
-          client_interactions_.update(ctxt.client.id, interactions);
+        } else {
+          clientInteractionsByWorld(ctxt.world).remove(ctxt.client.id);
         }
-      }
-
-      void remove(const Context& ctxt, const ClientInteractionType& type)
-      {
-
-      }
-
-      std::vector<std::string> worlds()
-      {
-        return worlds_;
-      }
-
-      ConcurrentContainer<Client>& clients()
-      {
-        return clients_;
-      }
-
-      ConcurrentContainer<std::vector<uwds_msgs::ClientInteraction>>& client_interactions()
-      {
-        return client_interactions_;
+        this->unlock();
       }
 
       void reset() {
         this->lock();
-        worlds_.clear();
-        clients_.reset();
-        client_interactions_.reset();
+        clients_->reset();
+        client_interactions_by_world_->reset();
         this->unlock();
       }
 
@@ -115,27 +107,21 @@ namespace uwds {
                   const std::vector<uwds_msgs::Client> clients,
                   const std::vector<uwds_msgs::ClientInteraction> client_interactions)
       {
+        reset();
         this->lock();
-        worlds_.clear();
-        clients_.reset();
-        client_interactions_.reset();
-        for(const auto& world : worlds)
-        {
-          worlds_.push_back(world);
-        }
         for(const auto& client : clients)
         {
-          clients_.update(client.id, client);
+          clients_->update(client.id, client);
         }
         for(const auto& client_interaction : client_interactions)
         {
-          if (client_interactions_.has(client_interaction.client_id))
+          if (!client_interactions_by_world_->has(client_interaction.ctxt.world))
           {
-            client_interactions_[client_interaction.client_id].push_back(client_interaction);
+            ClientInteractionsPtr interactions = boost::make_shared<ClientInteractions>();
+            client_interactions_by_world_->update(client_interaction.ctxt.world, interactions);
+            clientInteractionsByWorld(client_interaction.ctxt.world).update(client_interaction.ctxt.client.id, client_interaction);
           } else {
-            std::vector<uwds_msgs::ClientInteraction> interactions;
-            interactions.push_back(client_interaction);
-            client_interactions_.update(client_interaction.client_id, interactions);
+            clientInteractionsByWorld(client_interaction.ctxt.world).update(client_interaction.ctxt.client.id, client_interaction);
           }
         }
         this->unlock();
@@ -148,11 +134,9 @@ namespace uwds {
 
       std::mutex mutex_;
 
-      std::vector<std::string> worlds_;
+      ClientsPtr clients_;
 
-      ConcurrentContainer<Client> clients_;
-
-      ConcurrentContainer<std::vector<uwds_msgs::ClientInteraction>> client_interactions_;
+      ClientInteractionsByWorldPtr client_interactions_by_world_;
   };
 
   typedef boost::shared_ptr<uwds::Topology> TopologyPtr;

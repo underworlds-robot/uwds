@@ -1,12 +1,19 @@
 #ifndef MODEL_LOADER_HPP
 #define MODEL_LOADER_HPP
 
-#include <uwds/uwds.h>
+#include <ros/ros.h>
+#include<queue>
+#include<string>
+#include<vector>
+#include <uwds_msgs/Node.h>
+#include <uwds_msgs/Mesh.h>
+#include <shape_msgs/MeshTriangle.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h> // Output data structure
 #include <assimp/postprocess.h> // Post processing flags
-#include <ros/ros.h>
 #include <urdf/model.h>
+#include "../types/nodes.h"
+#include <tf/tf.h>
 
 using namespace uwds_msgs;
 
@@ -59,10 +66,10 @@ namespace uwds
     * @param meshes_imported The meshes imported
     * @param nodes_imported The nodes imported
     */
-    virtual bool loadURDF(const std::string& filename,
-                          const std::string& primitives_folder,
-                          std::vector<Mesh>& meshes_imported,
-                          std::vector<Node>& nodes_imported);
+    // virtual bool loadURDF(const std::string& filename,
+    //                       const std::string& primitives_folder,
+    //                       std::vector<Mesh>& meshes_imported,
+    //                       std::vector<Node>& nodes_imported);
 
 
     private:
