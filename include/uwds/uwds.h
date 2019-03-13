@@ -413,11 +413,11 @@ namespace uwds {
       /** @brief
        * A flag to know if verbose.
        */
-      bool verbose_;
+      bool verbose_ = false;
 
-      int publisher_buffer_size_;
+      int publisher_buffer_size_ = 20;
 
-      int subscriber_buffer_size_;
+      int subscriber_buffer_size_ = 20;
 
       /** @brief
        * The Underworlds namespace.

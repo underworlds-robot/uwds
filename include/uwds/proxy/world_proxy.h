@@ -255,6 +255,7 @@ namespace uwds {
       }
       Changes changes;
       changes.nodes_to_update = nodes_imported;
+      ros::Duration(0.15).sleep();
       update(changes);
       return true;
     }
