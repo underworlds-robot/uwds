@@ -6,6 +6,10 @@
 #include<map>
 #include<mutex>
 
+using namespace std;
+using namespace std_msgs;
+using namespace uwds_msgs;
+
 namespace uwds {
 
   /** @brief
@@ -16,7 +20,7 @@ namespace uwds {
   {
     typedef boost::shared_ptr<Element> ElementPtr;
     typedef boost::shared_ptr<Element const> ElementConstPtr;
-    typedef std::map<std::string, ElementPtr> ElementMap;
+    typedef map<string, ElementPtr> ElementMap;
 
     public:
 
@@ -26,7 +30,7 @@ namespace uwds {
        * @param id The id of the element
        * @param element The element to update
        */
-      void update(const std::string id, const ElementPtr element)
+      void update(const string id, const ElementPtr element)
       {
         if(map_.count(id)>0)
         {
@@ -44,7 +48,7 @@ namespace uwds {
        * @param id The id of the element
        * @param element The element to update
        */
-      void update(const std::string id, const Element element)
+      void update(const string id, const Element element)
       {
         if(map_.count(id)>0)
         {
@@ -61,7 +65,7 @@ namespace uwds {
        *
        * @param id The ID of the element to remove
        */
-      virtual void remove(const std::string id)
+      virtual void remove(const string id)
       {
         lock();
         map_.erase(id);
@@ -73,10 +77,10 @@ namespace uwds {
        *
        * @param ids The IDs of the elements to remove
        */
-      virtual void remove(const std::vector<std::string> ids)
+      virtual void remove(const vector<string> ids)
       {
         lock();
-        for(const std::string id : ids)
+        for(const string id : ids)
           map_.erase(id);
         unlock();
       }
@@ -86,14 +90,14 @@ namespace uwds {
        *
        * @param id The ID of the element to access
        */
-      Element& operator[](const std::string& id) {return *map_.at(id);}
+      Element& operator[](const string& id) {return *map_.at(id);}
 
       /** @brief
        * This method test if an element exist.
        *
        * @param id The ID of the element to test
        */
-      bool has(std::string id) {return(map_.count(id)>0);}
+      bool has(string id) {return(map_.count(id)>0);}
 
       /** @brief
        * This method check if the container is empty.
@@ -179,7 +183,7 @@ namespace uwds {
       /** @brief
        * The mutex of the container.
        */
-      std::mutex mutex_;
+      mutex mutex_;
   };
 }
 

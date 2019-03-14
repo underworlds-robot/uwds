@@ -11,6 +11,10 @@
 #include "concurrent_container.h"
 #include <uwds_msgs/Node.h>
 
+using namespace std;
+using namespace std_msgs;
+using namespace uwds_msgs;
+
 using namespace uwds_msgs;
 
 namespace uwds {
@@ -21,14 +25,14 @@ namespace uwds {
    * The node types enum
    */
   enum NodeType {
-    ENTITY = uwds_msgs::Node::ENTITY,
-    MESH = uwds_msgs::Node::MESH,
-    CAMERA = uwds_msgs::Node::CAMERA
+    ENTITY = Node::ENTITY,
+    MESH = Node::MESH,
+    CAMERA = Node::CAMERA
   };
   /** @brief
    * The types names corresponding
    */
-  static const std::array<std::string,3> NodeTypeName{"entity", "mesh", "camera"};
+  static const array<string,3> NodeTypeName{"entity", "mesh", "camera"};
 
   /** @brief
    * This class represent the Underworlds nodes container
@@ -61,7 +65,7 @@ namespace uwds {
        *
        * @param nodes The nodes to update
        */
-      void update(const std::vector<Node> nodes)
+      void update(const vector<Node> nodes)
       {
         for(const auto& node : nodes)
         {
@@ -74,7 +78,7 @@ namespace uwds {
        *
        * @param nodes The nodes to update
        */
-      void update(const std::vector<NodePtr> nodes)
+      void update(const vector<NodePtr> nodes)
       {
         for(const auto& node : nodes)
         {
@@ -82,7 +86,7 @@ namespace uwds {
         }
       }
 
-      std::string getNodeProperty(const std::string& node_id, const std::string& property_name)
+      string getNodeProperty(const string& node_id, const string& property_name)
       {
         this->lock();
         for(const auto& property : (*this)[node_id].properties)
@@ -102,10 +106,10 @@ namespace uwds {
         *
         * @param property_name The property name to test
         */
-       std::vector<NodePtr> byProperty(const std::string& property_name)
+       vector<NodePtr> byProperty(const string& property_name)
        {
-         std::vector<NodePtr> nodes;
-         std::string property;
+         vector<NodePtr> nodes;
+         string property;
          this->lock();
          for(const auto node : *this)
          {
@@ -123,10 +127,10 @@ namespace uwds {
         * @param property_name The property name to test
         * @param property_data The property data to test
         */
-       std::vector<NodePtr> byProperty(const std::string& property_name, const std::string& property_data)
+       vector<NodePtr> byProperty(const string& property_name, const string& property_data)
        {
-         std::vector<NodePtr> nodes;
-         std::string property;
+         vector<NodePtr> nodes;
+         string property;
          this->lock();
          for(const auto node : *this)
          {
@@ -143,9 +147,9 @@ namespace uwds {
         *
         * @param name The name to test
         */
-       std::vector<NodePtr> byName(const std::string& name)
+       vector<NodePtr> byName(const string& name)
        {
-         std::vector<NodePtr> nodes;
+         vector<NodePtr> nodes;
          this->lock();
          for(const auto node : *this)
          {
@@ -163,9 +167,9 @@ namespace uwds {
         *
         * @param type The type to test
         */
-       std::vector<NodePtr> byType(const NodeType& type)
+       vector<NodePtr> byType(const NodeType& type)
        {
-         std::vector<NodePtr> nodes;
+         vector<NodePtr> nodes;
          this->lock();
          for(const auto& node : *this)
          {

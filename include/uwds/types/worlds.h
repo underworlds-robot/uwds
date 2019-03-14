@@ -6,9 +6,13 @@
 
 #include "world.h"
 
+using namespace std;
+using namespace std_msgs;
+using namespace uwds_msgs;
+
 namespace uwds {
 
-  typedef std::map<std::string, WorldPtr> WorldMap;
+  typedef map<string, WorldPtr> WorldMap;
   /** @brief
    * This class represent the worlds container
    */
@@ -20,7 +24,7 @@ namespace uwds {
        *
        * @param name The name of the world to access
        */
-      World& operator[](const std::string& name){
+      World& operator[](const string& name){
         if (worlds_.count(name) == 0) {
           worlds_.emplace(name, boost::make_shared<World>(name, meshes_));
         }
@@ -33,9 +37,9 @@ namespace uwds {
       size_t size() {return worlds_.size();}
 
 
-      std::vector<Invalidations> applyChanges(const std::vector<ChangesInContextStampedConstPtr>& changes_list)
+      vector<Invalidations> applyChanges(const vector<ChangesInContextStampedConstPtr>& changes_list)
       {
-        std::vector<Invalidations> invalidations;
+        vector<Invalidations> invalidations;
         for(const auto& changes : changes_list)
         {
           invalidations.push_back(worlds_[changes->ctxt.world]->applyChanges(changes->header, changes->changes));

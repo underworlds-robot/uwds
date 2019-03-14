@@ -14,6 +14,8 @@
 #include <uwds_msgs/ClientInteraction.h>
 #include <std_msgs/Time.h>
 
+using namespace std;
+using namespace std_msgs;
 using namespace uwds_msgs;
 
 namespace uwds {
@@ -31,16 +33,16 @@ namespace uwds {
    * The interaction types.
    */
   enum ConnectionInteractionType {
-    READ = uwds_msgs::Connection::READ,
-    WRITE = uwds_msgs::Connection::WRITE
+    READ = Connection::READ,
+    WRITE = Connection::WRITE
   };
 
   /** @brief
    * The connection actions types.
    */
   enum ConnectionActionType {
-    CONNECT = uwds_msgs::Connection::CONNECT,
-    DISCONNECT = uwds_msgs::Connection::DISCONNECT
+    CONNECT = Connection::CONNECT,
+    DISCONNECT = Connection::DISCONNECT
   };
 
   /** @brief
@@ -60,7 +62,7 @@ namespace uwds {
 
       ClientInteractionsByWorld& clientsInteractions() {return *client_interactions_by_world_;}
 
-      ClientInteractions& clientInteractionsByWorld(const std::string& world_name)
+      ClientInteractions& clientInteractionsByWorld(const string& world_name)
       {
         return (*client_interactions_by_world_)[world_name];
       }
@@ -75,21 +77,15 @@ namespace uwds {
         if (action_type == CONNECT)
         {
           clients_->update(ctxt.client.id, ctxt.client);
-
           if(!client_interactions_by_world_->has(ctxt.world))
           {
             ClientInteractionsPtr interactions = boost::make_shared<ClientInteractions>();
             client_interactions_by_world_->update(ctxt.world, interactions);
-            ClientInteraction interaction_msg;
-            interaction_msg.ctxt = ctxt;
-            interaction_msg.type = interaction_type;
-            clientInteractionsByWorld(interaction_msg.ctxt.world).update(interaction_msg.ctxt.client.id, interaction_msg);
-          } else {
-            uwds_msgs::ClientInteraction interaction_msg;
-            interaction_msg.ctxt = ctxt;
-            interaction_msg.type = interaction_type;
-            clientInteractionsByWorld(ctxt.world).update(interaction_msg.ctxt.client.id, interaction_msg);
           }
+          ClientInteraction interaction_msg;
+          interaction_msg.ctxt = ctxt;
+          interaction_msg.type = interaction_type;
+          clientInteractionsByWorld(ctxt.world).update(interaction_msg.ctxt.client.id, interaction_msg);
         } else {
           clientInteractionsByWorld(ctxt.world).remove(ctxt.client.id);
         }
@@ -103,9 +99,9 @@ namespace uwds {
         this->unlock();
       }
 
-      void reset(const std::vector<std::string> worlds,
-                  const std::vector<uwds_msgs::Client> clients,
-                  const std::vector<uwds_msgs::ClientInteraction> client_interactions)
+      void reset(const vector<string> worlds,
+                  const vector<Client> clients,
+                  const vector<ClientInteraction> client_interactions)
       {
         reset();
         this->lock();
@@ -132,7 +128,7 @@ namespace uwds {
 
     private:
 
-      std::mutex mutex_;
+      mutex mutex_;
 
       ClientsPtr clients_;
 

@@ -13,6 +13,8 @@
 #include "concurrent_container.h"
 #include <uwds_msgs/Situation.h>
 
+using namespace std;
+using namespace std_msgs;
 using namespace uwds_msgs;
 
 namespace uwds {
@@ -21,18 +23,18 @@ namespace uwds {
    * The situation type enum
    */
   enum SituationType {
-    GENERIC = uwds_msgs::Situation::GENERIC,
-    FACT = uwds_msgs::Situation::FACT,
-    ACTION = uwds_msgs::Situation::ACTION,
-    INTERNAL = uwds_msgs::Situation::INTERNAL
+    GENERIC = Situation::GENERIC,
+    FACT = Situation::FACT,
+    ACTION = Situation::ACTION,
+    INTERNAL = Situation::INTERNAL
   };
   /** @brief
    * The situation types names corresponding
    */
-  static const std::array<std::string, 4> SituationTypeName{"generic",
-                                                            "fact",
-                                                            "action",
-                                                            "internal"};
+  static const array<string, 4> SituationTypeName{"generic",
+                                                  "fact",
+                                                  "action",
+                                                  "internal"};
 
   /** @brief
    * This class represent the situations container
@@ -66,7 +68,7 @@ namespace uwds {
        *
        * @param situations The situations to update
        */
-      void update(const std::vector<Situation> situations)
+      void update(const vector<Situation> situations)
       {
         for(auto& situation : situations)
         {
@@ -79,7 +81,7 @@ namespace uwds {
        *
        * @param situations The situations to update
        */
-      void update(const std::vector<SituationPtr> situations)
+      void update(const vector<SituationPtr> situations)
       {
         for(auto& situation : situations)
         {
@@ -87,7 +89,7 @@ namespace uwds {
         }
       }
 
-      std::string getSituationProperty(const std::string& situation_id, const std::string& property_name)
+      string getSituationProperty(const string& situation_id, const string& property_name)
       {
         this->lock();
         for(const auto& property : (*this)[situation_id].properties)
@@ -107,10 +109,10 @@ namespace uwds {
        *
        * @param property_name The property name to test
        */
-      std::vector<SituationPtr> byProperty(const std::string& property_name)
+      vector<SituationPtr> byProperty(const string& property_name)
       {
-        std::vector<SituationPtr> situations;
-        std::string property;
+        vector<SituationPtr> situations;
+        string property;
         this->lock();
         for(const auto situation : *this)
         {
@@ -128,14 +130,14 @@ namespace uwds {
        * @param property_name The property name to test
        * @param property_data The property data to test
        */
-      std::vector<SituationPtr> byProperty(const std::string& property_name, const std::string& property_data)
+      vector<SituationPtr> byProperty(const string& property_name, const string& property_data)
       {
-        std::vector<SituationPtr> situations;
-        std::string property;
+        vector<SituationPtr> situations;
+        string property;
         this->lock();
         for(const auto& situation : *this)
         {
-          std::string property = getSituationProperty(situation->id, property_name);
+          string property = getSituationProperty(situation->id, property_name);
           if(property == property_data)
             situations.push_back(situation);
         }
@@ -148,9 +150,9 @@ namespace uwds {
        *
        * @param description The description to test
        */
-      std::vector<SituationPtr> by_description(const std::string& description)
+      vector<SituationPtr> by_description(const string& description)
       {
-        std::vector<SituationPtr> situations;
+        vector<SituationPtr> situations;
         this->lock();
         for(const auto& situation : *this)
         {
@@ -168,9 +170,9 @@ namespace uwds {
        *
        * @param type The type to test
        */
-      std::vector<SituationPtr> by_type(const SituationType& type)
+      vector<SituationPtr> by_type(const SituationType& type)
       {
-        std::vector<SituationPtr> situations;
+        vector<SituationPtr> situations;
         this->lock();
         for(const auto& situation : *this)
         {

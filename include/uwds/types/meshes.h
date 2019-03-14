@@ -9,6 +9,8 @@
 #include "concurrent_container.h"
 #include <uwds_msgs/Mesh.h>
 
+using namespace std;
+using namespace std_msgs;
 using namespace uwds_msgs;
 
 namespace uwds {
@@ -45,9 +47,9 @@ namespace uwds {
        *
        * @param meshes The meshes to update
        */
-      std::vector<std::string> update(const std::vector<Mesh> meshes)
+      vector<string> update(const vector<Mesh> meshes)
       {
-        std::vector<std::string> mesh_ids;
+        vector<string> mesh_ids;
         for(const auto& mesh : meshes)
         {
           mesh_ids.push_back(mesh.id);
@@ -61,9 +63,9 @@ namespace uwds {
        *
        * @param meshes The meshes to update
        */
-      std::vector<std::string> update(const std::vector<MeshPtr> meshes)
+      vector<string> update(const vector<MeshPtr> meshes)
       {
-        std::vector<std::string> mesh_ids;
+        vector<string> mesh_ids;
         for(const auto& mesh : meshes)
         {
           mesh_ids.push_back(mesh->id);

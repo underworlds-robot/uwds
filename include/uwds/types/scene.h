@@ -5,6 +5,10 @@
 #include <queue>
 #include <pose_cov_ops/pose_cov_ops.h>
 
+using namespace std;
+using namespace std_msgs;
+using namespace uwds_msgs;
+
 namespace uwds {
 
   /** @brief
@@ -18,7 +22,7 @@ namespace uwds {
       Scene() {
         root_id_ = NEW_UUID;
         nodes_ = boost::make_shared<Nodes>();
-        uwds_msgs::Node root_node;
+        Node root_node;
         root_node.id = root_id_;
         root_node.name = "root";
         root_node.position.pose.orientation.w = 1.0;
@@ -46,7 +50,7 @@ namespace uwds {
        * @param node The node to update
        * @return The node id updated
        */
-      std::string update(const NodePtr node)
+      string update(const NodePtr node)
       {
         nodes_->update(node);
         return node->id;
@@ -58,7 +62,7 @@ namespace uwds {
        * @param node The node to update
        * @return The node id updated
        */
-      std::string update(const Node node)
+      string update(const Node node)
       {
         nodes_->update(node);
         return node.id;
@@ -70,9 +74,9 @@ namespace uwds {
        * @param nodes The nodes to update
        * @return The node ids updated
        */
-      std::vector<std::string> update(const std::vector<Node> nodes)
+      vector<string> update(const vector<Node> nodes)
       {
-        std::vector<std::string> node_ids;
+        vector<string> node_ids;
         for (const auto& node : nodes)
         {
           node_ids.push_back(node.id);
@@ -87,9 +91,9 @@ namespace uwds {
        * @param nodes The nodes to update
        * @return The node ids updated
        */
-      std::vector<std::string> update(const std::vector<NodePtr> nodes)
+      vector<string> update(const vector<NodePtr> nodes)
       {
-        std::vector<std::string> node_ids;
+        vector<string> node_ids;
         for (const auto& node : nodes)
         {
           node_ids.push_back(node->id);
@@ -104,7 +108,7 @@ namespace uwds {
        * @param id The node id to delete
        * @return The node id deleted
        */
-      std::string remove(const std::string id)
+      string remove(const string id)
       {
         nodes_->remove(id);
         return id;
@@ -116,7 +120,7 @@ namespace uwds {
        * @param ids The node ids to delete
        * @return The node ids deleted
        */
-      std::vector<std::string> remove(const std::vector<std::string> ids)
+      vector<string> remove(const vector<string> ids)
       {
         nodes_->remove(ids);
         return ids;
@@ -127,14 +131,14 @@ namespace uwds {
        *
        * @param root_id The root node ID
        */
-      //std::string setRootID(const std::string& root_id) {root_id_=root_id;}
+      //string setRootID(const string& root_id) {root_id_=root_id;}
 
       /** @brief
        * This method return the root node
        *
        * @return The root node ID
        */
-      std::string rootID() const {return root_id_;}
+      string rootID() const {return root_id_;}
 
       /** @brief
        * This method return the nodes container.
@@ -148,13 +152,13 @@ namespace uwds {
        *
        * @return The nodes ids deleted
        */
-      std::vector<std::string> reset(const std::string& new_root_id)
+      vector<string> reset(const string& new_root_id)
       {
-        std::vector<std::string> node_ids;
+        vector<string> node_ids;
         for (const auto& node : nodes())
           node_ids.push_back(node->id);
         nodes_->reset();
-        uwds_msgs::Node root_node;
+        Node root_node;
         root_node.id = new_root_id;
         root_node.name = "root";
         root_node.position.pose.orientation.w = 1.0;
@@ -167,7 +171,7 @@ namespace uwds {
       // void reset()
       // {
       //   nodes_->reset();
-      //   uwds_msgs::Node root_node;
+      //   Node root_node;
       //   root_node.id = root_id_;
       //   root_node.name = "root";
       //   root_node.position.pose.orientation.w = 1.0;
@@ -190,11 +194,11 @@ namespace uwds {
        * @param node_id The node ID
        * @return The parents of the node
        */
-      std::vector<Node> getParents(const std::string& node_id)
+      vector<Node> getParents(const string& node_id)
       {
         Node current_node;
-        std::vector<Node> parents;
-        std::queue<Node> fifo;
+        vector<Node> parents;
+        queue<Node> fifo;
         if (nodes()[node_id].parent != "")
         {
           fifo.push(nodes()[nodes()[node_id].parent]);
@@ -209,11 +213,11 @@ namespace uwds {
         return parents;
       }
 
-      geometry_msgs::Pose getWorldPose(const std::string& node_id)
+      geometry_msgs::Pose getWorldPose(const string& node_id)
       {
         Node current_node;
         geometry_msgs::Pose final_pose;
-        std::queue<Node> fifo;
+        queue<Node> fifo;
         final_pose = nodes()[node_id].position.pose;
         if (nodes()[node_id].parent != "")
         {
@@ -229,11 +233,11 @@ namespace uwds {
         return final_pose;
       }
 
-      geometry_msgs::PoseWithCovariance getWorldPoseWithCovariance(const std::string& node_id)
+      geometry_msgs::PoseWithCovariance getWorldPoseWithCovariance(const string& node_id)
       {
         Node current_node;
         geometry_msgs::PoseWithCovariance final_pose;
-        std::queue<Node> fifo;
+        queue<Node> fifo;
         final_pose = nodes()[node_id].position;
         if (nodes()[node_id].parent != "")
         {
@@ -249,7 +253,7 @@ namespace uwds {
         return final_pose;
       }
 
-      bool has(const std::string id)
+      bool has(const string id)
       {
         return nodes().has(id);
       }
@@ -260,7 +264,7 @@ namespace uwds {
       }
 
     private:
-      std::string root_id_;
+      string root_id_;
       NodesPtr nodes_;
   };
 

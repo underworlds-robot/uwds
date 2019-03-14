@@ -8,7 +8,9 @@
 #include "timeline.h"
 #include "meshes.h"
 
-#include<mutex>
+using namespace std;
+using namespace std_msgs;
+using namespace uwds_msgs;
 
 namespace uwds {
 
@@ -20,7 +22,7 @@ namespace uwds {
       /** @brief
        * Default constructor
        */
-      World(const std::string& name, const MeshesPtr meshes)
+      World(const string& name, const MeshesPtr meshes)
       {
         name_ = name;
         meshes_ = meshes;
@@ -36,7 +38,7 @@ namespace uwds {
       /** @brief
        * The name accessor
        */
-      std::string name() {return name_;}
+      string name() {return name_;}
 
       /** @brief
        * The scene accessor
@@ -94,7 +96,7 @@ namespace uwds {
       /** @brief
        * The name of the world.
        */
-      std::string name_;
+      string name_;
 
       /** @brief
        * The scene shared pointer.
