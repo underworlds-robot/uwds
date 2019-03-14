@@ -73,7 +73,7 @@ namespace uwds
 
     nh_->param<int>("uwds/subscriber_buffer_size", subscriber_buffer_size_, 20);
     nh_->param<int>("uwds/publisher_buffer_size", publisher_buffer_size_, 20);
-
+    nh_->param<bool>("verbose", verbose_, true);
     ROS_INFO("[%s::init] Underworlds server ready !", name_.c_str());
   }
 

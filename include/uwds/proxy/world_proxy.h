@@ -103,7 +103,7 @@ namespace uwds {
      */
     bool connect(const std::function<onChangesFcn>& callback)
     {
-      if(type_ == READ)
+      if(!ever_send_changes_)
       {
         if(!ever_connected_)
         {
@@ -112,11 +112,11 @@ namespace uwds {
         }
         ROS_INFO("[%s::connect] Connecting callback function to <%s> changes", client_->name.c_str(), world_name_.c_str());
         onChangesPtr = callback;
-        } else {
+        return true;
+      } else {
         ROS_WARN("[%s::connect] Loop detected for world <%s> ! Ignoring callback connection", client_->name.c_str(), world_name_.c_str());
         return false;
-     }
-     return true;
+      }
   }
 
     /** @brief
@@ -192,7 +192,7 @@ namespace uwds {
      */
     bool pushMeshesFrom3DFile(const std::string& filename, const std::vector<double>& scale)
     {
-      if (ever_send_changes_ == false)
+      if (!ever_send_changes_)
       {
         advertiseConnectionToRemote(WRITE, CONNECT);
         ever_send_changes_ = true;
@@ -211,7 +211,7 @@ namespace uwds {
 
     bool pushMeshesFrom3DFile(const std::string& filename)
     {
-      if (ever_send_changes_ == false)
+      if (!ever_send_changes_)
       {
         advertiseConnectionToRemote(WRITE, CONNECT);
         ever_send_changes_ = true;
@@ -239,7 +239,7 @@ namespace uwds {
      */
     bool pushSceneFrom3DFile(const std::string& filename)
     {
-      if (ever_send_changes_ == false)
+      if (!ever_send_changes_)
       {
         advertiseConnectionToRemote(WRITE, CONNECT);
         ever_send_changes_ = true;
@@ -255,7 +255,6 @@ namespace uwds {
       }
       Changes changes;
       changes.nodes_to_update = nodes_imported;
-      ros::Duration(0.15).sleep();
       update(changes);
       return true;
     }

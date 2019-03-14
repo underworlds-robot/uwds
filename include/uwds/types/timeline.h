@@ -2,12 +2,32 @@
 #define TIMELINE_HPP
 
 #include<ros/ros.h>
-
 #include "situations.h"
+#include <functional>
+#include <regex>
+
+using namespace std;
+using namespace std_msgs;
+using namespace uwds_msgs;
+
 
 namespace uwds {
 
-  //using onEventFcn = void(*)(string);
+  using onEventFcn = void(string, string);
+
+  enum EventMode {
+    RISING = 0,
+    FALLING
+  };
+
+  struct Event {
+    string regex;
+    EventMode mode;
+    function<onEventFcn> callback;
+  };
+
+  typedef ConcurrentContainer<Event> EventRegister;
+  typedef boost::shared_ptr<EventRegister> EventRegisterPtr;
 
   /** @brief
    * This class represent the timeline
@@ -20,6 +40,7 @@ namespace uwds {
       Timeline() {
         origin_.data = ros::Time::now();
         situations_ = boost::make_shared<Situations>();
+        event_register_ = boost::make_shared<EventRegister>();
       }
 
       /** @brief
@@ -46,6 +67,7 @@ namespace uwds {
       std::string update(const SituationPtr situation)
       {
         situations_->update(situation);
+        //evaluate(*situation);
         return situation->id;
       }
 
@@ -58,6 +80,7 @@ namespace uwds {
       std::string update(const Situation situation)
       {
         situations_->update(situation);
+        //evaluate(situation);
         return situation.id;
       }
 
@@ -87,6 +110,33 @@ namespace uwds {
         for (const auto& situation : situations)
           situation_ids.push_back(this->update(situation));
         return situation_ids;
+      }
+
+      bool evaluate(const Situation& situation)
+      {
+        string key = "";
+        bool triggered = false;
+        for (const auto event : *event_register_)
+        {
+          if(regex_match(situation.description, regex(event->regex)))
+          {
+            if(event->mode == FALLING)
+            {
+              if(situation.end.data != ros::Time())
+              {
+                event->callback(event->regex, situation.id);
+                key = event->regex;
+                triggered = true;
+              }
+            } else {
+              event->callback(event->regex, situation.id);
+              key = event->regex;
+              triggered = true;
+            }
+          }
+        }
+        if (triggered) event_register_->remove(key);
+        return triggered;
       }
 
       /** @brief
@@ -128,20 +178,8 @@ namespace uwds {
         origin_.data = origin;
         return situation_ids;
       }
-      //
-      // void connect(onEventFcn function, VoidConstPtr object)
-      // {
-      //
-      // }
 
-      /** @brief
-      * This method reset the timeline
-      */
-      // void reset()
-      // {
-      //   situations_->reset();
-      //   origin_.data = ros::Time::now();
-      // }
+      void connect(Event event) {event_register_->update(event.regex, event);}
 
       /** @brief
        * Lock the timeline.
@@ -181,6 +219,11 @@ namespace uwds {
       * The situations container pointer
       */
       SituationsPtr situations_;
+
+      /** @brief
+      * The event register shared pointer.
+      */
+      EventRegisterPtr event_register_;
   };
 
   typedef boost::shared_ptr<uwds::Timeline> TimelinePtr;

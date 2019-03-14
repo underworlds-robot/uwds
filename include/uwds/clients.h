@@ -56,6 +56,7 @@ namespace uwds
         throw std::runtime_error("Multiple inputs provided.");
       }
       ctx_.worlds().close();
+      onReconfigure(inputs);
       for(const auto input : inputs)
       {
          ctx_->worlds()[input].connect(&ReconfigurableUwdsClient::onChanges, this);
@@ -77,6 +78,8 @@ namespace uwds
     }
 
     virtual void onChanges(string world_name, Header header, Invalidations invalidations) = 0;
+
+    virtual void onReconfigure(vector<string> input_worlds) = 0;
 
   private:
     /**

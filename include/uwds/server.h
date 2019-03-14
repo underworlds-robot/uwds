@@ -6,7 +6,7 @@
 
 namespace uwds
 {
-  class UwdsServer : public nodelet::Nodelet
+  class UwdsServerNodelet : public nodelet::Nodelet
   {
   public:
     /** @brief
