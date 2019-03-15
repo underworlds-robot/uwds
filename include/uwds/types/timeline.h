@@ -179,7 +179,14 @@ namespace uwds {
         return situation_ids;
       }
 
-      void connect(Event event) {event_register_->update(event.regex, event);}
+      void connect(string regex, EventMode mode, function<onEventFcn> callback)
+      {
+        Event event;
+        event.regex = regex;
+        event.mode = mode;
+        event.callback = callback;
+        event_register_->update(regex, event);
+      }
 
       /** @brief
        * Lock the timeline.

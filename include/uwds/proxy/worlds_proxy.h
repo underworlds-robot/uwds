@@ -33,6 +33,8 @@ namespace uwds {
         worlds_.clear();
       }
 
+      bool has(string name) {return (worlds_.count(name)>0);}
+
     private:
       ClientPtr client_;
 

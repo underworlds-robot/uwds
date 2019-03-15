@@ -33,19 +33,14 @@ if __name__ == '__main__':
             G.add_node(client.name, fontcolor="black")
             client_map[client.id] = client
     for client_interaction in response.client_interactions:
-        if client_interaction.world and client_interaction.client_id:
+        if client_interaction.ctxt.world and client_interaction.ctxt.client.id:
             if client_interaction.type == 0:
-                edge_from = client_interaction.world
-                edge_to = client_map[client_interaction.client_id].name
+                edge_from = client_interaction.ctxt.world
+                edge_to = client_map[client_interaction.ctxt.client.id].name
             else:
-                edge_from = client_map[client_interaction.client_id].name
-                edge_to = client_interaction.world
-            duration = rospy.Time.now() - client_interaction.last_activity.data
-            if (duration.to_sec() < 120.0):
-                if (duration.to_sec()/60.0 < 1.0):
-                    time_str="  last activity :\n"+("%.3f"%(duration.to_sec()))+"s ago"
-                else:
-                    time_str="  last activity :\n"+("%.1f"%(duration.to_sec()/60.0))+"min ago"
-                G.add_edge(edge_from, edge_to, label=time_str)
+                edge_from = client_map[client_interaction.ctxt.client.id].name
+                edge_to = client_interaction.ctxt.world
+            G.add_edge(edge_from, edge_to)
+
     G.layout(prog='dot')
     G.draw("topology.pdf")

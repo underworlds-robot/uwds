@@ -17,7 +17,6 @@ using namespace uwds_msgs;
 namespace uwds {
 
   using onChangesFcn = void(string, std_msgs::Header, uwds_msgs::Invalidations);
-  typedef boost::shared_ptr<ros::VoidPtr const> VoidConstPtr;
 
   class AdvertiseConnectionProxy : public ServiceProxy<AdvertiseConnection, ConnectionInteractionType, ConnectionActionType>
   {

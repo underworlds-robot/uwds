@@ -52,6 +52,10 @@
 #include "proxy/topology_proxy.h"
 #include "proxy/meshes_proxy.h"
 #include "service/service.h"
+#include "service/scene_service.h"
+#include "service/timeline_service.h"
+#include "service/ontology_service.h"
+#include "service/topology_service.h"
 
 namespace uwds {
 
@@ -404,6 +408,8 @@ namespace uwds {
        }
 
      private:
+
+       ClientPtr client_;
 
        /** @brief
         * The ROS node handle shared pointer.
