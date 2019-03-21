@@ -1,7 +1,26 @@
 <library path="lib/libuwds">
+
   <class name="uwds/UwdsServerNodelet"
          type="uwds::UwdsServerNodelet"
          base_class_type="nodelet::Nodelet">
     <description>The Underworlds server, allowing to record the worlds history and distribute it on-demand</description>
   </class>
+  <class name="uwds/EnvProvider"
+         type="uwds::EnvProvider"
+         base_class_type="nodelet::Nodelet">
+    <description>This is the Underworlds static environment provider</description>
+  </class>
+
+  <class name="uwds/SceneViewer"
+         type="uwds::SceneViewer"
+         base_class_type="nodelet::Nodelet">
+    <description>This is the Underworlds scene visualizer</description>
+  </class>
+
+  <class name="uwds/WorldMerger"
+         type="uwds::WorldMerger"
+         base_class_type="nodelet::Nodelet">
+    <description>This is the Underworlds world merger</description>
+  </class>
+
 </library>

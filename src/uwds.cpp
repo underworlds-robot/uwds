@@ -1,5 +1,4 @@
 #include "uwds/uwds.h"
-
 using namespace std;
 using namespace uwds_msgs;
 
@@ -40,6 +39,10 @@ namespace uwds
   }
 
   Meshes& UnderworldsProxy::meshes() {return meshes_proxy_->meshes();}
+
+  //Client& UnderworldsProxy::client() {return *client_;}
+
+  string UnderworldsProxy::name() {return client_->name;}
 
   ///////////////////////////////////////////////////////////////////////////////
   //////////// Underworlds Server
@@ -94,6 +97,8 @@ namespace uwds
     }
     ROS_INFO("[%s::init] Underworlds server ready !", client_->name.c_str());
   }
+
+  string Underworlds::name() {return client_->name;}
 
 
 

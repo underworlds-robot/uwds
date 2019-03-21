@@ -76,6 +76,16 @@ namespace uwds {
 
     }
 
+    Mesh& operator[](const string& id)
+    {
+      if(meshes_->has(id)) {
+        return (*meshes_)[id];
+      } else {
+        getMeshFromRemote(id);
+        return (*meshes_)[id];
+      }
+    }
+
     virtual bool getMeshFromRemote(string mesh_id) {return get_mesh_proxy_->getDataFromRemote(mesh_id);}
 
     Meshes& meshes() {return *meshes_;}

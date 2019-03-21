@@ -1,0 +1,17 @@
+#include "uwds/uwds_client_nodelet.h"
+
+using namespace std;
+using namespace std_msgs;
+using namespace uwds_msgs;
+
+namespace uwds
+{
+  void UwdsClientNodelet::onInit()
+  {
+    nh_ = boost::make_shared<ros::NodeHandle>(getMTNodeHandle());
+    pnh_ = boost::make_shared<ros::NodeHandle>(getMTPrivateNodeHandle());
+    ctx_ = boost::make_shared<UnderworldsProxy>(nh_, getName(), type_);
+    pnh_->param<bool>("verbose", verbose_, true);
+    pnh_->param<string>("global_frame_id", global_frame_id_, "odom");
+  }
+}

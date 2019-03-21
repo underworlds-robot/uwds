@@ -13,7 +13,12 @@ find_package(catkin REQUIRED COMPONENTS
   nodelet
   pluginlib
   rostime
+	urdf
   uwds_msgs
+	geometry_msgs
+	sensor_msgs
+	jsk_recognition_msgs
+	visualization_msgs
   tf
   pose_cov_ops
 )
@@ -56,6 +61,11 @@ include_directories(
    src/tools/model_loader.cpp
    src/uwds.cpp
    src/server.cpp
+	 src/uwds_client_nodelet.cpp
+	 src/reconfigurable_client.cpp
+	 src/uwds_provider.cpp
+	 src/env_provider.cpp
+	 src/scene_viewer.cpp
 )
 
 ## Specify libraries to link a library or executable target against

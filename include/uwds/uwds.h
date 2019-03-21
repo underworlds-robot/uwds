@@ -106,6 +106,10 @@ namespace uwds {
      */
     Meshes& meshes();
 
+    Client& client();
+
+    string name();
+
   private:
 
     /** @brief
@@ -160,6 +164,8 @@ namespace uwds {
         * The Underworlds meshes accessor.
         */
        Meshes& meshes() {return * meshes_;}
+
+       string name();
 
        /** @brief
         * This method is called when changes are received.
