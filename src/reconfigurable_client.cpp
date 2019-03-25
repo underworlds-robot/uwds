@@ -49,7 +49,7 @@ namespace uwds
   bool ReconfigurableClient::reconfigureInputs(ReconfigureInputs::Request& req,
                                                ReconfigureInputs::Response& res)
   {
-    if(verbose_)NODELET_INFO("[%s::reconfigure] Service '~reconfigure_inputs' requested", ctx_->client().name.c_str());
+    if(verbose_)NODELET_INFO("[%s::reconfigure] Service '~reconfigure_inputs' requested", ctx_->name().c_str());
     try
     {
       reconfigure(req.inputs);

@@ -106,7 +106,7 @@ namespace uwds {
      */
     Meshes& meshes();
 
-    Client& client();
+    //Client& client();
 
     string name();
 
