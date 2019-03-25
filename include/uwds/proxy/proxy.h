@@ -19,9 +19,10 @@ namespace uwds {
     typedef boost::shared_ptr<ros::ServiceClient> ServiceClientPtr;
 
   public:
-    ServiceProxy(NodeHandlePtr nh, ClientPtr client, string service_name)
+    ServiceProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string service_name)
     {
       nh_ = nh;
+      pnh_ = pnh;
       client_ = client;
       service_name_ = service_name;
       service_client_ = boost::make_shared<ros::ServiceClient>(nh_->serviceClient<ServiceMessage>(service_name_));
@@ -51,6 +52,8 @@ namespace uwds {
 
     NodeHandlePtr nh_;
 
+    NodeHandlePtr pnh_;
+
     string service_name_;
 
     ClientPtr client_;
@@ -66,7 +69,7 @@ namespace uwds {
 
   public:
 
-    DataProxy(boost::shared_ptr<ros::NodeHandle> nh, ClientPtr client, string service_name, boost::shared_ptr<Data> data):ServiceProxy<GetDataSrv, Parameters...>(nh, client, service_name)
+    DataProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string service_name, boost::shared_ptr<Data> data):ServiceProxy<GetDataSrv, Parameters...>(nh, pnh, client, service_name)
     {
       data_ = data;
     }

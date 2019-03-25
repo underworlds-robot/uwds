@@ -89,7 +89,7 @@ namespace uwds {
     /** @brief
      * The Underworlds proxy class (to instantiate into clients).
      */
-    UnderworldsProxy(NodeHandlePtr nh, std::string client_name, ClientType client_type);
+    UnderworldsProxy(NodeHandlePtr nh, NodeHandlePtr pnh, std::string client_name, ClientType client_type);
 
     /** @brief
      * The Underworlds data structure accessor.
@@ -116,6 +116,11 @@ namespace uwds {
      * The ROS node handle shared pointer.
      */
     NodeHandlePtr nh_;
+
+    /** @brief
+     * The ROS private node handle shared pointer.
+     */
+    NodeHandlePtr pnh_;
 
     /** @brief
      * The Underworlds client description shared ptr.
@@ -147,7 +152,7 @@ namespace uwds {
       /** @brief
        * The class containing the Underworlds server
        */
-      Underworlds(NodeHandlePtr nh);
+      Underworlds(NodeHandlePtr nh, NodeHandlePtr pnh);
 
        ~Underworlds() {}
        /** @brief
@@ -173,11 +178,12 @@ namespace uwds {
        void changesCallback(const ChangesInContextStampedPtr& msg)
        {
           float delay = (ros::Time::now() - msg->header.stamp).toSec();
-          if(verbose_)ROS_INFO("[%s::changesCallback] Received changes from client <%s> in <%s> world %f in the past",
+          /*if(verbose_)ROS_INFO("[%s::changesCallback] Received changes from client <%s> in <%s> world %f in the past",
                                         name_.c_str(),
                                         msg->ctxt.client.name.c_str(),
                                         msg->ctxt.world.c_str(),
                                         delay);
+          */
           if(msg->ctxt.world == "uwds")
           {
             throw std::runtime_error("World namespace reserved.");
@@ -421,6 +427,11 @@ namespace uwds {
         * The ROS node handle shared pointer.
         */
       NodeHandlePtr nh_;
+
+      /** @brief
+       * The ROS private node handle shared pointer.
+       */
+     NodeHandlePtr pnh_;
 
       /** @brief
        * A flag to know if verbose.

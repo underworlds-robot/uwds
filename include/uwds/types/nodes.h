@@ -42,13 +42,39 @@ namespace uwds {
     using ConcurrentContainer::update;
 
     public:
+
+      Nodes() {
+        Node root_node;
+        root_node.id = root_id_;
+        root_node.name = "root";
+        root_node.position.pose.orientation.w = 1.0;
+        this->update(root_id_, root_node);
+      }
+
+      Nodes(string root_id) {
+        root_id_ = root_id;
+        Node root_node;
+        root_node.id = root_id_;
+        root_node.name = "root";
+        root_node.position.pose.orientation.w = 1.0;
+        this->update(root_id_, root_node);
+      }
+
+      ~Nodes() {}
       /** @brief
        * This method update a node (or create one if new)
        *
        * @param node The node to update
        */
-      void update(const NodePtr node) {
-        update(node->id, node);
+      void update(NodePtr node) {
+        if(!this->has(node->parent))
+          node->parent = root_id_;
+        vector<string> children = (*this)[node->parent].children;
+        if(std::find(std::begin(children), std::end(children), node->id) == std::end(children))
+        {
+          (*this)[node->parent].children.push_back(node->id);
+        }
+        this->update(node->id, node);
       }
 
       /** @brief
@@ -56,8 +82,15 @@ namespace uwds {
        *
        * @param node The node to update
        */
-      void update(const Node node) {
-        update(node.id, node);
+      void update(Node node) {
+        if(!this->has(node.parent))
+          node.parent = root_id_;
+        vector<string> children = (*this)[node.parent].children;
+        if(std::find(std::begin(children), std::end(children), node.id) == std::end(children))
+        {
+          (*this)[node.parent].children.push_back(node.id);
+        }
+        this->update(node.id, node);
       }
 
       /** @brief
@@ -181,6 +214,12 @@ namespace uwds {
          this->unlock();
          return nodes;
        }
+
+       string rootID() {return root_id_;}
+
+     protected:
+
+       string root_id_ = NEW_UUID;
   };
 
   typedef uwds::Nodes Nodes;

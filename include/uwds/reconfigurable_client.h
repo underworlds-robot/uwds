@@ -29,9 +29,9 @@ namespace uwds
     virtual bool reconfigureInputs(ReconfigureInputs::Request& req,
                                    ReconfigureInputs::Response& res);
 
-    virtual void onChanges(string world_name, Header header, Invalidations invalidations) = 0;
+    virtual void onChanges(const string& world_name, const Header& header, const Invalidations& invalidations) = 0;
 
-    virtual void onReconfigure(vector<string> input_worlds) = 0;
+    virtual void onReconfigure(const vector<string>& input_worlds) = 0;
 
     vector<string> inputsWorlds() {return input_worlds_;}
 
@@ -45,6 +45,10 @@ namespace uwds
      * The input world name.
      */
     vector<string> input_worlds_;
+
+    string output_world_;
+
+    string output_suffix_;
 
     /** @brief
      * The reconfigure service server.

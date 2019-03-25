@@ -22,7 +22,7 @@
         output="$(arg output)"
         launch-prefix="$(arg launch-prefix)">
         <rosparam subst_value="true">
-      verbose: false
+      verbose: true
     </rosparam>
   </node>
 </launch>

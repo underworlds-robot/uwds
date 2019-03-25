@@ -9,24 +9,26 @@ namespace uwds
 //////////// Underworlds Proxy
 ///////////////////////////////////////////////////////////////////////////////
 
-  UnderworldsProxy::UnderworldsProxy(NodeHandlePtr nh, std::string client_name, ClientType client_type)
+  UnderworldsProxy::UnderworldsProxy(NodeHandlePtr nh, NodeHandlePtr pnh, std::string client_name, ClientType client_type)
   {
     nh_ = nh;
+    pnh_ = pnh;
     client_ = boost::make_shared<Client>();
     client_->name = client_name;
     client_->id = NEW_UUID;
     client_->type = client_type;
 
-    meshes_proxy_ = boost::make_shared<MeshesProxy>(nh_, client_);
-    worlds_proxy_ = boost::make_shared<WorldsProxy>(nh_, client_, meshes_proxy_);
-    topology_proxy_ = boost::make_shared<TopologyProxy>(nh_, client_);
-
+    meshes_proxy_ = boost::make_shared<MeshesProxy>(nh_, pnh_, client_);
+    worlds_proxy_ = boost::make_shared<WorldsProxy>(nh_, pnh_, client_, meshes_proxy_);
+    topology_proxy_ = boost::make_shared<TopologyProxy>(nh_, pnh_, client_);
+    /*
     ros::AsyncSpinner spinner(0);
     if(spinner.canStart())
     {
       spinner.start();
       ROS_INFO("[%s::init] Async spinner started !", client_->name.c_str());
     }
+    */
     ROS_INFO("[%s::init] Underworlds client ready !", client_->name.c_str());
   }
 
@@ -48,19 +50,20 @@ namespace uwds
   //////////// Underworlds Server
   ///////////////////////////////////////////////////////////////////////////////
 
-  Underworlds::Underworlds(NodeHandlePtr nh)
+  Underworlds::Underworlds(NodeHandlePtr nh, NodeHandlePtr pnh)
   {
     nh_ = nh;
+    pnh_ = pnh;
     client_ = boost::make_shared<Client>();
     client_->name = "uwds";
     client_->id = NEW_UUID;
     client_->type = UNDEFINED;
     name_ = "uwds";
-    ROS_INFO("[%s::init] Create Underworlds data-structures...", client_->name.c_str());
+    if(verbose_)ROS_INFO("[%s::init] Create Underworlds data-structures...", client_->name.c_str());
     meshes_ = boost::make_shared<Meshes>();
     worlds_ = boost::make_shared<Worlds>(meshes_);
     topology_ = boost::make_shared<Topology>();
-    ROS_INFO("[%s::init] Advertise services...", client_->name.c_str());
+    if(verbose_)ROS_INFO("[%s::init] Advertise services...", client_->name.c_str());
     get_topology_service_server_ = nh_->advertiseService("uwds/get_topology",
                                             &Underworlds::getTopology,
                                             this);
@@ -85,16 +88,18 @@ namespace uwds
                                       &Underworlds::advertiseConnection,
                                       this);
 
-    nh_->param<int>("uwds/subscriber_buffer_size", subscriber_buffer_size_, 20);
-    nh_->param<int>("uwds/publisher_buffer_size", publisher_buffer_size_, 20);
-    nh_->param<bool>("verbose", verbose_, true);
-
+    pnh_->param<int>("subscriber_buffer_size", subscriber_buffer_size_, 20);
+    pnh_->param<int>("publisher_buffer_size", publisher_buffer_size_, 20);
+    pnh_->param<bool>("verbose", verbose_, true);
+    /*
     ros::AsyncSpinner spinner(0);
+
     if(spinner.canStart())
     {
       spinner.start();
-      ROS_INFO("[%s::init] Async spinner started !", client_->name.c_str());
+      if(verbose_)ROS_INFO("[%s::init] Async spinner started !", client_->name.c_str());
     }
+    */
     ROS_INFO("[%s::init] Underworlds server ready !", client_->name.c_str());
   }
 

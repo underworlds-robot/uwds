@@ -12,6 +12,8 @@ namespace uwds
     pnh_->param<bool>("use_single_input", use_single_input_, false);
     string default_inputs;
     pnh_->param<string>("default_inputs", default_inputs, "");
+    pnh_->param<string>("output_world", output_world_, "");
+    pnh_->param<string>("output_suffix", output_suffix_, "");
     boost::split(input_worlds_, default_inputs, boost::is_any_of(" "));
     reconfigure(input_worlds_);
     nh_->advertiseService(ctx_->name()+"/reconfigure_inputs", &ReconfigurableClient::reconfigureInputs, this);

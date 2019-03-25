@@ -16,10 +16,17 @@ namespace uwds
     virtual void onInit();
 
   private:
+
+    bool verbose_ = false;
     /**
      * The ROS node handle shared pointer.
      */
     boost::shared_ptr<ros::NodeHandle> nh_;
+
+    /**
+     * The ROS privqte node handle shared pointer.
+     */
+    boost::shared_ptr<ros::NodeHandle> pnh_;
     /** @brief
      * The Underworlds server.
      */

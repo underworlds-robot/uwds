@@ -14,7 +14,7 @@ namespace uwds {
   class GetSceneProxy : public DataProxy<Scene, GetScene>
   {
   public:
-    GetSceneProxy(boost::shared_ptr<ros::NodeHandle> nh, ClientPtr client, string world_name, ScenePtr scene, MeshesProxyPtr meshes):DataProxy<Scene, GetScene>(nh, client, "uwds/get_scene", scene)
+    GetSceneProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name, ScenePtr scene, MeshesProxyPtr meshes):DataProxy<Scene, GetScene>(nh, pnh, client, "uwds/get_scene", scene)
     {
       world_name_ = world_name;
       meshes_ = meshes;
@@ -69,10 +69,10 @@ namespace uwds {
   class SceneProxy
   {
   public:
-    SceneProxy(NodeHandlePtr nh, ClientPtr client, string world_name, MeshesProxyPtr meshes_proxy)
+    SceneProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name, MeshesProxyPtr meshes_proxy)
     {
       scene_ = boost::make_shared<Scene>();
-      get_scene_proxy_ = boost::make_shared<GetSceneProxy>(nh, client, world_name, scene_, meshes_proxy);
+      get_scene_proxy_ = boost::make_shared<GetSceneProxy>(nh, pnh, client, world_name, scene_, meshes_proxy);
     }
 
     ~SceneProxy() {}

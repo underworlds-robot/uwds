@@ -10,8 +10,10 @@ namespace uwds
   {
     nh_ = boost::make_shared<ros::NodeHandle>(getMTNodeHandle());
     pnh_ = boost::make_shared<ros::NodeHandle>(getMTPrivateNodeHandle());
-    ctx_ = boost::make_shared<UnderworldsProxy>(nh_, getName(), type_);
-    pnh_->param<bool>("verbose", verbose_, true);
+    string name = getName();
+    name.erase(std::begin(name));
+    ctx_ = boost::make_shared<UnderworldsProxy>(nh_, pnh_ , name, type_);
+    pnh_->param<bool>("verbose", verbose_, false);
     pnh_->param<string>("global_frame_id", global_frame_id_, "odom");
   }
 }

@@ -4,6 +4,7 @@ using namespace std;
 using namespace std_msgs;
 using namespace uwds_msgs;
 using namespace visualization_msgs;
+using namespace jsk_recognition_msgs;
 
 namespace uwds
 {
@@ -11,13 +12,22 @@ namespace uwds
   {
     uwds::ReconfigurableClient::onInit();
 
-    pnh_->param<std::string>("global_frame_id", global_frame_id_, "odom");
-    if (global_frame_id_ == "odom")
-      NODELET_WARN("[%s] Using 'odom' as default '~global_frame_id' parameter", ctx_->name().c_str());
-
     float publisher_frequency;
     pnh_->param<float>("publisher_frequency", publisher_frequency, 20.0);
     publisher_timer_ = nh_->createTimer(ros::Duration(1.0/publisher_frequency), &SceneViewer::onTimer, this);
+  }
+
+  void SceneViewer::onReconfigure(const vector<string>& inputs)
+  {
+    markers_publisher_map_.clear();
+    bboxes_publisher_map_.clear();
+    camera_publishers_map_.clear();
+
+    for(const auto& input : inputs)
+    {
+      markers_publisher_map_.emplace(input, boost::make_shared<ros::Publisher>(nh_->advertise<MarkerArray>(input+"/meshes", 2)));
+      bboxes_publisher_map_.emplace(input, boost::make_shared<ros::Publisher>(nh_->advertise<BoundingBoxArray>(input+"/boxes", 2)));
+    }
   }
 
   void SceneViewer::publishVisualization(const std::string world, const ros::Time stamp)
@@ -26,8 +36,8 @@ namespace uwds
     header.stamp = stamp;
     header.frame_id = global_frame_id_;
 
-    jsk_recognition_msgs::BoundingBoxArray bboxes;
-    visualization_msgs::MarkerArray markers;
+    BoundingBoxArray bboxes;
+    MarkerArray markers;
     bboxes.header = header;
     auto& scene = ctx_->worlds()[world].scene();
 
@@ -91,9 +101,9 @@ namespace uwds
     }
   }
 
-  vector<visualization_msgs::Marker> SceneViewer::nodeToMarkers(const string world, const Node node, const ros::Time stamp)
+  vector<Marker> SceneViewer::nodeToMarkers(const string world, const Node node, const ros::Time stamp)
   {
-    vector<visualization_msgs::Marker> markers;
+    vector<Marker> markers;
     vector<string> mesh_ids;
 
     //mesh_ids = getMeshes(world, node);
@@ -110,7 +120,7 @@ namespace uwds
 
     for(auto mesh_id : mesh_ids)
     {
-      visualization_msgs::Marker marker;
+      Marker marker;
       if (node.parent == scene.rootID())
         marker.header.frame_id = global_frame_id_;
       else
@@ -119,8 +129,8 @@ namespace uwds
       if (marker_id_map_.count(world+mesh_id)==0)
         marker_id_map_.emplace(world+mesh_id, last_marker_id_++);
       marker.id = marker_id_map_.at(world+mesh_id);
-      marker.action = visualization_msgs::Marker::ADD;
-      marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+      marker.action = Marker::ADD;
+      marker.type = Marker::TRIANGLE_LIST;
       marker.pose = node.position.pose;
       marker.scale.x = 1.0;
       marker.scale.y = 1.0;
@@ -174,9 +184,9 @@ namespace uwds
     return markers;
   }
 
-  jsk_recognition_msgs::BoundingBox SceneViewer::nodeToBoundingBox(const string world, const Node node, const ros::Time stamp)
+  BoundingBox SceneViewer::nodeToBoundingBox(const string world, const Node node, const ros::Time stamp)
   {
-    jsk_recognition_msgs::BoundingBox bbox;
+    BoundingBox bbox;
     std_msgs::Header bbox_header;
     bbox.header.stamp = stamp;
     bbox.header.frame_id = global_frame_id_;
@@ -264,3 +274,6 @@ namespace uwds
     return camera_info;
   }
 }
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(uwds::SceneViewer, nodelet::Nodelet)

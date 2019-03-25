@@ -13,7 +13,7 @@ namespace uwds {
   class PushMeshProxy : public ServiceProxy<PushMesh, Mesh>
   {
   public:
-    PushMeshProxy(boost::shared_ptr<ros::NodeHandle> nh, ClientPtr client):ServiceProxy<PushMesh, Mesh>(nh, client, "uwds/push_mesh") {}
+    PushMeshProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client):ServiceProxy<PushMesh, Mesh>(nh, pnh, client, "uwds/push_mesh") {}
   protected:
     PushMesh fillRequest(Mesh mesh)
     {
@@ -29,7 +29,7 @@ namespace uwds {
   class GetMeshProxy : public DataProxy<Meshes, GetMesh, bool, string>
   {
   public:
-    GetMeshProxy(boost::shared_ptr<ros::NodeHandle> nh, ClientPtr client, MeshesPtr meshes):DataProxy<Meshes, GetMesh, bool, string>(nh, client, "uwds/get_mesh", meshes) {}
+    GetMeshProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, MeshesPtr meshes):DataProxy<Meshes, GetMesh, bool, string>(nh, pnh, client, "uwds/get_mesh", meshes) {}
 
     ~GetMeshProxy() {}
 
@@ -57,11 +57,11 @@ namespace uwds {
   class MeshesProxy
   {
   public:
-    MeshesProxy(boost::shared_ptr<ros::NodeHandle> nh, ClientPtr client)
+    MeshesProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client)
     {
       meshes_ = boost::make_shared<Meshes>();
-      push_mesh_proxy_ = boost::make_shared<PushMeshProxy>(nh, client);
-      get_mesh_proxy_ = boost::make_shared<GetMeshProxy>(nh, client, meshes_);
+      push_mesh_proxy_ = boost::make_shared<PushMeshProxy>(nh, pnh, client);
+      get_mesh_proxy_ = boost::make_shared<GetMeshProxy>(nh, pnh, client, meshes_);
     }
 
     virtual bool pushMeshToRemote(Mesh mesh)

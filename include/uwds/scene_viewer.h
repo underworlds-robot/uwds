@@ -18,6 +18,7 @@ namespace uwds
 {
   class SceneViewer : public ReconfigurableClient
   {
+  public:
     /**@brief
      * The constructor.
      */
@@ -33,13 +34,13 @@ namespace uwds
      * in its onInit method.
      */
     virtual void onInit();
-
+  protected:
     /**@brief
      * Timer to publish the tf frames.
      */
     virtual void onTimer(const ros::TimerEvent& event);
 
-    void onReconfigure(const vector<string>& inputs) {}
+    void onReconfigure(const vector<string>& inputs);
 
     void onChanges(const std::string& world,
                          const std_msgs::Header& header,

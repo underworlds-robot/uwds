@@ -11,7 +11,7 @@ namespace uwds {
   class QueryOntologyProxy : public ServiceProxy<QueryOntology, string>
   {
   public:
-    QueryOntologyProxy(NodeHandlePtr nh, ClientPtr client, string world_name):ServiceProxy<QueryOntology, string>(nh, client, "uwds/query_ontology")
+    QueryOntologyProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name):ServiceProxy<QueryOntology, string>(nh, pnh, client, "uwds/query_ontology")
     {
       world_name_ = world_name;
     }
@@ -35,9 +35,9 @@ namespace uwds {
   class OntologyProxy
   {
   public:
-    OntologyProxy(NodeHandlePtr nh, ClientPtr client, string world_name)
+    OntologyProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name)
     {
-      query_ontology_proxy_ = boost::make_shared<QueryOntologyProxy>(nh, client, world_name);
+      query_ontology_proxy_ = boost::make_shared<QueryOntologyProxy>(nh, pnh, client, world_name);
     }
 
     vector<string> queryOntology(string query)

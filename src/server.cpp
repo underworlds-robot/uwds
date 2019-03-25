@@ -8,7 +8,10 @@ namespace uwds
   void UwdsServerNodelet::onInit()
   {
     nh_ = boost::make_shared<ros::NodeHandle>(getMTNodeHandle());
-    ctx_ = boost::make_shared<Underworlds>(nh_);
+    pnh_ = boost::make_shared<ros::NodeHandle>(getMTPrivateNodeHandle());
+    pnh_->param<bool>("verbose", verbose_, false);
+    ctx_ = boost::make_shared<Underworlds>(nh_, pnh_);
+
   }
 }
 

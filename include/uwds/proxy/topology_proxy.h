@@ -13,7 +13,7 @@ namespace uwds {
   class GetTopologyProxy : public DataProxy<Topology, GetTopology, bool>
   {
   public:
-    GetTopologyProxy(NodeHandlePtr nh, ClientPtr client, TopologyPtr topology):DataProxy<Topology, GetTopology, bool>(nh, client, "uwds/get_topology", topology) {}
+    GetTopologyProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, TopologyPtr topology):DataProxy<Topology, GetTopology, bool>(nh, pnh, client, "uwds/get_topology", topology) {}
 
     ~GetTopologyProxy() = default;
 
@@ -43,10 +43,10 @@ namespace uwds {
   class TopologyProxy
   {
   public:
-    TopologyProxy(NodeHandlePtr nh, ClientPtr client)
+    TopologyProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client)
     {
       topology_ = boost::make_shared<Topology>();
-      get_topology_proxy_ = boost::make_shared<GetTopologyProxy>(nh, client, topology_);
+      get_topology_proxy_ = boost::make_shared<GetTopologyProxy>(nh, pnh, client, topology_);
     }
 
     ~TopologyProxy() {}

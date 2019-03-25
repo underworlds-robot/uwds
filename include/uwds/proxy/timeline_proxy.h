@@ -13,7 +13,7 @@ namespace uwds {
   class GetTimelineProxy : public DataProxy<Timeline, GetTimeline>
   {
   public:
-    GetTimelineProxy(NodeHandlePtr nh, ClientPtr client, string world_name, TimelinePtr timeline):DataProxy<Timeline, GetTimeline>(nh, client, "uwds/get_timeline", timeline)
+    GetTimelineProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name, TimelinePtr timeline):DataProxy<Timeline, GetTimeline>(nh, pnh, client, "uwds/get_timeline", timeline)
     {
       world_name_ = world_name;
     }
@@ -52,10 +52,10 @@ namespace uwds {
   class TimelineProxy
   {
   public:
-    TimelineProxy(boost::shared_ptr<ros::NodeHandle> nh, ClientPtr client, string world_name)
+    TimelineProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name)
     {
       timeline_ = boost::make_shared<Timeline>();
-      get_timeline_proxy_ = boost::make_shared<GetTimelineProxy>(nh, client, world_name, timeline_);
+      get_timeline_proxy_ = boost::make_shared<GetTimelineProxy>(nh, pnh, client, world_name, timeline_);
     }
 
     ~TimelineProxy() {}

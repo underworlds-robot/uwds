@@ -21,7 +21,7 @@ namespace uwds {
   class AdvertiseConnectionProxy : public ServiceProxy<AdvertiseConnection, ConnectionInteractionType, ConnectionActionType>
   {
   public:
-    AdvertiseConnectionProxy(NodeHandlePtr nh, ClientPtr client, string world_name):ServiceProxy<AdvertiseConnection, ConnectionInteractionType, ConnectionActionType>(nh, client, "uwds/advertise_connection")
+    AdvertiseConnectionProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name):ServiceProxy<AdvertiseConnection, ConnectionInteractionType, ConnectionActionType>(nh, pnh, client, "uwds/advertise_connection")
     {
       world_name_ = world_name;
     }
@@ -45,29 +45,30 @@ namespace uwds {
   class WorldProxy
   {
   public:
-    WorldProxy(NodeHandlePtr nh, ClientPtr client, MeshesProxyPtr meshes_proxy, string world_name)
+    WorldProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, MeshesProxyPtr meshes_proxy, string world_name)
     {
       nh_ = nh;
+      pnh_ = pnh;
       client_ = client;
       world_name_ = world_name;
 
       meshes_proxy_ = meshes_proxy;
-      scene_proxy_ = boost::make_shared<SceneProxy>(nh_, client_, world_name_, meshes_proxy_);
-      timeline_proxy_ = boost::make_shared<TimelineProxy>(nh_, client_, world_name_);
-      ontology_proxy_ = boost::make_shared<OntologyProxy>(nh_, client_, world_name_);
+      scene_proxy_ = boost::make_shared<SceneProxy>(nh_, pnh_, client_, world_name_, meshes_proxy_);
+      timeline_proxy_ = boost::make_shared<TimelineProxy>(nh_, pnh_, client_, world_name_);
+      ontology_proxy_ = boost::make_shared<OntologyProxy>(nh_, pnh_, client_, world_name_);
 
-      advertise_connection_proxy_ = boost::make_shared<AdvertiseConnectionProxy>(nh_, client_, world_name_);
+      advertise_connection_proxy_ = boost::make_shared<AdvertiseConnectionProxy>(nh_, pnh_, client_, world_name_);
       scene_proxy_->getSceneFromRemote();
       timeline_proxy_->getTimelineFromRemote();
 
       int subscriber_buffer_size;
-      nh_->param<int>("uwds/subscriber_buffer_size", subscriber_buffer_size, 20);
+      pnh_->param<int>("subscriber_buffer_size", subscriber_buffer_size, 20);
       changes_subscriber_ = boost::make_shared<ros::Subscriber>(nh_->subscribe(world_name_+"/changes",
                                                                 subscriber_buffer_size,
                                                                 &WorldProxy::changesCallback,
                                                                 this));
       int publisher_buffer_size;
-      nh_->param<int>("uwds/publisher_buffer_size", publisher_buffer_size, 20);
+      pnh_->param<int>("publisher_buffer_size", publisher_buffer_size, 20);
       changes_publisher_ = boost::make_shared<ros::Publisher>(nh_->advertise<ChangesInContextStamped>(world_name_+"/changes", publisher_buffer_size));
     }
 
@@ -189,7 +190,7 @@ namespace uwds {
      *
      * @param filename : The filename.
      */
-    bool pushMeshesFrom3DFile(const std::string& filename, const std::vector<double>& scale)
+    bool pushMeshesFrom3DFile(const std::string& filename, const std::vector<double>& scale, vector<Mesh>& meshes_imported, std::vector<double>& aabb)
     {
       if (!ever_send_changes_)
       {
@@ -197,18 +198,21 @@ namespace uwds {
         ever_send_changes_ = true;
       }
       ModelLoader ml;
-      std::vector<double> aabb;
-      std::vector<Mesh> meshes_imported;
+      //std::vector<double> aabb;
+      //std::vector<Mesh> meshes_imported;
       if(!ml.loadMeshes(filename, scale, meshes_imported, aabb))
+      {
+        ROS_ERROR("[%s::pushMeshesFrom3DFile] Error occured while loading file '%s'", client_->name.c_str(), filename.c_str());
         return false;
-      for (const auto mesh : meshes_imported)
+      }
+      for (const auto& mesh : meshes_imported)
       {
         meshes_proxy_->pushMeshToRemote(mesh);
       }
       return true;
     }
 
-    bool pushMeshesFrom3DFile(const std::string& filename)
+    bool pushMeshesFrom3DFile(const std::string& filename, vector<Mesh>& meshes_imported, std::vector<double>& aabb)
     {
       if (!ever_send_changes_)
       {
@@ -217,14 +221,17 @@ namespace uwds {
       }
       uwds::ModelLoader ml;
       std::vector<double> scale;
-      std::vector<double> aabb;
-      std::vector<Mesh> meshes_imported;
+      //std::vector<double> aabb;
+      //std::vector<Mesh> meshes_imported;
       scale.push_back(1.0);
       scale.push_back(1.0);
       scale.push_back(1.0);
       if(!ml.loadMeshes(filename, scale, meshes_imported, aabb))
+      {
+        ROS_ERROR("[%s::pushMeshesFrom3DFile] Error occured while loading file '%s'", client_->name.c_str(), filename.c_str());
         return false;
-      for (const auto mesh : meshes_imported)
+      }
+      for (const auto& mesh : meshes_imported)
       {
         meshes_proxy_->pushMeshToRemote(mesh);
       }
@@ -247,7 +254,10 @@ namespace uwds {
       std::vector<Mesh> meshes_imported;
       std::vector<Node> nodes_imported;
       if(!ml.loadScene(filename, scene().rootID(), true, meshes_imported, nodes_imported))
+      {
+        ROS_ERROR("[%s::pushSceneFrom3DFile] Error occured while loading file '%s'", client_->name.c_str(), filename.c_str());
         return false;
+      }
       for (const auto mesh : meshes_imported)
       {
         meshes_proxy_->pushMeshToRemote(mesh);
@@ -277,6 +287,8 @@ namespace uwds {
     string world_name_;
 
     NodeHandlePtr nh_;
+
+    NodeHandlePtr pnh_;
 
     ClientPtr client_;
 

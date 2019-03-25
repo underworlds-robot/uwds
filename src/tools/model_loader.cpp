@@ -361,7 +361,9 @@ namespace uwds
       aabb.push_back(aabb_x);
       aabb.push_back(aabb_y);
       aabb.push_back(aabb_z);
+      return true;
     }
+    return false;
   }
 
   // bool ModelLoader::loadURDF(const std::string& filename,

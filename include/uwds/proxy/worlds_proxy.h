@@ -12,9 +12,10 @@ namespace uwds {
 
   class WorldsProxy {
     public:
-      WorldsProxy(NodeHandlePtr nh, ClientPtr client, const MeshesProxyPtr meshes)
+      WorldsProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, const MeshesProxyPtr meshes)
       {
         nh_ = nh;
+        pnh_ = pnh;
         meshes_ = meshes;
         client_ = client;
       }
@@ -23,7 +24,7 @@ namespace uwds {
 
       WorldProxy& operator[](const std::string& name){
         if (worlds_.count(name) == 0) {
-          worlds_.emplace(name, boost::make_shared<WorldProxy>(nh_, client_, meshes_, name));
+          worlds_.emplace(name, boost::make_shared<WorldProxy>(nh_, pnh_, client_, meshes_, name));
         }
         return *worlds_.at(name);
       }
@@ -39,6 +40,8 @@ namespace uwds {
       ClientPtr client_;
 
       NodeHandlePtr nh_;
+
+      NodeHandlePtr pnh_;
 
       WorldProxyMap worlds_;
 

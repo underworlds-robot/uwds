@@ -20,13 +20,8 @@ namespace uwds {
        * Default constructor.
        */
       Scene() {
-        root_id_ = NEW_UUID;
         nodes_ = boost::make_shared<Nodes>();
-        Node root_node;
-        root_node.id = root_id_;
-        root_node.name = "root";
-        root_node.position.pose.orientation.w = 1.0;
-        nodes_->update(root_node);
+        root_id_ = nodes_->rootID();
       }
 
       /** @brief
@@ -157,26 +152,10 @@ namespace uwds {
         vector<string> node_ids;
         for (const auto& node : nodes())
           node_ids.push_back(node->id);
-        nodes_->reset();
-        Node root_node;
-        root_node.id = new_root_id;
-        root_node.name = "root";
-        root_node.position.pose.orientation.w = 1.0;
-        nodes_->update(root_node);
-        //setRootID(root_node.id);
         root_id_ = new_root_id;
+        nodes_ = boost::make_shared<Nodes>(root_id_);
         return node_ids;
       }
-
-      // void reset()
-      // {
-      //   nodes_->reset();
-      //   Node root_node;
-      //   root_node.id = root_id_;
-      //   root_node.name = "root";
-      //   root_node.position.pose.orientation.w = 1.0;
-      //   nodes_->update(root_node);
-      // }
 
       /** @brief
        * Lock the scene.
