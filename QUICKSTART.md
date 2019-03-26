@@ -48,12 +48,17 @@ First, launch the server with :
 ```
 roslaunch uwds uwds_server.launch
 ```
-Then launch the env provider that will create a world from a 3D file :
+Launch the *env_provider* that will create a world from a 3D file :
 ```
 roslaunch uwds env_provider.launch
 ```
+And after that launch the scene viewer that will publish the visualization topics :
 
-Start Rviz with :
+```
+roslaunch uwds scene_viewer.launch
+```
+
+Then start Rviz with :
 ```
 rviz
 ```
@@ -81,18 +86,18 @@ You should have something like that :
   <img src="img/topology.png" alt="topology"/>
 </p>
 
-This figure means that the provider writes into the world named *env* and the reader reads it.
+This figure means that the *env_provider* writes into the world named *env* and the *scene_viewer* reads it.
 
 You can also inspect the scene graph of the visualized world by using :
 ```
-rosrun uwds view_scene.py test
+rosrun uwds view_scene.py env
 evince scene.pdf
 ```
 
 This should generate this :
 
 <p align="center">
-  <img src="img/scene.png" alt="scene!"/>
+  <img src="img/scene.png" alt="scene"/>
 </p>
 
 As you notice, every node is at least parented to the root of the tree. The scene can be viewed in the same manner that the traditional `tf`.

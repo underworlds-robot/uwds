@@ -12,7 +12,7 @@ if __name__ == '__main__':
     parser.add_argument("world", help="The Underworlds world to monitor")
     args = parser.parse_args()
 
-    rospy.init_node("uwds_view_scene", anonymous=False)
+    rospy.init_node("uwds_view_scene_graph", anonymous=False)
     G = pgv.AGraph(strict=True, directed=True)
     # nodes attributes
     G.node_attr['style']= "filled"
@@ -41,11 +41,6 @@ if __name__ == '__main__':
         edge_to = node_names_map[node_id]
         duration = rospy.Time.now() - node.last_observation.data
         time_str = ""
-        if (nodes_map[node.id].last_observation.data != 0):
-            if (duration.to_sec()/60 < 1.0):
-                time_str="last observation :\n"+("%.3f"%(duration.to_sec()))+"s ago"
-            else:
-                time_str="last observation :\n"+("%.1f"%(duration.to_sec()/60))+"min ago"
-        G.add_edge(edge_from, edge_to, label=time_str)
+        G.add_edge(edge_from, edge_to)
     G.layout(prog='dot')
     G.draw("scene.pdf")
