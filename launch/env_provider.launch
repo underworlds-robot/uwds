@@ -7,7 +7,7 @@
   <arg name="nodelet_manager" default="uwds_nodelet_manager"/>
   <arg name="launch-prefix" default=""/>
 
-  <arg name="filename" default="$(find uwds)/res/blend/adream.blend"/>
+  <arg name="filename" default="$(find uwds)/res/example.blend"/>
   <arg name="global_frame_id" default="map"/>
 
   <node name="$(arg nodelet_manager)"
@@ -26,7 +26,7 @@
         launch-prefix="$(arg launch-prefix)"
         if="$(arg start_server)"/>
 
-  <node name="env_provider2"
+  <node name="env_provider"
         pkg="nodelet" type="nodelet"
         args="load uwds/EnvProvider $(arg nodelet_manager)"
         respawn="$(arg respawn)"
@@ -34,7 +34,7 @@
         launch-prefix="$(arg launch-prefix)">
     <rosparam subst_value="true">
       filename: $(arg filename)
-      verbose : false
+      verbose : true
     </rosparam>
   </node>
 </launch>
