@@ -16,9 +16,9 @@ This package provide the server that store the data and distribute it on-demand,
 
 Follow the quick start guide to learn how to use *Underworlds* :
 
-[<p align="center">
+<a href="QUICKSTART.md"><p align="center">
   <img src="img/quick_start.png" alt="Quick start here !"/>
-</p>](QUICKSTART.md)
+</p></a>
 
 
 ---
