@@ -80,7 +80,7 @@ namespace uwds
         uwds_msgs::Node new_node;
         new_node.id = NEW_UUID;
         if (current_node != scene->mRootNode) {
-          new_node.name = (boost::format("%s") % current_node->mName.C_Str()).str();
+          new_node.name = string(current_node->mName.C_Str());
         } else {
           new_node.name = "assimp_root";
         }
@@ -103,7 +103,7 @@ namespace uwds
           if(current_node->mParent == scene->mRootNode)
             new_node.parent = root_node_id;
           else
-            new_node.parent = node_id_by_name.at((boost::format("%s") % current_node->mParent->mName.C_Str()).str());
+            new_node.parent = node_id_by_name.at(string(current_node->mParent->mName.C_Str()));
         }
 
         new_node.position.pose.position.x = pos.x;
@@ -237,7 +237,7 @@ namespace uwds
                 aabb_y = 0.000001;
               if(aabb_z== 0.0)
                 aabb_z = 0.000001;
-              new_node_aabb.data = (boost::format("%f,%f,%f") % aabb_x % aabb_y % aabb_z).str();
+              new_node_aabb.data = to_string(aabb_x)+","+to_string(aabb_y)+","+to_string(aabb_z);
               new_node.properties.push_back(new_node_meshes);
               new_node.properties.push_back(new_node_aabb);
             }
