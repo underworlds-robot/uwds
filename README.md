@@ -4,7 +4,8 @@ This ROS package named ***uwds*** contains the core components of *Underworlds* 
 Note : A Python Client API is provided in order to communicate with the server and develop your own clients, but will not benefit from this functionality.
 
 ----
-![screenshot](img/screenshot_rviz.png)
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=sM5uTl-Klxo" target="blank"><p align="center"><img src="http://img.youtube.com/vi/sM5uTl-Klxo/0.jpg"
+alt="IMAGE ALT TEXT HERE" width="480" height="360" border="10" /></p></a>
 
 *Underworlds* is a distributed and lightweight framework that aims at **sharing between clients parallel models of the physical world surrounding a robot**.
 
