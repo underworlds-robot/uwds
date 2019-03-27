@@ -20,7 +20,6 @@ Follow the quick start guide to learn how to use *Underworlds* :
   <img src="img/quick_start.png" alt="Quick start here !"/>
 </p></a>
 
-
 ---
 ### References
 

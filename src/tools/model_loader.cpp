@@ -30,7 +30,7 @@ namespace uwds
         for (unsigned int nb_camera = 0 ; nb_camera < scene->mNumCameras ; nb_camera++)
         {
           uwds_msgs::Node new_camera;
-          new_camera.name = (boost::format("%s") % scene->mCameras[nb_camera]->mName.C_Str()).str();
+          new_camera.name = string(scene->mCameras[nb_camera]->mName.C_Str());
           uwds_msgs::Property aspect;
           uwds_msgs::Property hfov;
           uwds_msgs::Property clipplanenear;
@@ -38,21 +38,23 @@ namespace uwds
           uwds_msgs::Property up;
           uwds_msgs::Property lookat;
           lookat.name = "lookat";
-          lookat.data = (boost::format("%f,%f,%f") % (float) scene->mCameras[nb_camera]->mLookAt.x
-                                               % (float) scene->mCameras[nb_camera]->mLookAt.y
-                                               % (float) scene->mCameras[nb_camera]->mLookAt.z).str();
+          lookat.data = to_string((float) scene->mCameras[nb_camera]->mLookAt.x)+","
+                        + to_string((float) scene->mCameras[nb_camera]->mLookAt.y)+","
+                        + to_string((float) scene->mCameras[nb_camera]->mLookAt.z);
+
           up.name = "up";
-          up.data = (boost::format("%f,%f,%f") % (float) scene->mCameras[nb_camera]->mUp.x
-                                               % (float) scene->mCameras[nb_camera]->mUp.y
-                                               % (float) scene->mCameras[nb_camera]->mUp.z).str();
+          up.data = to_string((float) scene->mCameras[nb_camera]->mUp.x)+","
+                    + to_string((float) scene->mCameras[nb_camera]->mUp.y)+","
+                    + to_string((float) scene->mCameras[nb_camera]->mUp.z);
+
           aspect.name = "aspect";
-          aspect.data = (boost::format("%f") % scene->mCameras[nb_camera]->mAspect).str();
+          aspect.data = to_string(scene->mCameras[nb_camera]->mAspect);
           hfov.name = "hfov";
-          hfov.data = (boost::format("%f") % scene->mCameras[nb_camera]->mHorizontalFOV).str();
+          hfov.data = to_string(scene->mCameras[nb_camera]->mHorizontalFOV);
           clipplanenear.name = "clipplanenear";
-          clipplanenear.data = (boost::format("%f") % scene->mCameras[nb_camera]->mClipPlaneNear).str();
+          clipplanenear.data = to_string(scene->mCameras[nb_camera]->mClipPlaneNear);
           clipplanefar.name = "clipplanefar";
-          clipplanefar.data = (boost::format("%f") % scene->mCameras[nb_camera]->mClipPlaneFar).str();
+          clipplanefar.data = to_string(scene->mCameras[nb_camera]->mClipPlaneFar);
           new_camera.properties.push_back(aspect);
           new_camera.properties.push_back(hfov);
           new_camera.properties.push_back(clipplanenear);
