@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 	jsk_recognition_msgs
 	visualization_msgs
   tf
+  tf2_ros
   pose_cov_ops
 )
 
@@ -42,7 +43,7 @@ catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp nodelet pluginlib rostime uwds_msgs tf pose_cov_ops
+  CATKIN_DEPENDS roscpp nodelet pluginlib rostime tf tf2_ros pose_cov_ops
 )
 
 ###########
@@ -66,6 +67,7 @@ include_directories(
 	 src/uwds_provider.cpp
 	 src/env_provider.cpp
 	 src/scene_viewer.cpp
+   src/world_merger.cpp
 )
 
 ## Specify libraries to link a library or executable target against
