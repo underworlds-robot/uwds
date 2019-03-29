@@ -60,6 +60,8 @@ namespace uwds
     TransformListenerPtr tf_listener_;
 
     BufferPtr tf_buffer_;
+
+    ros::Timer publisher_timer_;
   };
 }
 

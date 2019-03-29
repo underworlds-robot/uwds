@@ -9,7 +9,7 @@ from types import *
 DEFAULT_PUBLISHER_BUFFER_SIZE = 10
 
 
-class UwdsClient(DynamicConnectionBasedNode):
+class UwdsClient(object):
     """
     The Underworlds client
 

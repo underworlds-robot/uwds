@@ -11,6 +11,9 @@ namespace uwds
     tf_buffer_ = boost::make_shared<tf2_ros::Buffer>();
     tf_listener_ = boost::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
     ReconfigurableClient::onInit();
+    float publisher_frequency;
+    pnh_->param<float>("publisher_frequency", publisher_frequency, 20.0);
+    publisher_timer_ = nh_->createTimer(ros::Duration(1.0/publisher_frequency), &WorldMerger::onTimer, this);
   }
 
   void WorldMerger::onChanges(const string& world,
@@ -30,8 +33,7 @@ namespace uwds
       {
         bool insert = false;
         bool transformed = false;
-        //
-        if(header.frame_id != global_frame_id_)
+        if(header.frame_id!="" && header.frame_id != global_frame_id_)
         {
           geometry_msgs::TransformStamped transformStamped;
           tf2::Stamped<tf2::Transform> temp;
@@ -85,7 +87,8 @@ namespace uwds
     changes_mutex_.unlock();
   }
 
-  void WorldMerger::onTimer(const ros::TimerEvent& event) {
+  void WorldMerger::onTimer(const ros::TimerEvent& event)
+  {
     for (const auto& world : input_worlds_)
     {
       Header header;
