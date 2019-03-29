@@ -5,6 +5,4 @@ class Uuid:
         self.uuid_ = str(uuid.uuid4())
 
     def toString():
-        tokens = uuid_.split("-")
-        tokens.join("")
-        return token
+        return uuid_.split("-").join("")

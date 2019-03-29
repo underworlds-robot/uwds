@@ -5,6 +5,7 @@ from dynamic_connection_based_node import DynamicConnectionBasedNode
 from uwds_msgs.srv import GetTopology, GetScene, GetTimeline, GetMesh
 from uwds_msgs.msg import Context, ChangesInContextStamped
 from types import *
+from types.uuid import Uuid
 
 DEFAULT_PUBLISHER_BUFFER_SIZE = 10
 
@@ -23,11 +24,10 @@ class UwdsClient(object):
         @type self.node_name: string
         @param self.node_name: The client name
         """
-        # super
-        DynamicConnectionBasedNode.__init__(self, node_name)
+
         # General service
         self.node_name = node_name
-        self.client_id = str(uuid.uuid4())
+        self.client_id = Uuid().toString()
         self.client_type = client_type
         self.ever_send_changes = False
 

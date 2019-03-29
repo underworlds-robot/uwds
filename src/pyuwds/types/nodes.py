@@ -1,6 +1,6 @@
 from concurrent_container import ConcurrentContainer
 from uwds_msgs.msg import Node
-import uuid
+from uuid import Uuid
 
 ENTITY = Node.ENTITY
 MESH = Node.MESH
