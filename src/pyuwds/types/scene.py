@@ -7,8 +7,8 @@ import uuid
 class Scene:
 
     def __init__(self):
-        self.reset(str(uuid.uuid4()))
-    
+        self.reset(Uuid().toString())
+
     def update(self, nodes):
         current_time = rospy.Time.now()
         for node in nodes:

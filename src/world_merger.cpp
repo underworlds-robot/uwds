@@ -42,7 +42,7 @@ namespace uwds
             transformStamped = tf_buffer_->lookupTransform(header.frame_id, global_frame_id_, ros::Time(0));
             tf2::fromMsg(transformStamped, temp);
             tf2::toMsg(temp, sensor_pose);
-            pose_cov_ops::compose(sensor_pose.pose, scene.nodes()[id].position.pose, scene.nodes()[id].position.pose);
+            pose_cov_ops::compose(scene.nodes()[id].position.pose, sensor_pose.pose, scene.nodes()[id].position.pose);
             transformed = true;
           } catch(tf2::TransformException& e) {
             ROS_WARN("[%s::onChanges] Error occured while transforming node into world frame : %s",ctx_->name().c_str(), e.what());

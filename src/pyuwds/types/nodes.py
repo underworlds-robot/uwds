@@ -1,5 +1,6 @@
 from concurrent_container import ConcurrentContainer
 from uwds_msgs.msg import Node
+import uuid
 
 ENTITY = Node.ENTITY
 MESH = Node.MESH
@@ -35,7 +36,7 @@ class Nodes (ConcurrentContainer):
         nodes = [n for n in self if n.name == node_name]
         self._unlock()
         return nodes
-       
+
     def by_type(self, type):
         self._lock()
         nodes = [n for n in self if n.type == type]

@@ -80,7 +80,7 @@ namespace uwds
         if (node.type == CAMERA)
         {
           if(camera_publishers_map_.count(world+node.id) == 0)
-            camera_publishers_map_.emplace(world+node.id, boost::make_shared<ros::Publisher>(nh_->advertise<sensor_msgs::CameraInfo>(world+"/"+node.name+"/camera_info", 2)));
+            camera_publishers_map_.emplace(world+node.id, boost::make_shared<ros::Publisher>(nh_->advertise<sensor_msgs::CameraInfo>(world+"/"+node.id+"/camera_info", 2)));
 
           camera_publishers_map_.at(world+node.id)->publish(nodeToCameraInfo(world, node, stamp));
         }
@@ -106,7 +106,6 @@ namespace uwds
     vector<Marker> markers;
     vector<string> mesh_ids;
 
-    //mesh_ids = getMeshes(world, node);
     for(auto property : node.properties)
     {
       if(property.name=="meshes")
@@ -135,51 +134,48 @@ namespace uwds
       marker.scale.x = 1.0;
       marker.scale.y = 1.0;
       marker.scale.z = 1.0;
-      if(ctx_->worlds()[world].meshes().has(mesh_id))
+      const auto& mesh = ctx_->meshes()[mesh_id];
+      for (const auto& triangle : mesh.triangles)
       {
-        const auto& mesh = ctx_->worlds()[world].meshes()[mesh_id];
-        for (const auto& triangle : mesh.triangles)
-        {
-          geometry_msgs::Point p0, p1, p2;
-          std_msgs::ColorRGBA c0, c1, c2;
-          p0.x = mesh.vertices[triangle.vertex_indices[0]].x;
-          p0.y = mesh.vertices[triangle.vertex_indices[0]].y;
-          p0.z = mesh.vertices[triangle.vertex_indices[0]].z;
+        geometry_msgs::Point p0, p1, p2;
+        std_msgs::ColorRGBA c0, c1, c2;
+        p0.x = mesh.vertices[triangle.vertex_indices[0]].x;
+        p0.y = mesh.vertices[triangle.vertex_indices[0]].y;
+        p0.z = mesh.vertices[triangle.vertex_indices[0]].z;
 
-          c0.r = mesh.vertex_colors[triangle.vertex_indices[0]].r;
-          c0.g = mesh.vertex_colors[triangle.vertex_indices[0]].g;
-          c0.b = mesh.vertex_colors[triangle.vertex_indices[0]].b;
-          c0.a = mesh.vertex_colors[triangle.vertex_indices[0]].a;
+        c0.r = mesh.vertex_colors[triangle.vertex_indices[0]].r;
+        c0.g = mesh.vertex_colors[triangle.vertex_indices[0]].g;
+        c0.b = mesh.vertex_colors[triangle.vertex_indices[0]].b;
+        c0.a = mesh.vertex_colors[triangle.vertex_indices[0]].a;
 
-          p1.x = mesh.vertices[triangle.vertex_indices[1]].x;
-          p1.y = mesh.vertices[triangle.vertex_indices[1]].y;
-          p1.z = mesh.vertices[triangle.vertex_indices[1]].z;
+        p1.x = mesh.vertices[triangle.vertex_indices[1]].x;
+        p1.y = mesh.vertices[triangle.vertex_indices[1]].y;
+        p1.z = mesh.vertices[triangle.vertex_indices[1]].z;
 
-          c1.r = mesh.vertex_colors[triangle.vertex_indices[1]].r;
-          c1.g = mesh.vertex_colors[triangle.vertex_indices[1]].g;
-          c1.b = mesh.vertex_colors[triangle.vertex_indices[1]].b;
-          c1.a = mesh.vertex_colors[triangle.vertex_indices[1]].a;
+        c1.r = mesh.vertex_colors[triangle.vertex_indices[1]].r;
+        c1.g = mesh.vertex_colors[triangle.vertex_indices[1]].g;
+        c1.b = mesh.vertex_colors[triangle.vertex_indices[1]].b;
+        c1.a = mesh.vertex_colors[triangle.vertex_indices[1]].a;
 
-          p2.x = mesh.vertices[triangle.vertex_indices[2]].x;
-          p2.y = mesh.vertices[triangle.vertex_indices[2]].y;
-          p2.z = mesh.vertices[triangle.vertex_indices[2]].z;
+        p2.x = mesh.vertices[triangle.vertex_indices[2]].x;
+        p2.y = mesh.vertices[triangle.vertex_indices[2]].y;
+        p2.z = mesh.vertices[triangle.vertex_indices[2]].z;
 
-          c2.r = mesh.vertex_colors[triangle.vertex_indices[2]].r;
-          c2.g = mesh.vertex_colors[triangle.vertex_indices[2]].g;
-          c2.b = mesh.vertex_colors[triangle.vertex_indices[2]].b;
-          c2.a = mesh.vertex_colors[triangle.vertex_indices[2]].a;
+        c2.r = mesh.vertex_colors[triangle.vertex_indices[2]].r;
+        c2.g = mesh.vertex_colors[triangle.vertex_indices[2]].g;
+        c2.b = mesh.vertex_colors[triangle.vertex_indices[2]].b;
+        c2.a = mesh.vertex_colors[triangle.vertex_indices[2]].a;
 
-          marker.points.push_back(p0);
-          marker.colors.push_back(c0);
+        marker.points.push_back(p0);
+        marker.colors.push_back(c0);
 
-          marker.points.push_back(p1);
-          marker.colors.push_back(c1);
+        marker.points.push_back(p1);
+        marker.colors.push_back(c1);
 
-          marker.points.push_back(p2);
-          marker.colors.push_back(c2);
-        }
-        markers.push_back(marker);
+        marker.points.push_back(p2);
+        marker.colors.push_back(c2);
       }
+      markers.push_back(marker);
     }
     return markers;
   }

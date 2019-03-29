@@ -5,8 +5,7 @@
 #include<array>
 #include<map>
 #include<mutex>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
+#include "uuid.h"
 
 #include "concurrent_container.h"
 #include <uwds_msgs/Node.h>
@@ -15,11 +14,8 @@ using namespace std;
 using namespace std_msgs;
 using namespace uwds_msgs;
 
-using namespace uwds_msgs;
 
 namespace uwds {
-
-  #define NEW_UUID boost::uuids::to_string(boost::uuids::random_generator()())
 
   /** @brief
    * The node types enum
