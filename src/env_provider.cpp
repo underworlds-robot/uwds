@@ -10,8 +10,9 @@ namespace uwds
   {
     UwdsClientNodelet::onInit();
     string filename;
+
     pnh_->param<string>("filename", filename, "");
-    if(ctx_->worlds()["env"].pushSceneFrom3DFile(filename))
+    if(ctx_->worlds()[output_world_].pushSceneFrom3DFile(filename))
       if(verbose_)ROS_INFO("Successfully load file !");
   }
 }

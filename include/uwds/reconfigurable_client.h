@@ -46,10 +46,6 @@ namespace uwds
      */
     vector<string> input_worlds_;
 
-    string output_world_;
-
-    string output_suffix_;
-
     /** @brief
      * The reconfigure service server.
      */

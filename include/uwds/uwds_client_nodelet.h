@@ -41,6 +41,10 @@ namespace uwds
 
     bool verbose_;
 
+    string output_suffix_;
+
+    string output_world_;
+
     string global_frame_id_;
   };
 }

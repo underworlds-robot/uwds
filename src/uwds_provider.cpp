@@ -11,6 +11,5 @@ namespace uwds
   {
     UwdsClientNodelet::onInit();
     input_subscriber_ = nh_->subscribe("input", 1, &UwdsProvider<Message>::callback, this);
-    pnh_->param<string>("output_world", output_world_, "output");
   }
 }

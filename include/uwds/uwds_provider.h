@@ -28,11 +28,6 @@ namespace uwds
      */
     virtual void callback(const boost::shared_ptr<Message>& msg) = 0;
 
-    /** @brief
-     * The output world name.
-     */
-    string output_world_;
-
     /**@brief
      * Input subscriber for perception data.
      */

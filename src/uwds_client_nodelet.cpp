@@ -15,5 +15,7 @@ namespace uwds
     ctx_ = boost::make_shared<UnderworldsProxy>(nh_, pnh_ , name, type_);
     pnh_->param<bool>("verbose", verbose_, false);
     pnh_->param<string>("global_frame_id", global_frame_id_, "odom");
+    pnh_->param<string>("output_world", output_world_, "");
+    pnh_->param<string>("output_suffix", output_suffix_, "");
   }
 }
