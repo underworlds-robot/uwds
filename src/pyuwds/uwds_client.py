@@ -91,7 +91,7 @@ class UwdsClient(DynamicConnectionBasedNode):
         if self.ever_send_changes is False:
             self.ever_send_changes = True
 
-    def getTopologyFromRemote():
+    def getTopologyFromRemote(self):
         """
         """
         ctxt = Context()
