@@ -180,7 +180,7 @@ Here is the first important thing :
 ctx_ = boost::make_shared<UnderworldsProxy>(nh, pnh, "provider_example", PROVIDER);
 
 ```
-This line create the Underworlds proxy and declare the client as a `PROVIDER` that is named *provider_example*, the proxy is the access point to the Underworlds data-structure and allow you to not care about the communication processes to handle the distribution of many parrallel world states to clients. You just need to create it to use Underworlds, here we use shared pointers but it is not required.
+This line create the Underworlds proxy and declare the client as a `PROVIDER` that is named *provider_example*, the proxy is the access point to the Underworlds data-structure and allow you to not care about the communication processes that handle the distribution of the world states to the clients. You just need to create it to use Underworlds, here we use shared pointers but it is not required.
 
 The second important line in this example is this one :
 
@@ -188,6 +188,50 @@ The second important line in this example is this one :
 ctx_->worlds()["robot/env"].pushSceneFrom3DFile(filename)
 ```
 This line will lazzely create a proxy for the world `robot/env` that will fetch the world from the Underworlds server to then subscribe to any changes that will pass trought the topic `robot/env/changes`. After that the proxy will load the scene from the given file and send it over the network.
+
+#### Reader example
+
+```c++
+#include <ros/ros.h>
+#include <uwds/uwds.h>
+
+typedef boost::shared_ptr<ros::NodeHandle> NodeHandlePtr;
+using namespace std;
+using namespace std_msgs;
+using namespace uwds;
+
+class ReaderExample
+{
+public:
+  ReaderExample(NodeHandlePtr nh, NodeHandlePtr pnh)
+  {
+    ctx_ = boost::make_shared<UnderworldsProxy>(nh, pnh, "reader_example", READER);
+    if(ctx_->worlds()["robot/env_filtered"].connect(bind(&ReaderExample::onChanges, this, _1, _2, _3)));
+      ROS_INFO("Ready to listen for changes !");
+  }
+protected:
+  void onChanges(string world_name, Header header, Invalidations invalidations)
+  {
+    for(const auto id : invalidations.node_ids_updated)
+      ROS_INFO("Received node <(%s)%s>", ctx_->worlds()["robot/env_filtered"].scene().nodes()[id].name.c_str(), id.c_str());
+    for(const auto id : invalidations.situation_ids_updated)
+      ROS_INFO("Received situation <(%s)%s>", ctx_->worlds()["robot/env_filtered"].timeline().situations()[id].description.c_str(), id.c_str());
+    for(const auto id : invalidations.mesh_ids_updated)
+      ROS_INFO("Received mesh <%s>", ctx_->meshes()[id].id.c_str());
+  }
+  UnderworldsProxyPtr ctx_;
+};
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "reader_example");
+  NodeHandlePtr nh = boost::make_shared<ros::NodeHandle>();
+  NodeHandlePtr pnh = boost::make_shared<ros::NodeHandle>("~");
+  ReaderExample reader = ReaderExample(nh, pnh);
+  ros::spin();
+}
+
+```
 
 #### Filter example
 
@@ -237,50 +281,6 @@ int main(int argc, char **argv)
   string regex;
   nh->param<string>("regex", regex, "");
   FilterExample filter = FilterExample(nh, pnh, regex);
-  ros::spin();
-}
-
-```
-
-#### Reader example
-
-```c++
-#include <ros/ros.h>
-#include <uwds/uwds.h>
-
-typedef boost::shared_ptr<ros::NodeHandle> NodeHandlePtr;
-using namespace std;
-using namespace std_msgs;
-using namespace uwds;
-
-class ReaderExample
-{
-public:
-  ReaderExample(NodeHandlePtr nh, NodeHandlePtr pnh)
-  {
-    ctx_ = boost::make_shared<UnderworldsProxy>(nh, pnh, "reader_example", READER);
-    if(ctx_->worlds()["robot/env_filtered"].connect(bind(&ReaderExample::onChanges, this, _1, _2, _3)));
-      ROS_INFO("Ready to listen for changes !");
-  }
-protected:
-  void onChanges(string world_name, Header header, Invalidations invalidations)
-  {
-    for(const auto id : invalidations.node_ids_updated)
-      ROS_INFO("Received node <(%s)%s>", ctx_->worlds()["robot/env_filtered"].scene().nodes()[id].name.c_str(), id.c_str());
-    for(const auto id : invalidations.situation_ids_updated)
-      ROS_INFO("Received situation <(%s)%s>", ctx_->worlds()["robot/env_filtered"].timeline().situations()[id].description.c_str(), id.c_str());
-    for(const auto id : invalidations.mesh_ids_updated)
-      ROS_INFO("Received mesh <%s>", ctx_->meshes()[id].id.c_str());
-  }
-  UnderworldsProxyPtr ctx_;
-};
-
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "reader_example");
-  NodeHandlePtr nh = boost::make_shared<ros::NodeHandle>();
-  NodeHandlePtr pnh = boost::make_shared<ros::NodeHandle>("~");
-  ReaderExample reader = ReaderExample(nh, pnh);
   ros::spin();
 }
 
