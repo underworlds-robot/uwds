@@ -10,7 +10,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 
@@ -41,6 +40,7 @@
 #include <uwds_msgs/GetMesh.h>
 #include <uwds_msgs/PushMesh.h>
 #include <uwds_msgs/QueryOntology.h>
+#include <uwds_msgs/SimpleQuery.h>
 
 #include <uwds_msgs/ReconfigureInputs.h>
 #include <uwds_msgs/List.h>

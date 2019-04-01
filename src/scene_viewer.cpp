@@ -49,7 +49,7 @@ namespace uwds
         std::string source_frame;
         if (node.parent != scene.rootID())
         {
-          source_frame = world + "/" + scene.nodes()[node.parent].name;
+          source_frame = world + "/" + scene.nodes()[node.parent].id;
         } else {
           source_frame = global_frame_id_;
         }
@@ -66,7 +66,7 @@ namespace uwds
         transform.setOrigin(t);
         transform.setRotation(q);
 
-        tf_broadcaster_.sendTransform(tf::StampedTransform(transform, stamp, source_frame, world + "/" + node.name));
+        tf_broadcaster_.sendTransform(tf::StampedTransform(transform, stamp, source_frame, world + "/" + node.id));
 
         if (node.type == MESH)
         {
@@ -123,7 +123,7 @@ namespace uwds
       if (node.parent == scene.rootID())
         marker.header.frame_id = global_frame_id_;
       else
-        marker.header.frame_id = world + "/" + scene.nodes()[node.parent].name;
+        marker.header.frame_id = world + "/" + scene.nodes()[node.parent].id;
       marker.header.stamp = stamp;
       if (marker_id_map_.count(world+mesh_id)==0)
         marker_id_map_.emplace(world+mesh_id, last_marker_id_++);
@@ -189,7 +189,7 @@ namespace uwds
     try
     {
       tf::StampedTransform transform;
-      tf_listener_.lookupTransform(global_frame_id_, world+"/"+node.name,
+      tf_listener_.lookupTransform(global_frame_id_, world+"/"+node.id,
                                ros::Time(), transform);
 
       tf::Vector3 t = transform.getOrigin();
@@ -225,7 +225,7 @@ namespace uwds
   sensor_msgs::CameraInfo SceneViewer::nodeToCameraInfo(const string world, const Node node, const ros::Time stamp)
   {
     sensor_msgs::CameraInfo camera_info;
-    camera_info.header.frame_id = world + "/" + node.name;
+    camera_info.header.frame_id = world + "/" + node.id;
     camera_info.header.stamp = stamp;
     camera_info.height=480;
     camera_info.width=640;
