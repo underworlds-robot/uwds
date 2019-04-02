@@ -8,6 +8,22 @@ using namespace uwds_msgs;
 
 namespace uwds
 {
+  enum JointType {
+    REVOLUTE = urdf::Joint::REVOLUTE,
+    CONTINUOUS = urdf::Joint::CONTINUOUS,
+    PRISMATIC = urdf::Joint::PRISMATIC,
+    FLOATING = urdf::Joint::FLOATING,
+    PLANAR = urdf::Joint::PLANAR,
+    FIXED = urdf::Joint::FIXED
+    };
+
+  static const std::array<std::string,6> JointTypeName{"revolute",
+                                                       "continuous",
+                                                       "prismatic",
+                                                       "floating",
+                                                       "planar",
+                                                       "fixed"};
+
   bool ModelLoader::loadScene(const string& filename,
                               const string& root_node_id,
                               const bool only_meshes,
@@ -400,12 +416,12 @@ namespace uwds
       Property joint_type_property;
       joint_type_property.name = "joint";
       switch (joint_pair.second->type) {
-        case urdf::Joint::REVOLUTE: joint_type_property.data = "revolute"; break;
-        case urdf::Joint::CONTINUOUS: joint_type_property.data = "continuous"; break;
-        case urdf::Joint::PRISMATIC: joint_type_property.data = "prismatic"; break;
-        case urdf::Joint::FLOATING: joint_type_property.data = "floating"; break;
-        case urdf::Joint::PLANAR: joint_type_property.data = "planar"; break;
-        case urdf::Joint::FIXED: joint_type_property.data = "fixed"; break;
+        case REVOLUTE: joint_type_property.data = JointTypeName[REVOLUTE]; break;
+        case CONTINUOUS: joint_type_property.data = JointTypeName[CONTINUOUS]; break;
+        case PRISMATIC: joint_type_property.data = JointTypeName[PRISMATIC]; break;
+        case FLOATING: joint_type_property.data = JointTypeName[FLOATING]; break;
+        case PLANAR: joint_type_property.data = JointTypeName[PLANAR]; break;
+        case FIXED: joint_type_property.data = JointTypeName[FIXED]; break;
         default : joint_type_property.data = "unknown";
       }
       nodes_imported.push_back(new_node);

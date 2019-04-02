@@ -18,19 +18,49 @@ namespace uwds
       if(verbose_)ROS_INFO("Successfully load file !");
     for(const auto node : nodes_imported)
     {
-      link_id_map_[node.name] = node;
+      node_id_map_[node.name] = node;
     }
   }
 
   void RobotProvider::callback(const boost::shared_ptr<JointState>& msg)
   {
     Changes changes;
-    // for (uint i = 0; i < msg->name.size(); ++i)
-    // {
-    //   node_to_update = link_id_map_[msg->name[i]];
-    //   //node_to_update.position.pose.position.x = msg->position[i]
-    //
-    // }
+    Node node_to_update;
+
+    for (uint i = 0; i < msg->name.size(); ++i)
+    {
+      node_to_update = node_id_map_[msg->name[i]];
+      vector<float> axis;
+      JointType type;
+      for(const auto& property : node_to_update.properties)
+      {
+        if(property.name == "axis")
+        {
+          vector<string> axis_tokens;
+          boost::split(property.data, axis_tokens, boost::is_any_of(","));
+          for (size_t j = 0; j <3 ; ++j) {
+            axis.push_back(to_float(axis_tokens[j]));
+          }
+        }
+        if(property.name == "joint")
+        {
+          switch (property.data) {
+            case JointTypeName[REVOLUTE]: type = REVOLUTE; break;
+            case JointTypeName[CONTINUOUS]: type = CONTINUOUS; break;
+            case JointTypeName[PRISMATIC]: type = PRISMATIC; break;
+            case JointTypeName[FLOATING]: type = FLOATING; break;
+            case JointTypeName[PLANAR]: type = PLANAR; break;
+            case JointTypeName[FIXED]: type = FIXED; break;
+            default : NODELET_ERROR("[%s::callback] Unknown type for joint %s, please check the robot URDF", ctx_->name().c_str(), msg->name[i]);
+                      return;
+          }
+        }
+        //TODO apply transform
+      }
+    }
+
+
+
   }
 }
 

@@ -69,6 +69,7 @@ namespace uwds
         if (changes_to_send_.situations_to_update[i].id == id)
         {
           changes_to_send_.situations_to_update[i] = timeline.situations()[id];
+          insert = true;
         }
       }
       if(!insert) changes_to_send_.situations_to_update.push_back(timeline.situations()[id]);
@@ -80,6 +81,7 @@ namespace uwds
         if (changes.meshes_to_update[i].id == id)
         {
           changes_to_send_.meshes_to_update[i] = meshes[id];
+          insert = true;
         }
       }
       if(!insert) changes_to_send_.meshes_to_update.push_back(meshes[id]);
