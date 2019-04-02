@@ -4,15 +4,15 @@
 #define max(x,y) (y>x?y:x)
 
 using namespace std;
-
+using namespace uwds_msgs;
 
 namespace uwds
 {
-  bool ModelLoader::loadScene(const std::string& filename,
-                              const std::string& root_node_id,
+  bool ModelLoader::loadScene(const string& filename,
+                              const string& root_node_id,
                               const bool only_meshes,
-                              std::vector<Mesh>& meshes_imported,
-                              std::vector<Node>& nodes_imported)
+                              vector<Mesh>& meshes_imported,
+                              vector<Node>& nodes_imported)
   {
     const aiScene* scene =  importer_->ReadFile(filename.c_str(),
                               aiProcess_Triangulate |
@@ -22,9 +22,9 @@ namespace uwds
 
     if (scene)
     {
-      std::vector<std::string> camera_names;
-      std::map<std::string, uwds_msgs::Node> cameras_by_name;
-      std::map<std::string, std::string> node_id_by_name;
+      vector<string> camera_names;
+      map<string, uwds_msgs::Node> cameras_by_name;
+      map<string, string> node_id_by_name;
       if (scene->mNumCameras > 0)
       {
         for (unsigned int nb_camera = 0 ; nb_camera < scene->mNumCameras ; nb_camera++)
@@ -70,7 +70,7 @@ namespace uwds
       bool first_node = true;
       bool first_mesh;
       unsigned int nb_valid_mesh;
-      std::queue<const aiNode*> fifo;
+      queue<const aiNode*> fifo;
       fifo.push(scene->mRootNode);
       //ROS_ERROR("Start exploring file '%s'", filename.c_str());
       while(!fifo.empty()){
@@ -130,11 +130,11 @@ namespace uwds
         } else {
           if(current_node->mNumMeshes > 0)
           {
-            float x_min = std::numeric_limits<float>::infinity();
+            float x_min = numeric_limits<float>::infinity();
             float x_max = 0;
-            float y_min = std::numeric_limits<float>::infinity();
+            float y_min = numeric_limits<float>::infinity();
             float y_max = 0;
-            float z_min = std::numeric_limits<float>::infinity();
+            float z_min = numeric_limits<float>::infinity();
             float z_max = 0;
 
             uwds_msgs::Property new_node_meshes;
@@ -264,10 +264,10 @@ namespace uwds
     }
   }
 
-  bool ModelLoader::loadMeshes(const std::string& filename,
-                          const std::vector<double>& scale,
-                          std::vector<Mesh>& meshes_imported,
-                          std::vector<double>& aabb)
+  bool ModelLoader::loadMeshes(const string& filename,
+                          const vector<double>& scale,
+                          vector<Mesh>& meshes_imported,
+                          vector<double>& aabb)
   {
     const aiScene* scene =  importer_->ReadFile(filename.c_str(),
                               aiProcess_Triangulate |
@@ -276,11 +276,11 @@ namespace uwds
                               aiProcess_JoinIdenticalVertices);
     if (scene)
     {
-      float x_min = std::numeric_limits<float>::infinity();
+      float x_min = numeric_limits<float>::infinity();
       float x_max = 0;
-      float y_min = std::numeric_limits<float>::infinity();
+      float y_min = numeric_limits<float>::infinity();
       float y_max = 0;
-      float z_min = std::numeric_limits<float>::infinity();
+      float z_min = numeric_limits<float>::infinity();
       float z_max = 0;
       for (unsigned int nb_mesh = 0 ; nb_mesh < scene->mNumMeshes ; nb_mesh++)
       {
@@ -368,95 +368,170 @@ namespace uwds
     return false;
   }
 
-  // bool ModelLoader::loadURDF(const std::string& filename,
-  //                            const std::string& primitives_folder,
-  //                            std::vector<Mesh>& meshes_imported,
-  //                            std::vector<Node>& nodes_imported)
-  // {
-  //
-  //   urdf::Model model;
-  //
-  //   std::string root_link = model.root_link_->name;
-  //   if (!model.initFile(filename))
-  //   {
-  //     ROS_ERROR("Loading file '%s' failed", filename.c_str());
-  //     return false;
-  //   }
-  //   std::queue<urdf::Link> fifo;
-  //   urdf::Link link;
-  //   fifo.push(*model.getRoot());
-  //   do {
-  //     link = fifo.front();
-  //     fifo.pop();
-  //     uwds_msgs::Node new_node;
-  //     new_node.id = NEW_UUID;
-  //     new_node.name = link.name;
-  //     std::vector<double> aabb;
-  //     uwds_msgs::Mesh new_mesh;
-  //     new_mesh.id = NEW_UUID;
-  //     std::vector<uwds_msgs::Mesh> meshes;
-  //     if (link.visual->geometry->type == urdf::Geometry::SPHERE)
-  //     {
-  //
-  //       boost::shared_ptr<urdf::Sphere> sphere = boost::dynamic_pointer_cast<urdf::Sphere>(link.visual->geometry);
-  //       std::vector<double> scale;
-  //       scale.push_back(sphere->radius);
-  //       scale.push_back(sphere->radius);
-  //       scale.push_back(sphere->radius);
-  //       loadMeshes(primitives_folder+"/3ds/sphere.3ds",
-  //                  scale,
-  //                  meshes,
-  //                  aabb);
-  //     }
-  //     if (link.visual->geometry->type == urdf::Geometry::BOX)
-  //     {
-  //       boost::shared_ptr<urdf::Box> box = boost::dynamic_pointer_cast<urdf::Box>(link.visual->geometry);
-  //       std::vector<double> scale;
-  //       scale.push_back(box->dim.x);
-  //       scale.push_back(box->dim.y);
-  //       scale.push_back(box->dim.z);
-  //       loadMeshes(primitives_folder+"/3ds/box.3ds",
-  //                  scale,
-  //                  meshes,
-  //                  aabb);
-  //     }
-  //     if (link.visual->geometry->type == urdf::Geometry::CYLINDER)
-  //     {
-  //       boost::shared_ptr<urdf::Cylinder> cylinder = boost::dynamic_pointer_cast<urdf::Cylinder>(link.visual->geometry);
-  //       std::vector<double> scale;
-  //       scale.push_back(cylinder->radius);
-  //       scale.push_back(cylinder->radius);
-  //       scale.push_back(cylinder->length);
-  //       loadMeshes(primitives_folder+"/3ds/cylinder.3ds",
-  //                  scale,
-  //                  meshes,
-  //                  aabb);
-  //     }
-  //     if (link.visual->geometry->type == urdf::Geometry::MESH)
-  //     {
-  //       boost::shared_ptr<urdf::Mesh> mesh = boost::dynamic_pointer_cast<urdf::Mesh>(link.visual->geometry);
-  //       std::vector<double> scale;
-  //       scale.push_back(mesh->scale.x);
-  //       scale.push_back(mesh->scale.y);
-  //       scale.push_back(mesh->scale.z);
-  //       loadMeshes(mesh->filename,
-  //                  scale,
-  //                  meshes,
-  //                  aabb);
-  //     }
-  //
-  //     for (const auto& child_ptr : link.child_links)
-  //     {
-  //       fifo.push(*child_ptr);
-  //     }
-  //   } while (!fifo.empty());
-  //
-  //   for (const auto& link_pair : model.links_)
-  //   {
-  //     uwds_msgs::Node new_node;
-  //     new_node.name = link_pair.first;
-  //     new_node.id = NEW_UUID;
-  //   }
-  //   return true;
-  // }
+  bool ModelLoader::loadURDF(const string& filename,
+                             const string& primitives_folder,
+                             const string& root_id,
+                             vector<Mesh>& meshes_imported,
+                             vector<Node>& nodes_imported)
+  {
+    urdf::Model model;
+    map<string, string> node_id_by_frame;
+    if (!model.initFile(filename))
+    {
+      ROS_ERROR("Loading file '%s' failed", filename.c_str());
+      return false;
+    }
+    for(const auto& joint_pair : model.joints_)
+    {
+      uwds_msgs::Node new_node;
+      new_node.id = NEW_UUID;
+      new_node.type = ENTITY;
+      new_node.name = joint_pair.first;
+      new_node.position.pose.position.x = joint_pair.second->parent_to_joint_origin_transform.position.x;
+      new_node.position.pose.position.y = joint_pair.second->parent_to_joint_origin_transform.position.y;
+      new_node.position.pose.position.z = joint_pair.second->parent_to_joint_origin_transform.position.z;
+      new_node.position.pose.orientation.x = joint_pair.second->parent_to_joint_origin_transform.rotation.x;
+      new_node.position.pose.orientation.y = joint_pair.second->parent_to_joint_origin_transform.rotation.y;
+      new_node.position.pose.orientation.z = joint_pair.second->parent_to_joint_origin_transform.rotation.z;
+      new_node.position.pose.orientation.w = joint_pair.second->parent_to_joint_origin_transform.rotation.w;
+      Property axis_property;
+      axis_property.name = "axis";
+      axis_property.data = to_string(joint_pair.second->axis.x) + "," + to_string(joint_pair.second->axis.y) + "," + to_string(joint_pair.second->axis.z);
+      Property joint_type_property;
+      joint_type_property.name = "joint";
+      switch (joint_pair.second->type) {
+        case urdf::Joint::REVOLUTE: joint_type_property.data = "revolute"; break;
+        case urdf::Joint::CONTINUOUS: joint_type_property.data = "continuous"; break;
+        case urdf::Joint::PRISMATIC: joint_type_property.data = "prismatic"; break;
+        case urdf::Joint::FLOATING: joint_type_property.data = "floating"; break;
+        case urdf::Joint::PLANAR: joint_type_property.data = "planar"; break;
+        case urdf::Joint::FIXED: joint_type_property.data = "fixed"; break;
+        default : joint_type_property.data = "unknown";
+      }
+      nodes_imported.push_back(new_node);
+      node_id_by_frame.emplace(new_node.name, new_node.id);
+    }
+
+    queue<urdf::Link> fifo;
+    urdf::Link link;
+    //string parent = root_id;
+    fifo.push(*model.getRoot());
+    do {
+      link = fifo.front();
+      fifo.pop();
+      uwds_msgs::Node new_node;
+      new_node.id = NEW_UUID;
+      new_node.type = MESH;
+      new_node.name = link.name;
+      vector<double> aabb;
+      vector<uwds_msgs::Mesh> meshes;
+      node_id_by_frame.emplace(new_node.name, new_node.id);
+
+      new_node.position.pose.position.x = link.visual->origin.position.x;
+      new_node.position.pose.position.y = link.visual->origin.position.y;
+      new_node.position.pose.position.z = link.visual->origin.position.z;
+      new_node.position.pose.orientation.x = link.visual->origin.rotation.x;
+      new_node.position.pose.orientation.y = link.visual->origin.rotation.y;
+      new_node.position.pose.orientation.z = link.visual->origin.rotation.z;
+      new_node.position.pose.orientation.w = link.visual->origin.rotation.w;
+
+      if (link.visual->geometry->type == urdf::Geometry::SPHERE)
+      {
+
+        boost::shared_ptr<urdf::Sphere> sphere = boost::dynamic_pointer_cast<urdf::Sphere>(link.visual->geometry);
+        vector<double> scale;
+        scale.push_back(sphere->radius);
+        scale.push_back(sphere->radius);
+        scale.push_back(sphere->radius);
+        loadMeshes(primitives_folder+"/3ds/sphere.3ds",
+                   scale,
+                   meshes,
+                   aabb);
+      }
+      if (link.visual->geometry->type == urdf::Geometry::BOX)
+      {
+        boost::shared_ptr<urdf::Box> box = boost::dynamic_pointer_cast<urdf::Box>(link.visual->geometry);
+        vector<double> scale;
+        scale.push_back(box->dim.x);
+        scale.push_back(box->dim.y);
+        scale.push_back(box->dim.z);
+        loadMeshes(primitives_folder+"/3ds/box.3ds",
+                   scale,
+                   meshes,
+                   aabb);
+      }
+      if (link.visual->geometry->type == urdf::Geometry::CYLINDER)
+      {
+        boost::shared_ptr<urdf::Cylinder> cylinder = boost::dynamic_pointer_cast<urdf::Cylinder>(link.visual->geometry);
+        vector<double> scale;
+        scale.push_back(cylinder->radius);
+        scale.push_back(cylinder->radius);
+        scale.push_back(cylinder->length);
+        loadMeshes(primitives_folder+"/3ds/cylinder.3ds",
+                   scale,
+                   meshes,
+                   aabb);
+      }
+      if (link.visual->geometry->type == urdf::Geometry::MESH)
+      {
+        boost::shared_ptr<urdf::Mesh> mesh = boost::dynamic_pointer_cast<urdf::Mesh>(link.visual->geometry);
+        vector<double> scale;
+        scale.push_back(mesh->scale.x);
+        scale.push_back(mesh->scale.y);
+        scale.push_back(mesh->scale.z);
+        loadMeshes(mesh->filename,
+                   scale,
+                   meshes,
+                   aabb);
+      }
+      Property meshes_property;
+      meshes_property.name = "meshes";
+      bool first_mesh = true;
+      for(const auto& mesh : meshes)
+      {
+        meshes_imported.push_back(mesh);
+        if(first_mesh)
+          meshes_property.data += mesh.id;
+        else
+          meshes_property.data += "," + mesh.id;
+      }
+      new_node.properties.push_back(meshes_property);
+      Property aabb_property;
+      aabb_property.name = "aabb";
+      aabb_property.data = to_string(aabb[0])+","+to_string(aabb[1])+","+to_string(aabb[2]);
+      new_node.properties.push_back(aabb_property);
+      Property class_property;
+      class_property.name = "class";
+      class_property.data = "BodyPart";
+      if(new_node.name == "head")
+        class_property.data = "Head";
+      if(new_node.name =="gripper" || new_node.name =="r_gripper" || new_node.name =="l_gripper")
+        class_property.data = "Hand";
+      if(new_node.name == "torso")
+        class_property.data = "Torso";
+      new_node.properties.push_back(class_property);
+      nodes_imported.push_back(new_node);
+      for (const auto& child_ptr : link.child_links)
+      {
+        fifo.push(*child_ptr);
+      }
+      for(auto& node : nodes_imported)
+      {
+        if(node.name == model.getRoot()->name)
+          new_node.parent = root_id;
+        else{
+          if(node.type == MESH)
+          {
+            if(node_id_by_frame.count(model.getLink(node.name)->parent_joint->name) != 0)
+              node.parent = node_id_by_frame.at(model.getLink(node.name)->parent_joint->name);
+          }
+          else {
+            if(node_id_by_frame.count(model.getJoint(node.name)->parent_link_name) != 0)
+              node.parent = node_id_by_frame.at(model.getJoint(node.name)->parent_link_name);
+          }
+        }
+      }
+    } while (!fifo.empty());
+    return true;
+  }
 }

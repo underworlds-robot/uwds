@@ -15,6 +15,7 @@
 #include "../types/nodes.h"
 #include <tf/tf.h>
 
+using namespace std;
 using namespace uwds_msgs;
 
 namespace uwds
@@ -39,11 +40,11 @@ namespace uwds
      * @param meshes_imported The meshes imported
      * @param nodes_imported The nodes imported
      */
-    virtual bool loadScene(const std::string& filename,
-                           const std::string& root_node_id,
+    virtual bool loadScene(const string& filename,
+                           const string& root_node_id,
                            const bool only_meshes,
-                           std::vector<Mesh>& meshes_imported,
-                           std::vector<Node>& nodes_imported);
+                           vector<Mesh>& meshes_imported,
+                           vector<Node>& nodes_imported);
 
    /**@brief
     * This method allow to load meshes.
@@ -53,10 +54,10 @@ namespace uwds
     * @param meshes_imported The meshes imported
     * @param aabb The aabb of the meshes
     */
-    virtual bool loadMeshes(const std::string& filename,
-                            const std::vector<double>& scale,
-                            std::vector<Mesh>& meshes_imported,
-                            std::vector<double>& aabb);
+    virtual bool loadMeshes(const string& filename,
+                            const vector<double>& scale,
+                            vector<Mesh>& meshes_imported,
+                            vector<double>& aabb);
 
    /**@brief
     * This method allow to load an entity from an URDF file
@@ -66,10 +67,11 @@ namespace uwds
     * @param meshes_imported The meshes imported
     * @param nodes_imported The nodes imported
     */
-    // virtual bool loadURDF(const std::string& filename,
-    //                       const std::string& primitives_folder,
-    //                       std::vector<Mesh>& meshes_imported,
-    //                       std::vector<Node>& nodes_imported);
+    virtual bool loadURDF(const string& filename,
+                          const string& primitives_folder,
+                          const string& root_id,
+                          vector<Mesh>& meshes_imported,
+                          vector<Node>& nodes_imported);
 
 
     private:

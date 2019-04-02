@@ -3,6 +3,7 @@
 
 #include "nodes.h"
 #include <queue>
+#include <regex>
 #include <pose_cov_ops/pose_cov_ops.h>
 
 using namespace std;
@@ -168,6 +169,31 @@ namespace uwds {
       void unlock() {nodes_->unlock();}
 
       /** @brief
+       * Get the nodes that have a name that math the given regex.
+       *
+       * @param regex The regex
+       * @return The nodes that match
+       */
+      vector<Node> getNodesByName(const string& regex)
+      {
+        Node current_node;
+        vector<Node> match;
+        queue<Node> fifo;
+        lock();
+        fifo.push(nodes()[rootID()]);
+        do {
+          current_node = fifo.front();
+          fifo.pop();
+            if(std::regex_match(current_node.name, std::regex(regex)))
+              match.push_back(current_node);
+          for(const auto& child : current_node.children)
+            fifo.push(nodes()[child]);
+        } while(!fifo.empty());
+        unlock();
+        return match;
+      }
+
+      /** @brief
        * Get the given node parents.
        *
        * @param node_id The node ID
@@ -178,6 +204,7 @@ namespace uwds {
         Node current_node;
         vector<Node> parents;
         queue<Node> fifo;
+        lock();
         if (nodes()[node_id].parent != "")
         {
           fifo.push(nodes()[nodes()[node_id].parent]);
@@ -189,6 +216,7 @@ namespace uwds {
               fifo.push(nodes()[current_node.parent]);
           } while(!fifo.empty());
         }
+        unlock();
         return parents;
       }
 
@@ -197,6 +225,7 @@ namespace uwds {
         Node current_node;
         geometry_msgs::Pose final_pose;
         queue<Node> fifo;
+        lock();
         final_pose = nodes()[node_id].position.pose;
         if (nodes()[node_id].parent != "")
         {
@@ -209,6 +238,7 @@ namespace uwds {
               fifo.push(nodes()[current_node.parent]);
           } while(!fifo.empty());
         }
+        unlock();
         return final_pose;
       }
 
@@ -217,6 +247,7 @@ namespace uwds {
         Node current_node;
         geometry_msgs::PoseWithCovariance final_pose;
         queue<Node> fifo;
+        lock();
         final_pose = nodes()[node_id].position;
         if (nodes()[node_id].parent != "")
         {
@@ -229,6 +260,29 @@ namespace uwds {
               fifo.push(nodes()[current_node.parent]);
           } while(!fifo.empty());
         }
+        unlock();
+        return final_pose;
+      }
+
+      geometry_msgs::Pose lookUpPose(const string& source_id, const string& target_id)
+      {
+        Node current_node;
+        geometry_msgs::Pose source_pose, target_pose, final_pose;
+        queue<Node> fifo;
+        source_pose = getWorldPose(source_id);
+        target_pose = getWorldPose(target_id);
+        pose_cov_ops::inverseCompose(target_pose, source_pose, final_pose);
+        return final_pose;
+      }
+
+      geometry_msgs::PoseWithCovariance lookUpPoseWithCovariance(const string& source_id, const string& target_id)
+      {
+        Node current_node;
+        geometry_msgs::PoseWithCovariance source_pose, target_pose, final_pose;
+        queue<Node> fifo;
+        source_pose = getWorldPoseWithCovariance(source_id);
+        target_pose = getWorldPoseWithCovariance(target_id);
+        pose_cov_ops::inverseCompose(target_pose, source_pose, final_pose);
         return final_pose;
       }
 

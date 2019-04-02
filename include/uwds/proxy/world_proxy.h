@@ -91,7 +91,7 @@ namespace uwds {
     /** @brief
      *
      */
-    std::vector<std::string> operator[](const std::string& query)
+    vector<string> operator[](const string& query)
     {
       return ontology_proxy_->queryOntology(query);
     }
@@ -101,7 +101,7 @@ namespace uwds {
      *
      * @param filename : The filename.
      */
-    bool connect(const std::function<onChangesFcn>& callback)
+    bool connect(const function<onChangesFcn>& callback)
     {
       if(!ever_send_changes_)
       {
@@ -190,7 +190,7 @@ namespace uwds {
      *
      * @param filename : The filename.
      */
-    bool pushMeshesFrom3DFile(const std::string& filename, const std::vector<double>& scale, vector<Mesh>& meshes_imported, std::vector<double>& aabb)
+    bool pushMeshesFrom3DFile(const string& filename, const vector<double>& scale, vector<Mesh>& meshes_imported, vector<double>& aabb)
     {
       if (!ever_send_changes_)
       {
@@ -198,8 +198,8 @@ namespace uwds {
         ever_send_changes_ = true;
       }
       ModelLoader ml;
-      //std::vector<double> aabb;
-      //std::vector<Mesh> meshes_imported;
+      //vector<double> aabb;
+      //vector<Mesh> meshes_imported;
       if(!ml.loadMeshes(filename, scale, meshes_imported, aabb))
       {
         ROS_ERROR("[%s::pushMeshesFrom3DFile] Error occured while loading file '%s'", client_->name.c_str(), filename.c_str());
@@ -212,7 +212,7 @@ namespace uwds {
       return true;
     }
 
-    bool pushMeshesFrom3DFile(const std::string& filename, vector<Mesh>& meshes_imported, std::vector<double>& aabb)
+    bool pushMeshesFrom3DFile(const string& filename, vector<Mesh>& meshes_imported, vector<double>& aabb)
     {
       if (!ever_send_changes_)
       {
@@ -220,9 +220,7 @@ namespace uwds {
         ever_send_changes_ = true;
       }
       uwds::ModelLoader ml;
-      std::vector<double> scale;
-      //std::vector<double> aabb;
-      //std::vector<Mesh> meshes_imported;
+      vector<double> scale;
       scale.push_back(1.0);
       scale.push_back(1.0);
       scale.push_back(1.0);
@@ -243,7 +241,7 @@ namespace uwds {
      *
      * @param filename : The filename.
      */
-    bool pushSceneFrom3DFile(const std::string& filename)
+    bool pushSceneFrom3DFile(const string& filename)
     {
       if (!ever_send_changes_)
       {
@@ -251,8 +249,8 @@ namespace uwds {
         ever_send_changes_ = true;
       }
       uwds::ModelLoader ml;
-      std::vector<Mesh> meshes_imported;
-      std::vector<Node> nodes_imported;
+      vector<Mesh> meshes_imported;
+      vector<Node> nodes_imported;
       if(!ml.loadScene(filename, scene().rootID(), true, meshes_imported, nodes_imported))
       {
         ROS_ERROR("[%s::pushSceneFrom3DFile] Error occured while loading file '%s'", client_->name.c_str(), filename.c_str());
@@ -265,6 +263,27 @@ namespace uwds {
       Changes changes;
       changes.nodes_to_update = nodes_imported;
       update(changes);
+      return true;
+    }
+
+    bool pushRobotMeshesFromURDF(const string& filename, const string& primitives_folder, vector<Node>& nodes_imported, const string& root_id="")
+    {
+      if (!ever_send_changes_)
+      {
+        advertiseConnectionToRemote(WRITE, CONNECT);
+        ever_send_changes_ = true;
+      }
+      uwds::ModelLoader ml;
+      vector<Mesh> meshes_imported;
+      if(!ml.loadURDF(filename, primitives_folder, root_id, meshes_imported, nodes_imported))
+      {
+        ROS_ERROR("[%s::pushSceneFrom3DFile] Error occured while loading URDF file '%s'", client_->name.c_str(), filename.c_str());
+        return true;
+      }
+      for (const auto mesh : meshes_imported)
+      {
+        meshes_proxy_->pushMeshToRemote(mesh);
+      }
       return true;
     }
 
@@ -310,7 +329,7 @@ namespace uwds {
     /** @brief
      * The global frame id.
      */
-    std::string global_frame_id_;
+    string global_frame_id_;
 
     MeshesProxyPtr meshes_proxy_;
 
@@ -325,7 +344,7 @@ namespace uwds {
     /** @brief
      * The GetTimeline service client.
      */
-    std::function<onChangesFcn> onChangesPtr = 0;
+    function<onChangesFcn> onChangesPtr = 0;
 
     /** @brief
      * The changes subscriber shared pointer.
