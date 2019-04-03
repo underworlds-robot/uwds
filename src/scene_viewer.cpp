@@ -40,7 +40,7 @@ namespace uwds
     MarkerArray markers;
     bboxes.header = header;
     auto& scene = ctx_->worlds()[world].scene();
-
+    scene.lock();
     for (const auto& node_ptr : scene.nodes())
     {
       Node node = *node_ptr;
@@ -74,6 +74,7 @@ namespace uwds
           {
             markers.markers.push_back(marker);
           }
+          NODELET_WARN("test lolo!");
           bboxes.boxes.push_back(nodeToBoundingBox(world, node, stamp));
         }
 
@@ -86,6 +87,7 @@ namespace uwds
         }
       }
     }
+    scene.unlock();
     if (markers_publisher_map_.count(world) > 0  && markers.markers.size()>0)
       markers_publisher_map_.at(world)->publish(markers);
 

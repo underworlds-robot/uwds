@@ -76,9 +76,7 @@ namespace uwds
                                           &Underworlds::getTimeline,
                                           this);
 
-    get_mesh_service_server_ = nh_->advertiseService("uwds/get_mesh",
-                                      &Underworlds::getMesh,
-                                      this);
+    get_mesh_service_ = boost::make_shared<GetMeshService>(nh_, client_, meshes_);
 
     push_mesh_service_server_ = nh_->advertiseService("uwds/push_mesh",
                                       &Underworlds::pushMesh,

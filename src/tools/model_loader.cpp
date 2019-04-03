@@ -453,8 +453,7 @@ namespace uwds
 
       if (link.visual->geometry->type == urdf::Geometry::SPHERE)
       {
-
-        boost::shared_ptr<urdf::Sphere> sphere = boost::dynamic_pointer_cast<urdf::Sphere>(link.visual->geometry);
+        std::shared_ptr<urdf::Sphere> sphere = std::dynamic_pointer_cast<urdf::Sphere>(link.visual->geometry);
         vector<double> scale;
         scale.push_back(sphere->radius);
         scale.push_back(sphere->radius);
@@ -466,7 +465,7 @@ namespace uwds
       }
       if (link.visual->geometry->type == urdf::Geometry::BOX)
       {
-        boost::shared_ptr<urdf::Box> box = boost::dynamic_pointer_cast<urdf::Box>(link.visual->geometry);
+        std::shared_ptr<urdf::Box> box = std::dynamic_pointer_cast<urdf::Box>(link.visual->geometry);
         vector<double> scale;
         scale.push_back(box->dim.x);
         scale.push_back(box->dim.y);
@@ -478,7 +477,7 @@ namespace uwds
       }
       if (link.visual->geometry->type == urdf::Geometry::CYLINDER)
       {
-        boost::shared_ptr<urdf::Cylinder> cylinder = boost::dynamic_pointer_cast<urdf::Cylinder>(link.visual->geometry);
+        std::shared_ptr<urdf::Cylinder> cylinder = std::dynamic_pointer_cast<urdf::Cylinder>(link.visual->geometry);
         vector<double> scale;
         scale.push_back(cylinder->radius);
         scale.push_back(cylinder->radius);
@@ -490,7 +489,7 @@ namespace uwds
       }
       if (link.visual->geometry->type == urdf::Geometry::MESH)
       {
-        boost::shared_ptr<urdf::Mesh> mesh = boost::dynamic_pointer_cast<urdf::Mesh>(link.visual->geometry);
+        std::shared_ptr<urdf::Mesh> mesh = std::dynamic_pointer_cast<urdf::Mesh>(link.visual->geometry);
         vector<double> scale;
         scale.push_back(mesh->scale.x);
         scale.push_back(mesh->scale.y);

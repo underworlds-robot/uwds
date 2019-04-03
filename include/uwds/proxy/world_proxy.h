@@ -9,7 +9,7 @@
 #include "meshes_proxy.h"
 #include "scene_proxy.h"
 #include "timeline_proxy.h"
-#include "ontology_proxy.h"
+#include "knowledge_base_proxy.h"
 
 using namespace std;
 using namespace uwds_msgs;

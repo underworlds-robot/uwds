@@ -33,6 +33,7 @@ namespace uwds {
     bool onRequest(RequestMessage& req, ResponseMessage& res)
     {
       try {
+        ROS_INFO("[%s::serviceServer] Client request '%s'", client_->name.c_str(), service_name_.c_str());
         fillResponse(req, res);
       } catch (std::exception e) {
         ROS_ERROR("[%s::serviceServer] Exception occured when processing '%s' : %s", client_->name.c_str(), service_name_.c_str(), e.what());

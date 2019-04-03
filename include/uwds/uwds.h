@@ -39,7 +39,7 @@
 #include <uwds_msgs/GetTimeline.h>
 #include <uwds_msgs/GetMesh.h>
 #include <uwds_msgs/PushMesh.h>
-#include <uwds_msgs/QueryOntology.h>
+#include <uwds_msgs/QueryInContext.h>
 #include <uwds_msgs/SimpleQuery.h>
 
 #include <uwds_msgs/ReconfigureInputs.h>
@@ -53,9 +53,10 @@
 #include "proxy/topology_proxy.h"
 #include "proxy/meshes_proxy.h"
 #include "service/service.h"
+#include "service/meshes_service.h"
 #include "service/scene_service.h"
 #include "service/timeline_service.h"
-#include "service/ontology_service.h"
+#include "service/knowledge_base_service.h"
 #include "service/topology_service.h"
 
 namespace uwds {
@@ -481,6 +482,7 @@ namespace uwds {
       /** @brief
        * The get mesh service server
        */
+      GetMeshServicePtr get_mesh_service_;
       ros::ServiceServer get_mesh_service_server_;
 
       /** @brief

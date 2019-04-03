@@ -12,6 +12,7 @@ namespace uwds {
 
   class GetMeshService : public Service<GetMesh::Request, GetMesh::Response>
   {
+  public:
     GetMeshService(NodeHandlePtr nh, ClientPtr client, MeshesPtr meshes):Service<GetMesh::Request, GetMesh::Response>(nh, client, "uwds/get_mesh")
     {
       meshes_ = meshes;
@@ -29,13 +30,16 @@ namespace uwds {
         res.error = "Requested mesh <"+req.mesh_id+"> not existing";
       }
     }
-
+  protected:
     MeshesPtr meshes_;
   };
+
+  typedef boost::shared_ptr<GetMeshService> GetMeshServicePtr;
 
 
   class PushMeshService : public Service<PushMesh::Request, PushMesh::Response>
   {
+  public:
     PushMeshService(NodeHandlePtr nh, ClientPtr client, MeshesPtr meshes):Service<PushMesh::Request, PushMesh::Response>(nh, client, "uwds/push_mesh")
     {
       meshes_ = meshes;
@@ -53,9 +57,11 @@ namespace uwds {
         res.error = "Pushed mesh <"+req.mesh.id+"> already existing";
       }
     }
-
+  protected:
     MeshesPtr meshes_;
   };
+
+  typedef boost::shared_ptr<PushMeshService> PushMeshServicePtr;
 
 }
 
