@@ -6,6 +6,18 @@
 using namespace std;
 using namespace uwds_msgs;
 
+#if URDFDOM_HEADERS_MAJOR_VERSION == 0 && URDFDOM_HEADERS_MINOR_VERSION <= 4
+  template <class T, class U>
+  boost::shared_ptr<T> my_pointer_cast(const boost::shared_ptr<U> &ptr){
+    return boost::dynamic_pointer_cast<T>(ptr);
+  }
+#else
+  template <class T, class U>
+  std::shared_ptr<T> my_pointer_cast(const std::shared_ptr<U> &ptr){
+    return std::dynamic_pointer_cast<T>(ptr);
+  }
+#endif
+
 namespace uwds
 {
   enum JointType {
@@ -453,7 +465,7 @@ namespace uwds
 
       if (link.visual->geometry->type == urdf::Geometry::SPHERE)
       {
-        std::shared_ptr<urdf::Sphere> sphere = std::dynamic_pointer_cast<urdf::Sphere>(link.visual->geometry);
+        urdf::SphereSharedPtr sphere = my_pointer_cast<urdf::Sphere>(link.visual->geometry);
         vector<double> scale;
         scale.push_back(sphere->radius);
         scale.push_back(sphere->radius);
@@ -465,7 +477,7 @@ namespace uwds
       }
       if (link.visual->geometry->type == urdf::Geometry::BOX)
       {
-        std::shared_ptr<urdf::Box> box = std::dynamic_pointer_cast<urdf::Box>(link.visual->geometry);
+        urdf::BoxSharedPtr box = my_pointer_cast<urdf::Box>(link.visual->geometry);
         vector<double> scale;
         scale.push_back(box->dim.x);
         scale.push_back(box->dim.y);
@@ -477,7 +489,7 @@ namespace uwds
       }
       if (link.visual->geometry->type == urdf::Geometry::CYLINDER)
       {
-        std::shared_ptr<urdf::Cylinder> cylinder = std::dynamic_pointer_cast<urdf::Cylinder>(link.visual->geometry);
+        urdf::CylinderSharedPtr cylinder = my_pointer_cast<urdf::Cylinder>(link.visual->geometry);
         vector<double> scale;
         scale.push_back(cylinder->radius);
         scale.push_back(cylinder->radius);
@@ -489,7 +501,7 @@ namespace uwds
       }
       if (link.visual->geometry->type == urdf::Geometry::MESH)
       {
-        std::shared_ptr<urdf::Mesh> mesh = std::dynamic_pointer_cast<urdf::Mesh>(link.visual->geometry);
+        urdf::MeshSharedPtr mesh = my_pointer_cast<urdf::Mesh>(link.visual->geometry);
         vector<double> scale;
         scale.push_back(mesh->scale.x);
         scale.push_back(mesh->scale.y);

@@ -22,6 +22,8 @@ namespace uwds
     markers_publisher_map_.clear();
     bboxes_publisher_map_.clear();
     camera_publishers_map_.clear();
+    marker_id_map_.clear();
+    last_marker_id_ = 0;
 
     for(const auto& input : inputs)
     {
@@ -74,7 +76,6 @@ namespace uwds
           {
             markers.markers.push_back(marker);
           }
-          NODELET_WARN("test lolo!");
           bboxes.boxes.push_back(nodeToBoundingBox(world, node, stamp));
         }
 
@@ -88,18 +89,22 @@ namespace uwds
       }
     }
     scene.unlock();
-    if (markers_publisher_map_.count(world) > 0  && markers.markers.size()>0)
+    if (markers_publisher_map_.count(world) > 0  && markers.markers.size() > 0)
       markers_publisher_map_.at(world)->publish(markers);
 
-    if (bboxes_publisher_map_.count(world) > 0 && bboxes.boxes.size()>0)
+    if (bboxes_publisher_map_.count(world) > 0 && bboxes.boxes.size() > 0)
       bboxes_publisher_map_.at(world)->publish(bboxes);
   }
 
   void SceneViewer::onTimer(const ros::TimerEvent& event) {
-    for (const auto& world : input_worlds_)
-    {
-      ros::Time stamp = ros::Time::now();
-      publishVisualization(world, stamp);
+    try{
+      for (const auto& world : input_worlds_)
+      {
+        ros::Time stamp = ros::Time::now();
+        publishVisualization(world, stamp);
+      }
+    } catch(std::exception e) {
+
     }
   }
 
@@ -127,8 +132,9 @@ namespace uwds
       else
         marker.header.frame_id = world + "/" + scene.nodes()[node.parent].id;
       marker.header.stamp = stamp;
-      if (marker_id_map_.count(world+mesh_id)==0)
+      if (marker_id_map_.count(world+mesh_id)==0) {
         marker_id_map_.emplace(world+mesh_id, last_marker_id_++);
+      }
       marker.id = marker_id_map_.at(world+mesh_id);
       marker.action = Marker::ADD;
       marker.type = Marker::TRIANGLE_LIST;

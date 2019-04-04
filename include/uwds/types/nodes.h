@@ -63,14 +63,25 @@ namespace uwds {
        * @param node The node to update
        */
       void update(NodePtr node) {
-        if(!this->has(node->parent))
-          node->parent = root_id_;
-        vector<string> children = (*this)[node->parent].children;
-        if(std::find(std::begin(children), std::end(children), node->id) == std::end(children))
+        if(node->name != "root")
         {
-          (*this)[node->parent].children.push_back(node->id);
+          node->children.clear();
+          string parent;
+          if(!this->has(node->parent)){
+            node->parent = root_id_;
+            parent = root_id_;
+          } else {
+            parent = node->parent;
+          }
+          vector<string> children = (*this)[parent].children;
+          this->lock();
+          if(std::find(std::begin(children), std::end(children), node->id) == std::end(children))
+          {
+            (*this)[parent].children.push_back(node->id);
+          }
+          this->unlock();
+          this->update(node->id, node);
         }
-        this->update(node->id, node);
       }
 
       /** @brief
@@ -78,15 +89,27 @@ namespace uwds {
        *
        * @param node The node to update
        */
-      void update(Node node) {
-        if(!this->has(node.parent))
-          node.parent = root_id_;
-        vector<string> children = (*this)[node.parent].children;
-        if(std::find(std::begin(children), std::end(children), node.id) == std::end(children))
+      void update(Node node)
+      {
+        if(node.name != "root")
         {
-          (*this)[node.parent].children.push_back(node.id);
+          node.children.clear();
+          string parent;
+          if(!this->has(node.parent)){
+            node.parent = root_id_;
+            parent = root_id_;
+          } else {
+            parent = node.parent;
+          }
+          vector<string> children = (*this)[parent].children;
+          this->lock();
+          if(std::find(std::begin(children), std::end(children), node.id) == std::end(children))
+          {
+            (*this)[parent].children.push_back(node.id);
+          }
+          this->unlock();
+          this->update(node.id, node);
         }
-        this->update(node.id, node);
       }
 
       /** @brief

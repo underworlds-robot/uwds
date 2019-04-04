@@ -14,6 +14,8 @@
 #include <urdf/model.h>
 #include "../types/nodes.h"
 #include <tf/tf.h>
+#include <boost/shared_ptr.hpp>
+#include <memory>
 
 using namespace std;
 using namespace uwds_msgs;

@@ -268,7 +268,6 @@ namespace uwds {
       {
         Node current_node;
         geometry_msgs::Pose source_pose, target_pose, final_pose;
-        queue<Node> fifo;
         source_pose = getWorldPose(source_id);
         target_pose = getWorldPose(target_id);
         pose_cov_ops::inverseCompose(target_pose, source_pose, final_pose);

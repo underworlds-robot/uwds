@@ -2,7 +2,7 @@ from concurrent_container import ConcurrentContainer
 from uwds_msgs.msg import Node
 from nodes import Nodes
 import rospy
-import uuid
+from uuid import Uuid
 
 class Scene:
 
