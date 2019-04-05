@@ -2,12 +2,12 @@ from concurrent_container import ConcurrentContainer
 from uwds_msgs.msg import Node
 from nodes import Nodes
 import rospy
-from uuid import Uuid
+from hexuuid import gen_uuid
 
 class Scene:
 
     def __init__(self):
-        self.reset(Uuid().toString())
+        self.reset(gen_uuid())
 
     def update(self, nodes):
         current_time = rospy.Time.now()
