@@ -13,6 +13,8 @@
 using namespace std;
 using namespace std_msgs;
 using namespace uwds_msgs;
+using namespace visualization_msgs;
+using namespace jsk_recognition_msgs;
 
 namespace uwds
 {
@@ -82,6 +84,8 @@ namespace uwds
      * The tf listener.
      */
     tf::TransformListener tf_listener_;
+
+    map<string, boost::shared_ptr<Marker>> marker_map_;
 
     /** @brief
      * The marker map by node world.

@@ -25,7 +25,7 @@ namespace uwds {
       pnh_ = pnh;
       client_ = client;
       service_name_ = service_name;
-      service_client_ = boost::make_shared<ros::ServiceClient>(nh_->serviceClient<ServiceMessage>(service_name_, true));
+      service_client_ = boost::make_shared<ros::ServiceClient>(nh_->serviceClient<ServiceMessage>(service_name_, false));
     }
 
     ~ServiceProxy() {}

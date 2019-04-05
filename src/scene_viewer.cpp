@@ -13,7 +13,7 @@ namespace uwds
     uwds::ReconfigurableClient::onInit();
 
     float publisher_frequency;
-    pnh_->param<float>("publisher_frequency", publisher_frequency, 20.0);
+    pnh_->param<float>("publisher_frequency", publisher_frequency, 30.0);
     publisher_timer_ = nh_->createTimer(ros::Duration(1.0/publisher_frequency), &SceneViewer::onTimer, this);
   }
 
@@ -42,7 +42,9 @@ namespace uwds
     MarkerArray markers;
     bboxes.header = header;
     auto& scene = ctx_->worlds()[world].scene();
+    auto& meshes = ctx_->meshes();
     scene.lock();
+    meshes.lock();
     for (const auto& node_ptr : scene.nodes())
     {
       Node node = *node_ptr;
@@ -51,7 +53,10 @@ namespace uwds
         std::string source_frame;
         if (node.parent != scene.rootID())
         {
-          source_frame = world + "/" + scene.nodes()[node.parent].id;
+          if(scene.nodes().has(node.parent))
+            source_frame = world + "/" + scene.nodes()[node.parent].id;
+          else
+            source_frame = global_frame_id_;
         } else {
           source_frame = global_frame_id_;
         }
@@ -88,15 +93,18 @@ namespace uwds
         }
       }
     }
-    scene.unlock();
+
     if (markers_publisher_map_.count(world) > 0  && markers.markers.size() > 0)
       markers_publisher_map_.at(world)->publish(markers);
 
     if (bboxes_publisher_map_.count(world) > 0 && bboxes.boxes.size() > 0)
       bboxes_publisher_map_.at(world)->publish(bboxes);
+    scene.unlock();
+    meshes.unlock();
   }
 
   void SceneViewer::onTimer(const ros::TimerEvent& event) {
+    reconfigure_mutex_.lock();
     try{
       for (const auto& world : input_worlds_)
       {
@@ -106,6 +114,7 @@ namespace uwds
     } catch(std::exception e) {
       NODELET_WARN("[%s::onTimer] Exception occurred : %s", ctx_->name().c_str(), e.what());
     }
+    reconfigure_mutex_.unlock();
   }
 
   vector<Marker> SceneViewer::nodeToMarkers(const string world, const Node node, const ros::Time stamp)
@@ -126,64 +135,76 @@ namespace uwds
 
     for(auto mesh_id : mesh_ids)
     {
-      Marker marker;
-      if (node.parent == scene.rootID())
-        marker.header.frame_id = global_frame_id_;
-      else
-        marker.header.frame_id = world + "/" + scene.nodes()[node.parent].id;
-      marker.header.stamp = stamp;
-      if (marker_id_map_.count(world+mesh_id)==0) {
-        marker_id_map_.emplace(world+mesh_id, last_marker_id_++);
-      }
-      marker.id = marker_id_map_.at(world+mesh_id);
-      marker.action = Marker::ADD;
-      marker.type = Marker::TRIANGLE_LIST;
-      marker.pose = node.position.pose;
-      marker.scale.x = 1.0;
-      marker.scale.y = 1.0;
-      marker.scale.z = 1.0;
-      const auto& mesh = ctx_->meshes()[mesh_id];
-      for (const auto& triangle : mesh.triangles)
+      try
       {
-        geometry_msgs::Point p0, p1, p2;
-        std_msgs::ColorRGBA c0, c1, c2;
-        p0.x = mesh.vertices[triangle.vertex_indices[0]].x;
-        p0.y = mesh.vertices[triangle.vertex_indices[0]].y;
-        p0.z = mesh.vertices[triangle.vertex_indices[0]].z;
+        boost::shared_ptr<Marker> marker = boost::make_shared<Marker>();
+        if (node.parent == scene.rootID())
+          marker->header.frame_id = global_frame_id_;
+        else
+          marker->header.frame_id = world + "/" + scene.nodes()[node.parent].id;
+        marker->header.stamp = stamp;
+        if (marker_id_map_.count(world+mesh_id)==0) {
+          marker_id_map_.emplace(world+mesh_id, last_marker_id_++);
+        }
+        marker->id = marker_id_map_.at(world+mesh_id);
+        marker->action = Marker::ADD;
+        marker->type = Marker::TRIANGLE_LIST;
+        marker->pose = node.position.pose;
+        marker->scale.x = 1.0;
+        marker->scale.y = 1.0;
+        marker->scale.z = 1.0;
 
-        c0.r = mesh.vertex_colors[triangle.vertex_indices[0]].r;
-        c0.g = mesh.vertex_colors[triangle.vertex_indices[0]].g;
-        c0.b = mesh.vertex_colors[triangle.vertex_indices[0]].b;
-        c0.a = mesh.vertex_colors[triangle.vertex_indices[0]].a;
+        const auto& mesh = ctx_->meshes()[mesh_id];
+        if(marker_map_.count(mesh_id) == 0) {
+          for (const auto& triangle : mesh.triangles)
+          {
+            if(triangle.vertex_indices.size()==3)
+            {
+              geometry_msgs::Point p0, p1, p2;
+              std_msgs::ColorRGBA c0, c1, c2;
+              p0.x = mesh.vertices[triangle.vertex_indices[0]].x;
+              p0.y = mesh.vertices[triangle.vertex_indices[0]].y;
+              p0.z = mesh.vertices[triangle.vertex_indices[0]].z;
 
-        p1.x = mesh.vertices[triangle.vertex_indices[1]].x;
-        p1.y = mesh.vertices[triangle.vertex_indices[1]].y;
-        p1.z = mesh.vertices[triangle.vertex_indices[1]].z;
+              c0.r = mesh.vertex_colors[triangle.vertex_indices[0]].r;
+              c0.g = mesh.vertex_colors[triangle.vertex_indices[0]].g;
+              c0.b = mesh.vertex_colors[triangle.vertex_indices[0]].b;
+              c0.a = mesh.vertex_colors[triangle.vertex_indices[0]].a;
 
-        c1.r = mesh.vertex_colors[triangle.vertex_indices[1]].r;
-        c1.g = mesh.vertex_colors[triangle.vertex_indices[1]].g;
-        c1.b = mesh.vertex_colors[triangle.vertex_indices[1]].b;
-        c1.a = mesh.vertex_colors[triangle.vertex_indices[1]].a;
+              p1.x = mesh.vertices[triangle.vertex_indices[1]].x;
+              p1.y = mesh.vertices[triangle.vertex_indices[1]].y;
+              p1.z = mesh.vertices[triangle.vertex_indices[1]].z;
 
-        p2.x = mesh.vertices[triangle.vertex_indices[2]].x;
-        p2.y = mesh.vertices[triangle.vertex_indices[2]].y;
-        p2.z = mesh.vertices[triangle.vertex_indices[2]].z;
+              c1.r = mesh.vertex_colors[triangle.vertex_indices[1]].r;
+              c1.g = mesh.vertex_colors[triangle.vertex_indices[1]].g;
+              c1.b = mesh.vertex_colors[triangle.vertex_indices[1]].b;
+              c1.a = mesh.vertex_colors[triangle.vertex_indices[1]].a;
 
-        c2.r = mesh.vertex_colors[triangle.vertex_indices[2]].r;
-        c2.g = mesh.vertex_colors[triangle.vertex_indices[2]].g;
-        c2.b = mesh.vertex_colors[triangle.vertex_indices[2]].b;
-        c2.a = mesh.vertex_colors[triangle.vertex_indices[2]].a;
+              p2.x = mesh.vertices[triangle.vertex_indices[2]].x;
+              p2.y = mesh.vertices[triangle.vertex_indices[2]].y;
+              p2.z = mesh.vertices[triangle.vertex_indices[2]].z;
 
-        marker.points.push_back(p0);
-        marker.colors.push_back(c0);
+              c2.r = mesh.vertex_colors[triangle.vertex_indices[2]].r;
+              c2.g = mesh.vertex_colors[triangle.vertex_indices[2]].g;
+              c2.b = mesh.vertex_colors[triangle.vertex_indices[2]].b;
+              c2.a = mesh.vertex_colors[triangle.vertex_indices[2]].a;
 
-        marker.points.push_back(p1);
-        marker.colors.push_back(c1);
+              marker->points.push_back(p0);
+              marker->colors.push_back(c0);
 
-        marker.points.push_back(p2);
-        marker.colors.push_back(c2);
+              marker->points.push_back(p1);
+              marker->colors.push_back(c1);
+
+              marker->points.push_back(p2);
+              marker->colors.push_back(c2);
+            }
+          }
+          marker_map_.emplace(mesh_id, marker);
+        }
+        markers.push_back(*(marker_map_.at(mesh_id)));
+      } catch (exception& e){
+        ROS_WARN("Exception occurred while creating marker for mesh <%s>: %s ", mesh_id.c_str(), e.what());
       }
-      markers.push_back(marker);
     }
     return markers;
   }
@@ -210,7 +231,7 @@ namespace uwds
       bbox.pose.orientation.y = q.getY();
       bbox.pose.orientation.z = q.getZ();
       bbox.pose.orientation.w = q.getW();
-    } catch(exception){
+    } catch(exception& e){
       bbox.header.frame_id = world+"/"+node.name;
     }
     for(const auto& property : node.properties)

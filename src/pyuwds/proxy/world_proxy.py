@@ -15,7 +15,7 @@ WRITE = Connection.WRITE
 ConnectionTypeNames = {READ: "read", WRITE: "write"}
 
 class AdvertiseConnectionProxy(ServiceProxy):
-    
+
     def __init__(self, client, world_name):
         super(AdvertiseConnectionProxy, self).__init__(client, 'uwds/advertise_connection', AdvertiseConnection)
         self.__world_name = world_name
@@ -46,7 +46,7 @@ class WorldProxy(object):
         print "got"
         self.__timeline_proxy.get_timeline_from_remote()
 
-       
+
         self.__changes_subscriber = rospy.Subscriber(world_name + '/changes', ChangesInContextStamped, self.changes_callback, queue_size=20)
         self.__changes_publisher = rospy.Publisher(world_name + '/changes', ChangesInContextStamped, queue_size=20)
         self.__ever_connected = False
@@ -85,8 +85,6 @@ class WorldProxy(object):
         inv.mesh_ids_deleted = msg.changes.meshes_to_delete
         self.meshes().remove(msg.changes.meshes_to_delete)
         u = self.meshes().update(msg.changes.meshes_to_update)
-        print msg.changes.meshes_to_update
-        print u
         inv.mesh_ids_updated = u
         if self.__ever_connected:
             self.__on_changes(self.__world_name, msg.header, inv)
@@ -122,4 +120,3 @@ class WorldProxy(object):
 
     def push_scene_from_3d_file(self, filename):
         raise NotImplementedError
-        

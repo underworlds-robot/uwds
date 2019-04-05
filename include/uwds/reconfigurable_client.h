@@ -39,6 +39,8 @@ namespace uwds
     vector<string> inputsWorlds() {return input_worlds_;}
 
   protected:
+
+    mutex reconfigure_mutex_;
     /**
      * A flag to know if use single input.
      */

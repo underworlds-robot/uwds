@@ -11,15 +11,17 @@ namespace uwds
     UwdsClientNodelet::onInit();
     pnh_->param<bool>("use_single_input", use_single_input_, false);
     string default_inputs;
+    vector<string> input_worlds;
     pnh_->param<string>("default_inputs", default_inputs, "");
-    boost::split(input_worlds_, default_inputs, boost::is_any_of(" "));
-    reconfigure(input_worlds_);
+    boost::split(input_worlds, default_inputs, boost::is_any_of(" "));
+    reconfigure(input_worlds);
     reconfigure_service_server_ = nh_->advertiseService(ctx_->name()+"/reconfigure_inputs", &ReconfigurableClient::reconfigureInputs, this);
     list_inputs_service_server_ = nh_->advertiseService(ctx_->name()+"/list_inputs", &ReconfigurableClient::listInputs, this);
   }
 
   void ReconfigurableClient::reconfigure(vector<string> inputs)
   {
+    reconfigure_mutex_.lock();
     if (inputs.size() > 1 and use_single_input_)
     {
       throw std::runtime_error("Multiple inputs provided while 'use_single_input' activated.");
@@ -35,7 +37,8 @@ namespace uwds
        auto& timeline = ctx_->worlds()[input].timeline();
        auto& meshes = ctx_->worlds()[input].meshes();
        for (const auto& node : scene.nodes())
-          invalidations.node_ids_updated.push_back(node->id);
+          if (node->name !="root")
+            invalidations.node_ids_updated.push_back(node->id);
        for (const auto& situation : timeline.situations())
           invalidations.situation_ids_updated.push_back(situation->id);
        for (const auto& mesh : meshes)
@@ -45,6 +48,7 @@ namespace uwds
        onChanges(input, header, invalidations);
     }
     input_worlds_ = inputs;
+    reconfigure_mutex_.unlock();
   }
 
   bool ReconfigurableClient::reconfigureInputs(ReconfigureInputs::Request& req,

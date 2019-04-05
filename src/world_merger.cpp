@@ -74,18 +74,18 @@ namespace uwds
       }
       if(!insert) changes_to_send_.situations_to_update.push_back(timeline.situations()[id]);
     }
-    for(const std::string& id : invalidations.mesh_ids_updated)
-    {
-      bool insert = false;
-      for (uint i=0; i < changes.meshes_to_update.size(); ++i) {
-        if (changes.meshes_to_update[i].id == id)
-        {
-          changes_to_send_.meshes_to_update[i] = meshes[id];
-          insert = true;
-        }
-      }
-      if(!insert) changes_to_send_.meshes_to_update.push_back(meshes[id]);
-    }
+    // for(const std::string& id : invalidations.mesh_ids_updated)
+    // {
+    //   bool insert = false;
+    //   for (uint i=0; i < changes.meshes_to_update.size(); ++i) {
+    //     if (changes.meshes_to_update[i].id == id)
+    //     {
+    //       changes_to_send_.meshes_to_update[i] = meshes[id];
+    //       insert = true;
+    //     }
+    //   }
+    //   if(!insert) changes_to_send_.meshes_to_update.push_back(meshes[id]);
+    // }
     changes_mutex_.unlock();
   }
 
