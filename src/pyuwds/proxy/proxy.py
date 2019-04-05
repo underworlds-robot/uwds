@@ -2,7 +2,7 @@ import rospy
 from uwds_msgs.msg import Invalidations
 
 class ServiceProxy(object):
-    
+
     def __init__(self, client, service_name, service_msg):
         self.client = client
         self.service_name = service_name
@@ -19,11 +19,10 @@ class ServiceProxy(object):
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
         return None
-        
 
     def _fill_request(self, *param):
         raise NotImplementedError
-    
+
 class DataProxy (ServiceProxy):
 
     def __init__(self, client, service_name, data, service_msg):

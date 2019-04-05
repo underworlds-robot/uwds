@@ -2,7 +2,7 @@
 #include <uwds/uwds.h>
 #include <gtest/gtest.h>
 
-#define PROPAGATION_TIME 0.2
+#define PROPAGATION_TIME 0.002
 #define SETUP_TIME 0.5
 #define WAIT_FOR(X) ros::Duration(X).sleep()
 
@@ -13,7 +13,7 @@ TEST(Underworlds, push3DMesh)
   ctx = UnderworldsProxy(boost::make_shared<ros::NodeHandle>(), "client_test", PROVIDER);
   ctx.worlds()["env"].pushSceneFrom3DFile(argv[1]);
   WAIT_FOR(PROPAGATION_TIME);
-  TEST_EXPRESSION(ctx.worlds()["env"].size > 1);
+  TEST_EXPRESSION(ctx.worlds()["env"].size() > 1);
 }
 
 int main(int argc, char **argv)

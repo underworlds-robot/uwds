@@ -33,6 +33,9 @@ namespace uwds
 
     virtual void onReconfigure(const vector<string>& input_worlds) = 0;
 
+    virtual bool listInputs(List::Request& req,
+                            List::Response& res);
+
     vector<string> inputsWorlds() {return input_worlds_;}
 
   protected:
@@ -50,6 +53,11 @@ namespace uwds
      * The reconfigure service server.
      */
     ros::ServiceServer reconfigure_service_server_;
+
+    /** @brief
+     * The list inputs service server.
+     */
+    ros::ServiceServer list_inputs_service_server_;
   };
 }
 

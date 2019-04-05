@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import rospy
-from pyuwds.uwds import UnderworldsProxy
+from std_msgs.msg import Header
+from uwds_msgs.msg import Invalidations
+from pyuwds.uwds_client import UwdsClient
 
-class ReconfigurableClient(object):
+
+class ReconfigurableClient(UwdsClient):
     """
     The Underworlds client
 
@@ -17,22 +20,50 @@ class ReconfigurableClient(object):
         @type self.node_name: string
         @param self.node_name: The client name
         """
-
+        super(ReconfigurableClient, self).__init__(client_name, client_type)
         self.__use_single_input = rospy.get_param("~use_single_input", False)
         self.input_worlds = rospy.get_param("~default_input_worlds", "")
         self.output_suffix = rospy.get_param("~output_suffix", "")
-        self.ctx = UnderworldsProxy(client_name, client_type)
         self.__reconfigure_service_server = rospy.Service(client_name+"/reconfigure_inputs", self.reconfigureInputs)
+        self.__list_inputs_service_server = rospy.Service(client_name+"/list_inputs", self.listInputs)
 
-    def reconfigure(inputs):
-        pass
+    def reconfigure(self, inputs):
+        if inputs.size > 1 and self.__use_single_input:
+            raise RuntimeError("Multiple inputs provided while 'use_single_input' activated.")
+        self.ctx.worlds.close()
+        self.onReconfigure(inputs)
+        for input in inputs:
+            self.ctx.worlds[input].connect(self.onChanges)
+            invalidations = Invalidations()
+            scene = self.ctx.worlds[input].scene
+            timeline = self.ctx.worlds[input].timeline
+            meshes = self.ctx.worlds[input].meshes
+            for node in scene.nodes:
+                invalidations.node_ids_updated.append(node.id)
+            for situation in timeline.situations:
+                invalidations.situation_ids_updated.append(situation.id)
+            for mesh in meshes:
+                invalidations.mesh_ids_updated.append(mesh.id)
+            header = Header()
+            header.stamp = rospy.Time.now()
+            self.onChanges(input, header, invalidations)
+        self.inputs_worlds = inputs
 
-    def reconfigureInputs(req):
-        return True
+    def reconfigureInputs(self, req):
+        try:
+            self.reconfigure(req.inputs)
+            return True, ""
+        except Exception as e:
+            return False, str(e)
 
-    def onChanges(world_name, header, invalidations):
-        pass
+    def listInputs(self, req):
+        try:
+            return self.input_worlds, True, ""
+        except Exception as e:
+            return [], False, str(e)
 
+    def onChanges(self, world_name, header, invalidations):
+        raise NotImplementedError
 
-    def onReconfigure(input_worlds):
-        pass
+    def onReconfigure(self, input_worlds):
+        raise NotImplementedError

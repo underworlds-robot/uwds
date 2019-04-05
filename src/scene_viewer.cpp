@@ -104,7 +104,7 @@ namespace uwds
         publishVisualization(world, stamp);
       }
     } catch(std::exception e) {
-
+      NODELET_WARN("[%s::onTimer] Exception occurred : %s", ctx_->name().c_str(), e.what());
     }
   }
 

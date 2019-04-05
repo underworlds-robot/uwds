@@ -167,6 +167,7 @@ namespace uwds
 
             uwds_msgs::Property new_node_meshes;
             uwds_msgs::Property new_node_aabb;
+            uwds_msgs::Property new_node_class;
 
             new_node_meshes.name = "meshes";
             new_node_aabb.name = "aabb";
@@ -268,6 +269,9 @@ namespace uwds
               new_node_aabb.data = to_string(aabb_x)+","+to_string(aabb_y)+","+to_string(aabb_z);
               new_node.properties.push_back(new_node_meshes);
               new_node.properties.push_back(new_node_aabb);
+              new_node_class.name = "class";
+              new_node_class.data = "Obstacle";
+              new_node.properties.push_back(new_node_class);
             }
           }
           if(current_node != scene->mRootNode)
@@ -275,13 +279,11 @@ namespace uwds
             nodes_imported.push_back(new_node);
           }
         }
-        //ROS_ERROR("%d child to explore ", current_node->mNumChildren);
         if(current_node->mNumChildren > 0)
         {
           for (unsigned int nb_children = 0 ; nb_children <  current_node->mNumChildren ; nb_children++)
           {
             fifo.push(current_node->mChildren[nb_children]);
-            //ROS_ERROR("push node to fifo");
           }
         }
       }

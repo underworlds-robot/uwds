@@ -173,7 +173,6 @@ class Worlds(object):
         self.meshes = meshes
         self.worlds = {}
 
-
 class Topology(object):
     """
     The Underworlds client topology structure
