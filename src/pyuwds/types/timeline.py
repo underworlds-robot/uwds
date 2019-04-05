@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import rospy
 from concurrent_container import ConcurrentContainer
 from uwds_msgs.msg import Situation
@@ -36,7 +39,7 @@ class Timeline(object):
             situation_ids = self.__situations.ids()
             self.__situations.reset()
         return situation_ids
-    
+
     def origin(self):
         return self.__origin
 

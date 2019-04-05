@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from scene import Scene
 from timeline import Timeline
 from uwds_msgs.msg import Invalidations

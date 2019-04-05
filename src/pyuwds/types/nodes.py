@@ -1,6 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from concurrent_container import ConcurrentContainer
 from uwds_msgs.msg import Node
-from uuid import Uuid
 
 ENTITY = Node.ENTITY
 MESH = Node.MESH

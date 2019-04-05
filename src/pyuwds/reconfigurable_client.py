@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import rospy
 from std_msgs.msg import Header
 from uwds_msgs.msg import Invalidations

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from concurrent_container import ConcurrentContainer
 
 class Meshes (ConcurrentContainer):

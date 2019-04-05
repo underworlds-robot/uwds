@@ -1,5 +1,5 @@
 from uwds_msgs.msg import Client
-import hexuuid import gen_uuid
+from types.hexuuid import gen_uuid
 
 from proxy.meshes_proxy import MeshesProxy
 from proxy.topology_proxy import TopologyProxy

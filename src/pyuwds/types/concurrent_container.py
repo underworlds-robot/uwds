@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from threading import Lock
 
 class ConcurrentContainer(object):
@@ -27,7 +30,7 @@ class ConcurrentContainer(object):
 
     def is_empty(self):
         return self.get_size() > 0
-    
+
     def get_size(self):
         return len(self.__map)
 
@@ -47,4 +50,3 @@ class ConcurrentContainer(object):
 
     def ids(self):
         return self.__map.keys()
-    
