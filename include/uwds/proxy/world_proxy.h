@@ -76,7 +76,7 @@ namespace uwds {
     /** @brief
      * The meshes accessor.
      */
-    Meshes& meshes() {return meshes_proxy_->meshes();}
+    MeshesProxy& meshes() {return *meshes_proxy_;}
 
     /** @brief
      * The scene accessor.

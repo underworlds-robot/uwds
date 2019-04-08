@@ -21,7 +21,6 @@ namespace uwds
 
   void ReconfigurableClient::reconfigure(vector<string> inputs)
   {
-    reconfigure_mutex_.lock();
     if (inputs.size() > 1 and use_single_input_)
     {
       throw std::runtime_error("Multiple inputs provided while 'use_single_input' activated.");
@@ -29,7 +28,8 @@ namespace uwds
     ctx_->worlds().close();
     onReconfigure(inputs);
     input_worlds_.clear();
-    for(const auto input : inputs)
+
+    for(const string input : inputs)
     {
        ctx_->worlds()[input].connect(bind(&ReconfigurableClient::onChanges, this, _1, _2, _3));
        Invalidations invalidations;
@@ -41,14 +41,14 @@ namespace uwds
             invalidations.node_ids_updated.push_back(node->id);
        for (const auto& situation : timeline.situations())
           invalidations.situation_ids_updated.push_back(situation->id);
-       for (const auto& mesh : meshes)
+       for (const auto& mesh : meshes.meshes())
           invalidations.mesh_ids_updated.push_back(mesh->id);
        Header header;
+       header.frame_id = global_frame_id_;
        header.stamp = ros::Time::now();
        onChanges(input, header, invalidations);
     }
     input_worlds_ = inputs;
-    reconfigure_mutex_.unlock();
   }
 
   bool ReconfigurableClient::reconfigureInputs(ReconfigureInputs::Request& req,

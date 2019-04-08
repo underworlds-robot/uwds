@@ -6,6 +6,7 @@
 #include<map>
 #include<mutex>
 #include "uuid.h"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include "concurrent_container.h"
 #include <uwds_msgs/Node.h>
@@ -79,7 +80,14 @@ namespace uwds {
           {
             (*this)[parent].children.push_back(node->id);
           }
+          // normalize quaternion
+          tf2::Quaternion q;
+          tf2::convert(node->position.pose.orientation , q);
+          q.normalize();
+          node->position.pose.orientation = tf2::toMsg(q);
+          // unlock nodes
           this->unlock();
+          // update node
           this->update(node->id, node);
         }
       }
@@ -107,6 +115,12 @@ namespace uwds {
           {
             (*this)[parent].children.push_back(node.id);
           }
+          // normalize quaternion
+          tf2::Quaternion q;
+          tf2::convert(node.position.pose.orientation , q);
+          q.normalize();
+          node.position.pose.orientation = tf2::toMsg(q);
+
           this->unlock();
           this->update(node.id, node);
         }
@@ -154,7 +168,7 @@ namespace uwds {
       }
 
        /** @brief
-        * Returns the nodes by name
+        * Returns the nodes by property name
         *
         * @param property_name The property name to test
         */

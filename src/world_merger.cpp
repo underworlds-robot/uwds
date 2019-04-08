@@ -24,8 +24,6 @@ namespace uwds
     auto& timeline = ctx_->worlds()[world].timeline();
     auto& meshes = ctx_->worlds()[world].meshes();
 
-    Changes changes;
-
     changes_mutex_.lock();
     for(const string& id : invalidations.node_ids_updated)
     {
@@ -88,8 +86,8 @@ namespace uwds
     for(const std::string& id : invalidations.mesh_ids_updated)
     {
       bool insert = false;
-      for (uint i=0; i < changes.meshes_to_update.size(); ++i) {
-        if (changes.meshes_to_update[i].id == id)
+      for (uint i=0; i < changes_to_send_.meshes_to_update.size(); ++i) {
+        if (changes_to_send_.meshes_to_update[i].id == id)
         {
           changes_to_send_.meshes_to_update[i] = meshes[id];
           insert = true;

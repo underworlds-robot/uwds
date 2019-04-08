@@ -104,17 +104,15 @@ namespace uwds
   }
 
   void SceneViewer::onTimer(const ros::TimerEvent& event) {
-    reconfigure_mutex_.lock();
     try{
       for (const auto& world : input_worlds_)
       {
         ros::Time stamp = ros::Time::now();
         publishVisualization(world, stamp);
       }
-    } catch(std::exception e) {
+    } catch(exception& e) {
       NODELET_WARN("[%s::onTimer] Exception occurred : %s", ctx_->name().c_str(), e.what());
     }
-    reconfigure_mutex_.unlock();
   }
 
   vector<Marker> SceneViewer::nodeToMarkers(const string world, const Node node, const ros::Time stamp)
@@ -137,6 +135,8 @@ namespace uwds
     {
       try
       {
+        const auto& mesh = ctx_->worlds()[world].meshes()[mesh_id];
+
         boost::shared_ptr<Marker> marker = boost::make_shared<Marker>();
         if (node.parent == scene.rootID())
           marker->header.frame_id = global_frame_id_;
@@ -154,8 +154,7 @@ namespace uwds
         marker->scale.y = 1.0;
         marker->scale.z = 1.0;
 
-        const auto& mesh = ctx_->meshes()[mesh_id];
-        if(marker_map_.count(mesh_id) == 0) {
+        if(marker_map_.count(world+mesh_id) == 0) {
           for (const auto& triangle : mesh.triangles)
           {
             if(triangle.vertex_indices.size()==3)
@@ -199,9 +198,9 @@ namespace uwds
               marker->colors.push_back(c2);
             }
           }
-          marker_map_.emplace(mesh_id, marker);
+          marker_map_.emplace(world+mesh_id, marker);
         }
-        markers.push_back(*(marker_map_.at(mesh_id)));
+        markers.push_back(*(marker_map_.at(world+mesh_id)));
       } catch (exception& e){
         ROS_WARN("Exception occurred while creating marker for mesh <%s>: %s ", mesh_id.c_str(), e.what());
       }

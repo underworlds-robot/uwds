@@ -1,6 +1,9 @@
 #ifndef MESHES_PROXY_HPP
 #define MESHES_PROXY_HPP
 
+#include<vector>
+#include<map>
+#include<mutex>
 #include "proxy.h"
 #include "uwds_msgs/GetMesh.h"
 #include "uwds/types/meshes.h"
@@ -84,6 +87,31 @@ namespace uwds {
         getMeshFromRemote(id);
         return (*meshes_)[id];
       }
+    }
+
+    bool has(string id)
+    {
+      return meshes_->has(id);
+    }
+
+    void update(Mesh mesh)
+    {
+      meshes_->update(mesh);
+    }
+
+    vector<string> update(const vector<Mesh> meshes)
+    {
+      return meshes_->update(meshes);
+    }
+
+    void remove(string mesh_id)
+    {
+      meshes_->remove(mesh_id);
+    }
+
+    void remove(vector<string> mesh_ids)
+    {
+      meshes_->remove(mesh_ids);
     }
 
     virtual bool getMeshFromRemote(string mesh_id) {return get_mesh_proxy_->getDataFromRemote(mesh_id);}

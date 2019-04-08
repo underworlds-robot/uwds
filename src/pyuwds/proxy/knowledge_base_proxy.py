@@ -20,7 +20,7 @@ class QueryKnowledgeBaseProxy(ServiceProxy):
 
 class KnowledgeBaseProxy(object):
 
-    def __init__(self, client, world_name, meshes_proxy):
+    def __init__(self, client, world_name):
         self.__query_proxy = QueryKnowledgeBaseProxy(client, world_name)
 
     def query_knowledge_base(self, query):

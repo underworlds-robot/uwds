@@ -124,7 +124,7 @@ namespace uwds {
        */
       void unlock() {mutex_.unlock();}
 
-    private:
+    public:
       /** @brief
        * custom Iterator for the nodes,
        * allow to easely explore the map container.

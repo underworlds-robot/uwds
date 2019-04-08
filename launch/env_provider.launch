@@ -7,7 +7,7 @@
   <arg name="nodelet_manager" default="uwds_nodelet_manager"/>
   <arg name="launch-prefix" default=""/>
 
-  <arg name="filename" default="$(find uwds)/res/example.blend"/>
+  <arg name="filename" default="$(find uwds)/res/adream_example.blend"/>
   <arg name="output_world" default="robot/env"/>
   <arg name="global_frame_id" default="map"/>
 
