@@ -10,27 +10,27 @@ class ServiceProxy(object):
 
     def call(self, *param):
         rospy.wait_for_service(self.service_name)
-        service_request = self._fill_request(*param)
         try:
+            service_request = self._fill_request(*param)
             service_response = self.__service_client(service_request)
             if not service_response.success:
-                rospy.logerr("[%s::serviceProxy] Error occurred while calling '%s' service" % (self.client.name, self.service_name))
+                rospy.logerr("[%s::serviceProxy] Error occurred while processing '%s' service" % (self.client.name, self.service_name))
             return service_response
         except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+            rospy.logerr("[%s::serviceProxy] Error occurred while calling '%s' service : %s" % (self.client.name, self.service_name,e))
         return None
 
     def _fill_request(self, *param):
         raise NotImplementedError
 
-class DataProxy (ServiceProxy):
+
+class DataProxy(ServiceProxy):
 
     def __init__(self, client, service_name, data, service_msg):
         super(DataProxy, self).__init__(client, service_name, service_msg)
         self.data = data
 
     def get_data_from_remote(self, *param):
-        print 'get data'
         returns = Invalidations()
         '''
         try:

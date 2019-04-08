@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-from concurrent_container import ConcurrentContainer
+import rospy
 from uwds_msgs.msg import Node
 from nodes import Nodes
-import rospy
-from hexuuid import gen_uuid
+from gen_uuid import gen_uuid
+
 
 class Scene:
 

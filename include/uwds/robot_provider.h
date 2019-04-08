@@ -24,7 +24,7 @@ namespace uwds
 
     string base_frame_id_;
 
-    map<string, Node> link_id_map_;
+    map<string, Node> node_id_map_;
   };
 }
 

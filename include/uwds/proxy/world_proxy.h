@@ -55,7 +55,7 @@ namespace uwds {
       meshes_proxy_ = meshes_proxy;
       scene_proxy_ = boost::make_shared<SceneProxy>(nh_, pnh_, client_, world_name_, meshes_proxy_);
       timeline_proxy_ = boost::make_shared<TimelineProxy>(nh_, pnh_, client_, world_name_);
-      ontology_proxy_ = boost::make_shared<OntologyProxy>(nh_, pnh_, client_, world_name_);
+      knowledge_base_proxy_ = boost::make_shared<KnowledgeBaseProxy>(nh_, pnh_, client_, world_name_);
 
       advertise_connection_proxy_ = boost::make_shared<AdvertiseConnectionProxy>(nh_, pnh_, client_, world_name_);
       scene_proxy_->getSceneFromRemote();
@@ -93,7 +93,7 @@ namespace uwds {
      */
     vector<string> operator[](const string& query)
     {
-      return ontology_proxy_->queryOntology(query);
+      return knowledge_base_proxy_->queryKnowledgeBase(query);
     }
 
     /** @brief
@@ -337,7 +337,7 @@ namespace uwds {
 
     TimelineProxyPtr timeline_proxy_;
 
-    OntologyProxyPtr ontology_proxy_;
+    KnowledgeBaseProxyPtr knowledge_base_proxy_;
 
     AdvertiseConnectionProxyPtr advertise_connection_proxy_;
 

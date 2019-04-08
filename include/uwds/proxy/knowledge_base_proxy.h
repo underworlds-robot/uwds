@@ -32,27 +32,27 @@ namespace uwds {
   typedef boost::shared_ptr<QueryKnowledgeBase> QueryKnowledgeBasePtr;
   typedef boost::shared_ptr<QueryKnowledgeBase const> QueryKnowledgeBaseConstPtr;
 
-  class OntologyProxy
+  class KnowledgeBaseProxy
   {
   public:
-    OntologyProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name)
+    KnowledgeBaseProxy(NodeHandlePtr nh, NodeHandlePtr pnh, ClientPtr client, string world_name)
     {
-      query_ontology_proxy_ = boost::make_shared<QueryKnowledgeBase>(nh, pnh, client, world_name);
+      query_proxy_ = boost::make_shared<QueryKnowledgeBase>(nh, pnh, client, world_name);
     }
 
-    vector<string> queryOntology(string query)
+    vector<string> queryKnowledgeBase(string query)
     {
-      QueryInContext query_srv = query_ontology_proxy_->call(query);
+      QueryInContext query_srv = query_proxy_->call(query);
       if(!query_srv.response.success)
-        ROS_ERROR("[%s::ontology] Exception occured when processing '%s' query", query_ontology_proxy_->client().name.c_str(), query.c_str());
+        ROS_ERROR("[%s::knowledge] Exception occured when processing '%s' query", query_proxy_->client().name.c_str(), query.c_str());
       return query_srv.response.result;
     }
   protected:
-    QueryKnowledgeBasePtr query_ontology_proxy_;
+    QueryKnowledgeBasePtr query_proxy_;
   };
 
-  typedef boost::shared_ptr<OntologyProxy> OntologyProxyPtr;
-  typedef boost::shared_ptr<OntologyProxy const> OntologyProxyConstPtr;
+  typedef boost::shared_ptr<KnowledgeBaseProxy> KnowledgeBaseProxyPtr;
+  typedef boost::shared_ptr<KnowledgeBaseProxy const> KnowledgeBaseProxyConstPtr;
 
 }
 

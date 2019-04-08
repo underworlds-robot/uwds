@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from types.gen_uuid import gen_uuid
 from uwds_msgs.msg import Client
-from types.hexuuid import gen_uuid
 
 from proxy.meshes_proxy import MeshesProxy
 from proxy.topology_proxy import TopologyProxy
@@ -11,11 +13,15 @@ MONITOR = Client.MONITOR
 PROVIDER = Client.PROVIDER
 FILTER = Client.FILTER
 
+
+
+
 ClientTypeNames = {UNDEFINED: "undefined",
                 READER: "reader",
                 MONITOR: "monitor",
                 PROVIDER: "provider",
                 FILTER: "filter"}
+
 
 class UnderworldsProxy(object):
 

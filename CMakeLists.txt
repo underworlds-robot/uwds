@@ -74,7 +74,7 @@ include_directories(
 target_link_libraries(${PROJECT_NAME}
    ${catkin_LIBRARIES} assimp )
 
-add_dependencies(${PROJECT_NAME} uwds_msgs_gencpp)
+#add_dependencies(${PROJECT_NAME})
 
 if(catkin_EXPORTED_LIBRARIES)
   add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_LIBRARIES})

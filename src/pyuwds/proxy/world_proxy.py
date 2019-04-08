@@ -1,7 +1,8 @@
+
 from proxy import ServiceProxy
 from scene_proxy import SceneProxy
 from timeline_proxy import TimelineProxy
-#from ontology_proxy import OntologyProxy
+from knowledge_base_proxy import KnowledgeBaseProxy
 
 from uwds_msgs.msg import Client, Invalidations, ChangesInContextStamped, Connection
 from uwds_msgs.srv import AdvertiseConnection, AdvertiseConnectionRequest
@@ -31,19 +32,16 @@ class AdvertiseConnectionProxy(ServiceProxy):
 class WorldProxy(object):
 
     def __init__(self, client, meshes_proxy, world_name):
-        print "creating world"
         self.__client = client
         self.__world_name = world_name
         self.__global_frame_id = ""
         self.__meshes_proxy = meshes_proxy
         self.__scene_proxy = SceneProxy(client, world_name, meshes_proxy)
         self.__timeline_proxy = TimelineProxy(client, world_name)
-        #self.__ontology_proxy = OntologyProxy()
+        self.__knowledge_base_proxy = KnowledgeBaseProxy(client, world_name)
         self.__advertise_connection_proxy = AdvertiseConnectionProxy(client, world_name)
 
-        print "creating..."
         self.__scene_proxy.get_scene_from_remote()
-        print "got"
         self.__timeline_proxy.get_timeline_from_remote()
 
 
@@ -51,7 +49,6 @@ class WorldProxy(object):
         self.__changes_publisher = rospy.Publisher(world_name + '/changes', ChangesInContextStamped, queue_size=20)
         self.__ever_connected = False
         self.__ever_send_changes = False
-        print "created!"
 
     def meshes(self):
         return self.__meshes_proxy.meshes()
@@ -63,8 +60,7 @@ class WorldProxy(object):
         return self.__timeline_proxy.timeline()
 
     def __getitem__(self, query):
-        return None
-        #return self.__ontology_proxy.query_ontology(query)
+        return self.__knowledge_base_proxy.query_knowledge_base(query)
 
     def connect(self, callback):
         if not self.__ever_send_changes:

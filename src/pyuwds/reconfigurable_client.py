@@ -4,6 +4,7 @@
 import rospy
 from std_msgs.msg import Header
 from uwds_msgs.msg import Invalidations
+from uwds_msgs.srv import ReconfigureInputs, List
 from pyuwds.uwds_client import UwdsClient
 
 
@@ -23,22 +24,23 @@ class ReconfigurableClient(UwdsClient):
         """
         super(ReconfigurableClient, self).__init__(client_name, client_type)
         self.__use_single_input = rospy.get_param("~use_single_input", False)
-        self.input_worlds = rospy.get_param("~default_input_worlds", "")
+        input_worlds = rospy.get_param("~default_input_worlds", "")
         self.output_suffix = rospy.get_param("~output_suffix", "")
-        self.__reconfigure_service_server = rospy.Service(client_name+"/reconfigure_inputs", self.reconfigureInputs)
-        self.__list_inputs_service_server = rospy.Service(client_name+"/list_inputs", self.listInputs)
+        self.reconfigure(input_worlds.split(" "))
+        self.__reconfigure_service_server = rospy.Service(client_name+"/reconfigure_inputs", ReconfigureInputs, self.reconfigureInputs)
+        self.__list_inputs_service_server = rospy.Service(client_name+"/list_inputs", List, self.listInputs)
 
     def reconfigure(self, inputs):
-        if inputs.size > 1 and self.__use_single_input:
+        if len(inputs) > 1 and self.__use_single_input:
             raise RuntimeError("Multiple inputs provided while 'use_single_input' activated.")
-        self.ctx.worlds.close()
+        self.ctx.worlds().close()
         self.onReconfigure(inputs)
         for input in inputs:
-            self.ctx.worlds[input].connect(self.onChanges)
+            self.ctx.worlds()[input].connect(self.onChanges)
             invalidations = Invalidations()
-            scene = self.ctx.worlds[input].scene
-            timeline = self.ctx.worlds[input].timeline
-            meshes = self.ctx.worlds[input].meshes
+            scene = self.ctx.worlds()[input].scene
+            timeline = self.ctx.worlds()[input].timeline
+            meshes = self.ctx.worlds()[input].meshes
             for node in scene.nodes:
                 invalidations.node_ids_updated.append(node.id)
             for situation in timeline.situations:

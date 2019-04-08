@@ -47,6 +47,8 @@ namespace uwds {
         return invalidations;
       }
 
+      bool has(string name) {return (worlds_.count(name)>0);}
+
       /** @brief
        * This method reset all the worlds
        */

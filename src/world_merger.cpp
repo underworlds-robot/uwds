@@ -35,17 +35,28 @@ namespace uwds
         bool transformed = false;
         if(header.frame_id!="" && header.frame_id != global_frame_id_)
         {
-          geometry_msgs::TransformStamped transformStamped;
-          tf2::Stamped<tf2::Transform> temp;
-          geometry_msgs::PoseStamped sensor_pose;
-          try {
-            transformStamped = tf_buffer_->lookupTransform(header.frame_id, global_frame_id_, ros::Time(0));
-            tf2::fromMsg(transformStamped, temp);
-            tf2::toMsg(temp, sensor_pose);
-            pose_cov_ops::inverseCompose(scene.nodes()[id].position.pose, sensor_pose.pose, scene.nodes()[id].position.pose);
+          vector<Node> match = scene.getNodesByName(header.frame_id);
+          if(match.size() > 0)
+          {
+            if(match.size() > 1)
+            {
+              NODELET_WARN("[%s::onChanges] Multiple nodes matching '%s' frame. Parenting to the first one.", ctx_->name().c_str(), header.frame_id.c_str());
+            }
+            scene.nodes()[id].parent = match[0].id;
             transformed = true;
-          } catch(tf2::TransformException& e) {
-            ROS_WARN("[%s::onChanges] Error occured while transforming node into world frame : %s",ctx_->name().c_str(), e.what());
+          } else {
+            geometry_msgs::TransformStamped transformStamped;
+            tf2::Stamped<tf2::Transform> temp;
+            geometry_msgs::PoseStamped sensor_pose;
+            try {
+              transformStamped = tf_buffer_->lookupTransform(header.frame_id, global_frame_id_, ros::Time(0));
+              tf2::fromMsg(transformStamped, temp);
+              tf2::toMsg(temp, sensor_pose);
+              pose_cov_ops::inverseCompose(scene.nodes()[id].position.pose, sensor_pose.pose, scene.nodes()[id].position.pose);
+              transformed = true;
+            } catch(tf2::TransformException& e) {
+              ROS_WARN("[%s::onChanges] Error occured while transforming node into world frame : %s",ctx_->name().c_str(), e.what());
+            }
           }
         } else {
           transformed = true;
@@ -74,18 +85,18 @@ namespace uwds
       }
       if(!insert) changes_to_send_.situations_to_update.push_back(timeline.situations()[id]);
     }
-    // for(const std::string& id : invalidations.mesh_ids_updated)
-    // {
-    //   bool insert = false;
-    //   for (uint i=0; i < changes.meshes_to_update.size(); ++i) {
-    //     if (changes.meshes_to_update[i].id == id)
-    //     {
-    //       changes_to_send_.meshes_to_update[i] = meshes[id];
-    //       insert = true;
-    //     }
-    //   }
-    //   if(!insert) changes_to_send_.meshes_to_update.push_back(meshes[id]);
-    // }
+    for(const std::string& id : invalidations.mesh_ids_updated)
+    {
+      bool insert = false;
+      for (uint i=0; i < changes.meshes_to_update.size(); ++i) {
+        if (changes.meshes_to_update[i].id == id)
+        {
+          changes_to_send_.meshes_to_update[i] = meshes[id];
+          insert = true;
+        }
+      }
+      if(!insert) changes_to_send_.meshes_to_update.push_back(meshes[id]);
+    }
     changes_mutex_.unlock();
   }
 

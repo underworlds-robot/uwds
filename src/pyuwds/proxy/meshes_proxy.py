@@ -13,11 +13,10 @@ class PushMeshProxy(ServiceProxy):
         return push_mesh_request
 
 class GetMeshProxy(DataProxy):
-    
+
     def __init__(self, client, meshes):
         super(GetMeshProxy, self).__init__(client, 'uwds/get_mesh', meshes, GetMesh)
 
-    
     def _save_data_from_remote(self, get_mesh_response):
         if get_mesh_response.success:
             self.data.update([get_mesh_response.mesh])
@@ -48,4 +47,3 @@ class MeshesProxy(object):
 
     def meshes(self):
         return self.__meshes
-    
