@@ -64,10 +64,14 @@ namespace uwds
           for (uint i=0; i < changes_to_send_.nodes_to_update.size(); ++i) {
             if (changes_to_send_.nodes_to_update[i].id == id)
             {
-              changes_to_send_.nodes_to_update[i] = scene.nodes()[id];
+              if(scene.nodes().has(id)) {
+                changes_to_send_.nodes_to_update[i] = scene.nodes()[id];
+                insert = true;
+              }
             }
           }
-          if(!insert) changes_to_send_.nodes_to_update.push_back(scene.nodes()[id]);
+          if(scene.nodes().has(id))
+            if(!insert) changes_to_send_.nodes_to_update.push_back(scene.nodes()[id]);
         }
       }
     }
@@ -77,11 +81,14 @@ namespace uwds
       for (uint i=0; i < changes_to_send_.situations_to_update.size(); ++i) {
         if (changes_to_send_.situations_to_update[i].id == id)
         {
-          changes_to_send_.situations_to_update[i] = timeline.situations()[id];
-          insert = true;
+          if(timeline.situations().has(id)) {
+            changes_to_send_.situations_to_update[i] = timeline.situations()[id];
+            insert = true;
+          }
         }
       }
-      if(!insert) changes_to_send_.situations_to_update.push_back(timeline.situations()[id]);
+      if(timeline.situations().has(id))
+        if(!insert) changes_to_send_.situations_to_update.push_back(timeline.situations()[id]);
     }
     for(const std::string& id : invalidations.mesh_ids_updated)
     {
@@ -89,11 +96,45 @@ namespace uwds
       for (uint i=0; i < changes_to_send_.meshes_to_update.size(); ++i) {
         if (changes_to_send_.meshes_to_update[i].id == id)
         {
-          changes_to_send_.meshes_to_update[i] = meshes[id];
-          insert = true;
+          if(meshes.has(id)) {
+            changes_to_send_.meshes_to_update[i] = meshes[id];
+            insert = true;
+          }
         }
       }
-      if(!insert) changes_to_send_.meshes_to_update.push_back(meshes[id]);
+      if(meshes.has(id))
+        if(!insert) changes_to_send_.meshes_to_update.push_back(meshes[id]);
+    }
+
+    for(const string& id : invalidations.node_ids_deleted)
+    {
+      bool insert = false;
+      for (uint i=0; i < changes_to_send_.nodes_to_delete.size(); ++i)
+      {
+        if (changes_to_send_.nodes_to_delete[i] == id)
+          insert = true;
+      }
+      if(!insert) changes_to_send_.nodes_to_delete.push_back(id);
+    }
+    for(const string& id : invalidations.situation_ids_deleted)
+    {
+      bool insert = false;
+      for (uint i=0; i < changes_to_send_.situations_to_delete.size(); ++i)
+      {
+        if (changes_to_send_.situations_to_delete[i] == id)
+          insert = true;
+      }
+      if(!insert) changes_to_send_.situations_to_delete.push_back(id);
+    }
+    for(const string& id : invalidations.mesh_ids_deleted)
+    {
+      bool insert = false;
+      for (uint i=0; i < changes_to_send_.meshes_to_delete.size(); ++i)
+      {
+        if (changes_to_send_.meshes_to_delete[i] == id)
+          insert = true;
+      }
+      if(!insert) changes_to_send_.meshes_to_delete.push_back(id);
     }
     changes_mutex_.unlock();
   }
@@ -105,7 +146,15 @@ namespace uwds
       Header header;
       header.stamp = ros::Time::now();
       header.frame_id = global_frame_id_;
+      changes_mutex_.lock();
       ctx_->worlds()[output_world_].update(header, changes_to_send_);
+      changes_to_send_.nodes_to_update.clear();
+      changes_to_send_.situations_to_update.clear();
+      changes_to_send_.meshes_to_update.clear();
+      changes_to_send_.nodes_to_delete.clear();
+      changes_to_send_.situations_to_delete.clear();
+      changes_to_send_.meshes_to_delete.clear();
+      changes_mutex_.unlock();
       if(verbose_)NODELET_INFO("[%s::onChanges] Send changes to world <%s>", ctx_->name().c_str(), output_world_.c_str());
     }
   }

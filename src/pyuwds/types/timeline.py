@@ -43,6 +43,9 @@ class Timeline(object):
     def origin(self):
         return self.__origin
 
+    def situations(self):
+        return self.__situations
+
     '''
     def getSituationProperty(self, situation_id, property_name):
         if situation_id in self.situations:

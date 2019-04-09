@@ -50,3 +50,9 @@ class ConcurrentContainer(object):
 
     def ids(self):
         return self.__map.keys()
+
+    def __iter__(self):
+        return iter(self.__map.values())
+
+    def __next__(self):
+        return next(self.__map.values())

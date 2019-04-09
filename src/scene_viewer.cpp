@@ -200,7 +200,9 @@ namespace uwds
           }
           marker_map_.emplace(world+mesh_id, marker);
         }
-        markers.push_back(*(marker_map_.at(world+mesh_id)));
+        marker = marker_map_.at(world+mesh_id);
+        marker->pose = node.position.pose;
+        markers.push_back(*marker);
       } catch (exception& e){
         ROS_WARN("Exception occurred while creating marker for mesh <%s>: %s ", mesh_id.c_str(), e.what());
       }

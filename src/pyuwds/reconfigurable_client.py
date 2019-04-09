@@ -22,10 +22,10 @@ class ReconfigurableClient(UwdsClient):
         @type self.node_name: string
         @param self.node_name: The client name
         """
-        self.__use_single_input = rospy.get_param("~use_single_input", False)
-        input_worlds = rospy.get_param("~default_input_worlds", "")
-        self.output_suffix = rospy.get_param("~output_suffix", "")
         super(ReconfigurableClient, self).__init__(client_name, client_type)
+        input_worlds = rospy.get_param("~default_inputs", "")
+        self.__use_single_input = rospy.get_param("~use_single_input", False)
+        self.inputs_worlds = input_worlds.split(" ")
         self.reconfigure(input_worlds.split(" "))
         self.__reconfigure_service_server = rospy.Service(client_name+"/reconfigure_inputs", ReconfigureInputs, self.reconfigureInputs)
         self.__list_inputs_service_server = rospy.Service(client_name+"/list_inputs", List, self.listInputs)
@@ -41,11 +41,11 @@ class ReconfigurableClient(UwdsClient):
             scene = self.ctx.worlds()[input].scene()
             timeline = self.ctx.worlds()[input].timeline()
             meshes = self.ctx.worlds()[input].meshes()
-            for node in scene.nodes().values():
+            for node in scene.nodes():
                 invalidations.node_ids_updated.append(node.id)
-            for situation in timeline.situations().values():
+            for situation in timeline.situations():
                 invalidations.situation_ids_updated.append(situation.id)
-            for mesh in meshes.values():
+            for mesh in meshes:
                 invalidations.mesh_ids_updated.append(mesh.id)
             header = Header()
             header.stamp = rospy.Time.now()
