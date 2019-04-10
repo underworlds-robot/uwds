@@ -23,4 +23,10 @@
     <description>This is the Underworlds world merger</description>
   </class>
 
+  <class name="uwds/SimpleObjectProvider"
+         type="uwds::SimpleObjectProvider"
+         base_class_type="nodelet::Nodelet">
+    <description>This simplest object provider</description>
+  </class>
+
 </library>

@@ -53,7 +53,7 @@ class OverlaytextSituationPublisher(ReconfigurableClient):
         """
         """
         situations_text = self.overlay_name +"\n\r"
-        situations_text = "- facts\n\r"
+        situations_text += "- facts\n\r"
         situations_text += "id : description\n\r"
         situations_text += "----------------\n\r"
         fact_sorted = {}

@@ -19,7 +19,7 @@
         if="$(arg start_server)"/>
 
   <node name="overlaytext_situation_publisher"
-        pkg="uwds" type="overlaytext_situation_publisher.py"
+        pkg="uwds" type="timeline_viewer.py"
         respawn="$(arg respawn)"
         output="$(arg output)"
         launch-prefix="$(arg launch-prefix)">

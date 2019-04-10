@@ -70,6 +70,7 @@ include_directories(
 	 src/env_provider.cpp
 	 src/scene_viewer.cpp
    src/world_merger.cpp
+   src/simple_object_provider.cpp
 )
 
 ## Specify libraries to link a library or executable target against
