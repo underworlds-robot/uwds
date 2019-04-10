@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS system)
 
 find_package(Assimp REQUIRED COMPONENTS system)
+find_package(octomap REQUIRED)
 
 catkin_python_setup()
 
@@ -55,6 +56,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OCTOMAP_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -72,7 +74,7 @@ include_directories(
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
-   ${catkin_LIBRARIES} assimp )
+   ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} assimp)
 
 #add_dependencies(${PROJECT_NAME})
 

@@ -3,7 +3,7 @@
 
 import rospy
 from pyuwds.reconfigurable_client import ReconfigurableClient
-from pyuwds.types import READER
+from pyuwds.uwds import READER
 from jsk_rviz_plugins.msg import OverlayText
 from std_msgs.msg import ColorRGBA
 
@@ -15,7 +15,8 @@ class OverlaytextSituationPublisher(ReconfigurableClient):
         """
         """
         self.text_pub = rospy.Publisher('situations_overlay', OverlayText, queue_size=1)
-        ReconfigurableClient.__init__(self, "overlaytext_situation_publisher", READER)
+        self.overlay_name = rospy.get_param("~overlay_name", "TIMELINE")
+        super(OverlaytextSituationPublisher, self).__init__("overlaytext_situation_publisher", READER)
 
         rospy.Timer(rospy.Duration(1/30.0), self.handleTimer)
 
@@ -51,12 +52,13 @@ class OverlaytextSituationPublisher(ReconfigurableClient):
     def publishOverlaytext(self, world_name):
         """
         """
-        situations_text = "   FACTS\n\r"
+        situations_text = self.overlay_name +"\n\r"
+        situations_text = "- facts\n\r"
         situations_text += "id : description\n\r"
         situations_text += "----------------\n\r"
         fact_sorted = {}
         fact_desc = {}
-        for situation_id, situation in self.worlds[world_name].timeline.situations.items():
+        for situation in self.ctx.worlds()[world_name].timeline().situations():
             if situation.end.data != situation.start.data:
                 if situation.end.data == rospy.Time(0):
                     if situation.description not in fact_desc:
@@ -71,11 +73,11 @@ class OverlaytextSituationPublisher(ReconfigurableClient):
         for key in sorted(fact_sorted.iterkeys()):
             situations_text += fact_sorted[key].id[:5]+" : "+fact_sorted[key].description +"\n\r"
 
-        situations_text += "\n\rEVENTS\n\r"
+        situations_text += "\n\r- events\n\r"
         situations_text += "id : description\n\r"
         situations_text += "----------------\n\r"
         event_sorted = {}
-        for situation_id, situation in self.worlds[world_name].timeline.situations.items():
+        for situation in self.ctx.worlds()[world_name].timeline().situations():
             if situation.start.data == situation.end.data:
                 if rospy.Time.now() - situation.end.data < rospy.Duration(5.0):
                     event_sorted[situation.start.data] = situation
@@ -95,7 +97,6 @@ class OverlaytextSituationPublisher(ReconfigurableClient):
         text.fg_color = ColorRGBA(25 / 255.0, 1.0, 240.0 / 255.0, 1.0)
         text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.2)
         self.text_pub.publish(text)
-
 
 if __name__ == '__main__':
     rospy.init_node("overlaytext_situation_publisher")

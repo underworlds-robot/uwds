@@ -25,7 +25,7 @@ class ReconfigurableClient(UwdsClient):
         super(ReconfigurableClient, self).__init__(client_name, client_type)
         input_worlds = rospy.get_param("~default_inputs", "")
         self.__use_single_input = rospy.get_param("~use_single_input", False)
-        self.inputs_worlds = input_worlds.split(" ")
+        self.input_worlds = input_worlds.split(" ")
         self.reconfigure(input_worlds.split(" "))
         self.__reconfigure_service_server = rospy.Service(client_name+"/reconfigure_inputs", ReconfigureInputs, self.reconfigureInputs)
         self.__list_inputs_service_server = rospy.Service(client_name+"/list_inputs", List, self.listInputs)

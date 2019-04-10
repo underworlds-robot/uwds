@@ -40,3 +40,6 @@ class UnderworldsProxy(object):
 
     def meshes(self):
         return self.__meshes_proxy.meshes()
+
+    def name(self):
+        return self.__client.name

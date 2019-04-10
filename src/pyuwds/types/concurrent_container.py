@@ -45,6 +45,9 @@ class ConcurrentContainer(object):
     def __getitem__(self, key):
         return self.__map[key]
 
+    def __setitem__(self, key, item):
+        self.__map[key] = item
+
     def __contains__(self, key):
         return self.has(key)
 

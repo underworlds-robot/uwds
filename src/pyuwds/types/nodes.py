@@ -9,7 +9,7 @@ CAMERA = Node.CAMERA
 
 NodeTypeNames = {ENTITY: "entity", MESH: "mesh", CAMERA: "camera"}
 
-class Nodes (ConcurrentContainer):
+class Nodes(ConcurrentContainer):
 
     def update(self, nodes):
         super(Nodes, self).update([n.id for n in nodes], nodes)

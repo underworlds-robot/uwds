@@ -33,7 +33,7 @@
   <depend>tf2_ros</depend>
   <depend>rostime</depend>
   <depend>pose_cov_ops</depend>
-
+  <depend>octomap</depend>
   <test_depend>rosunit</test_depend>
 
   <!-- The export tag contains other, unspecified, tags -->

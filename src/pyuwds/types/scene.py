@@ -16,7 +16,7 @@ class Scene:
         for node in nodes:
             node.last_update.data = current_time
             if node.parent not in self.__nodes:
-                node.parent = self.root_id
+                node.parent = self.root_id()
         self.__nodes.update(nodes)
         return [n.id for n in nodes if n.name != "root"]
 
