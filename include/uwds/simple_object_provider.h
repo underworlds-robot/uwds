@@ -43,11 +43,11 @@ namespace uwds
 
       vector<Mesh> object_meshes_;
 
+      bool align_with_world_ = true;
+
       bool use_mesh_ = false;
 
       string object_class_;
-
-      bool meshes_ever_send_ = false;
 
       string global_frame_id_;
 

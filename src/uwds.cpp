@@ -64,44 +64,105 @@ namespace uwds
     worlds_ = boost::make_shared<Worlds>(meshes_);
     topology_ = boost::make_shared<Topology>();
     if(verbose_)ROS_INFO("[%s::init] Advertise services...", client_->name.c_str());
-    get_topology_service_server_ = nh_->advertiseService("uwds/get_topology",
-                                            &Underworlds::getTopology,
-                                            this);
 
-    get_scene_service_server_ = nh_->advertiseService("uwds/get_scene",
-                                        &Underworlds::getScene,
-                                        this);
+    get_topology_service_ = boost::make_shared<GetTopologyService>(nh_, client_, topology_);
 
-    get_timeline_service_server_ = nh_->advertiseService("uwds/get_timeline",
-                                          &Underworlds::getTimeline,
-                                          this);
-
+    push_mesh_service_ = boost::make_shared<PushMeshService>(nh_, client_, meshes_);
     get_mesh_service_ = boost::make_shared<GetMeshService>(nh_, client_, meshes_);
 
-    push_mesh_service_server_ = nh_->advertiseService("uwds/push_mesh",
-                                      &Underworlds::pushMesh,
-                                      this);
+    get_timeline_service_ = boost::make_shared<GetTimelineService>(nh_, client_, worlds_);
+
+    get_scene_service_ = boost::make_shared<GetSceneService>(nh_, client_, worlds_);
+
+
 
     advertise_service_server_ = nh_->advertiseService("uwds/advertise_connection",
                                       &Underworlds::advertiseConnection,
                                       this);
 
-    pnh_->param<int>("subscriber_buffer_size", subscriber_buffer_size_, 20);
+    pnh_->param<int>("subscriber_buffer_size", subscriber_buffer_size_, 30);
     pnh_->param<int>("publisher_buffer_size", publisher_buffer_size_, 20);
     pnh_->param<bool>("verbose", verbose_, true);
-    /*
-    ros::AsyncSpinner spinner(0);
 
-    if(spinner.canStart())
-    {
-      spinner.start();
-      if(verbose_)ROS_INFO("[%s::init] Async spinner started !", client_->name.c_str());
-    }
-    */
     ROS_INFO("[%s::init] Underworlds server ready !", client_->name.c_str());
   }
 
   string Underworlds::name() {return client_->name;}
+
+  void Underworlds::changesCallback(const ChangesInContextStampedPtr& msg)
+  {
+     float delay = (ros::Time::now() - msg->header.stamp).toSec();
+
+     if(msg->ctxt.world == "uwds")
+     {
+       throw std::runtime_error("World namespace reserved.");
+     }
+     if(msg->ctxt.world == "")
+     {
+       throw std::runtime_error("Empty world namespace.");
+     }
+     try
+     {
+       auto& scene = worlds()[msg->ctxt.world].scene();
+       auto& timeline = worlds()[msg->ctxt.world].timeline();
+
+       scene.nodes().remove(msg->changes.nodes_to_delete);
+       scene.nodes().update(msg->changes.nodes_to_update);
+
+       timeline.situations().remove(msg->changes.situations_to_delete);
+       timeline.situations().update(msg->changes.situations_to_update);
+
+       meshes().remove(msg->changes.meshes_to_delete);
+       meshes().update(msg->changes.meshes_to_update);
+
+     } catch(const std::exception& e) {
+       ROS_ERROR("[%s::changesCallback] Exception occured when receiving changes from <%s> : %s",
+                     name_.c_str(),
+                     msg->ctxt.world.c_str(),
+                     e.what());
+     }
+  }
+
+  bool Underworlds::advertiseConnection(AdvertiseConnection::Request &req,
+                           AdvertiseConnection::Response &res)
+  {
+    if(verbose_)ROS_INFO("[%s::connectInput] Client <%s> requested 'uwds/advertise_connection' in <%s> world",
+                                 name_.c_str(),
+                                 req.connection.ctxt.client.name.c_str(),
+                                 req.connection.ctxt.world.c_str());
+    try
+    {
+      if(req.connection.ctxt.world == "uwds")
+      {
+        throw std::runtime_error("World namespace <uwds> reserved.");
+      }
+      if(req.connection.ctxt.world == "")
+      {
+        throw std::runtime_error("Empty world namespace.");
+      }
+
+      if(changes_subscribers_map_.count(req.connection.ctxt.world) == 0)
+      {
+        changes_subscribers_map_.emplace(req.connection.ctxt.world, boost::make_shared<ros::Subscriber>(nh_->subscribe(req.connection.ctxt.world+"/changes", subscriber_buffer_size_, &Underworlds::changesCallback, this)));
+        if(verbose_)ROS_INFO("[%s::advertiseConnection] Changes subscriber for world <%s> created", name_.c_str(), req.connection.ctxt.world.c_str());
+      }
+
+      topology().update(req.connection.ctxt, (ConnectionInteractionType) req.connection.type, (ConnectionActionType) req.connection.action);
+
+      res.success = true;
+    }
+    catch(const std::exception& e)
+    {
+      ROS_ERROR("[%s::advertiseConnection] Exception occured while registering the <%s> client connection to world <%s> : %s",
+                         req.connection.ctxt.client.name.c_str(),
+                         name_.c_str(),
+                         req.connection.ctxt.world.c_str(),
+                         e.what());
+      res.success = false;
+      res.error = e.what();
+    }
+    return true;
+  }
 
 
 

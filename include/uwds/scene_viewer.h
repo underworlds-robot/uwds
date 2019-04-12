@@ -69,7 +69,6 @@ namespace uwds
      */
     map<string, unsigned int> marker_id_map_;
 
-    //map<string, vectorMarker> marker_map_;
     /** @brief
      * The visualization timer.
      */

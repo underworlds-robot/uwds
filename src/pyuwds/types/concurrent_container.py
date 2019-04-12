@@ -42,6 +42,9 @@ class ConcurrentContainer(object):
     def has(self, id):
         return id in self.ids()
 
+    def __len__(self):
+        return len(self.__map)
+
     def __getitem__(self, key):
         return self.__map[key]
 

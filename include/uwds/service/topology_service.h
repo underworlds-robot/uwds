@@ -10,11 +10,12 @@ using namespace uwds_msgs;
 namespace uwds {
   class GetTopologyService : public Service<GetTopology::Request, GetTopology::Response>
   {
+  public:
     GetTopologyService(NodeHandlePtr nh, ClientPtr client, TopologyPtr topology):Service<GetTopology::Request, GetTopology::Response>(nh, client, "uwds/get_topology")
     {
       topology_ = topology;
     }
-
+  protected:
     void fillResponse(GetTopology::Request& req, GetTopology::Response& res)
     {
       topology_->lock();
@@ -43,6 +44,8 @@ namespace uwds {
 
     TopologyPtr topology_;
   };
+
+  typedef boost::shared_ptr<GetTopologyService> GetTopologyServicePtr;
 }
 
 #endif

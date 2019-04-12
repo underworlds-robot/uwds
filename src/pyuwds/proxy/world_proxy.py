@@ -40,15 +40,15 @@ class WorldProxy(object):
         self.__timeline_proxy = TimelineProxy(client, world_name)
         self.__knowledge_base_proxy = KnowledgeBaseProxy(client, world_name)
         self.__advertise_connection_proxy = AdvertiseConnectionProxy(client, world_name)
-
+        self.__ever_connected = False
+        self.__ever_send_changes = False
         self.__scene_proxy.get_scene_from_remote()
         self.__timeline_proxy.get_timeline_from_remote()
 
 
         self.__changes_subscriber = rospy.Subscriber(world_name + '/changes', ChangesInContextStamped, self.changes_callback, queue_size=20)
         self.__changes_publisher = rospy.Publisher(world_name + '/changes', ChangesInContextStamped, queue_size=20)
-        self.__ever_connected = False
-        self.__ever_send_changes = False
+
 
     def meshes(self):
         return self.__meshes_proxy.meshes()

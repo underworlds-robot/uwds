@@ -67,9 +67,11 @@ namespace uwds {
        */
       virtual void remove(const string id)
       {
-        lock();
-        map_.erase(id);
-        unlock();
+        if(map_.count(id)>0){
+          lock();
+          map_.erase(id);
+          unlock();
+        }
       }
 
       /** @brief
@@ -81,7 +83,8 @@ namespace uwds {
       {
         lock();
         for(const string id : ids)
-          map_.erase(id);
+          if(map_.count(id)>0)
+            map_.erase(id);
         unlock();
       }
 

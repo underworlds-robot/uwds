@@ -17,7 +17,7 @@ namespace uwds {
     {
       meshes_ = meshes;
     }
-
+  protected:
     void fillResponse(GetMesh::Request& req, GetMesh::Response& res)
     {
       if (meshes_->has(req.mesh_id))
@@ -30,7 +30,7 @@ namespace uwds {
         res.error = "Requested mesh <"+req.mesh_id+"> not existing";
       }
     }
-  protected:
+
     MeshesPtr meshes_;
   };
 
@@ -44,7 +44,7 @@ namespace uwds {
     {
       meshes_ = meshes;
     }
-
+  protected:
     void fillResponse(PushMesh::Request& req, PushMesh::Response& res)
     {
       if (!meshes_->has(req.mesh.id))
@@ -57,7 +57,7 @@ namespace uwds {
         res.error = "Pushed mesh <"+req.mesh.id+"> already existing";
       }
     }
-  protected:
+
     MeshesPtr meshes_;
   };
 

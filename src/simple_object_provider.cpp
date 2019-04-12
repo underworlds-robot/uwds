@@ -7,6 +7,8 @@ namespace uwds
     UwdsClientNodelet::onInit();
     pnh_->param<string>("output_world", output_world_, "simple_object");
     pnh_->param<string>("global_frame_id", global_frame_id_, "map");
+    pnh_->param<bool>("align_with_world", align_with_world_, true);
+    pnh_->param<bool>("use_mesh", use_mesh_, true);
     object_node_ = boost::make_shared<Node>();
     Property meshes_property;
     meshes_property.name = "meshes";
@@ -52,98 +54,119 @@ namespace uwds
   {
     if (msg->pose.position.x!=0 && msg->pose.position.y!=0 && msg->pose.position.z !=0)
     {
+      bool transformed = false;
+      Header header;
+      header.frame_id = msg->header.frame_id;
+      header.stamp = ros::Time::now();
       Changes changes;
+      float tx = msg->pose.position.x;
+      float ty = msg->pose.position.y;
+      float tz = msg->pose.position.z;
 
-      static tf::TransformBroadcaster br;
-      tf::Transform box_tr;
-      box_tr.setOrigin(tf::Vector3(msg->pose.position.x,
-                                      msg->pose.position.y,
-                                      msg->pose.position.z));
-      box_tr.setRotation(tf::Quaternion(msg->pose.orientation.x,
-                                           msg->pose.orientation.y,
-                                           msg->pose.orientation.z,
-                                           msg->pose.orientation.w));
-      br.sendTransform(tf::StampedTransform(box_tr, msg->header.stamp, msg->header.frame_id, object_name_));
+      float rx = msg->pose.orientation.x;
+      float ry = msg->pose.orientation.y;
+      float rz = msg->pose.orientation.z;
+      float rw = msg->pose.orientation.w;
 
-      try
+      if(align_with_world_)
       {
-        tf::StampedTransform transform;
-        tf_listener_.lookupTransform(global_frame_id_, object_name_,
-                                 ros::Time(), transform);
+        static tf::TransformBroadcaster br;
+        tf::Transform box_tr;
+        box_tr.setOrigin(tf::Vector3(msg->pose.position.x,
+                                        msg->pose.position.y,
+                                        msg->pose.position.z));
+        box_tr.setRotation(tf::Quaternion(msg->pose.orientation.x,
+                                             msg->pose.orientation.y,
+                                             msg->pose.orientation.z,
+                                             msg->pose.orientation.w));
+        br.sendTransform(tf::StampedTransform(box_tr, msg->header.stamp, msg->header.frame_id, object_name_));
 
-        tf::Vector3 t = transform.getOrigin();
-        tf::Quaternion q = transform.getRotation();
-
-        ros::Time now = ros::Time::now();
-        double deltaX = t.getX() - object_node_->position.pose.position.x;
-        double deltaY = t.getY() - object_node_->position.pose.position.y;
-        double deltaZ = t.getZ() - object_node_->position.pose.position.z;
-        double deltaT;
-
-        if (object_node_->last_observation.data.toSec()!= 0.0)
+        try
         {
-          if(now.toSec() <= object_node_->last_observation.data.toSec())
-            return;
-          deltaT = now.toSec() - object_node_->last_observation.data.toSec();
+          tf::StampedTransform transform;
+          tf_listener_.lookupTransform(global_frame_id_, object_name_,
+                                   ros::Time(), transform);
+          tf::Vector3 t = transform.getOrigin();
+          tf::Quaternion q = transform.getRotation();
+          tx = t.getX();
+          ty = t.getY();
+          tz = t.getZ();
+          rx = 0.0;
+          ry = 0.0;
+          rz = 0.0;
+          rw = 1.0;
+          transformed = true;
+        } catch (tf::TransformException &ex) {
+          NODELET_WARN("[%s] Exception occured : %s",ctx_->name().c_str(), ex.what());
         }
-        else {
-          deltaT = 0.0;
-        }
+      }
 
-        if(deltaT != 0.0)
+
+      double deltaX = tx - object_node_->position.pose.position.x;
+      double deltaY = ty - object_node_->position.pose.position.y;
+      double deltaZ = tz - object_node_->position.pose.position.z;
+      double deltaT;
+
+      if (object_node_->last_observation.data.toSec()!= 0.0)
+      {
+        if(header.stamp.toSec() <= object_node_->last_observation.data.toSec())
+          return;
+        deltaT = header.stamp.toSec() - object_node_->last_observation.data.toSec();
+      }
+      else {
+        deltaT = 0.0;
+      }
+
+      if(deltaT != 0.0)
+      {
+        if(deltaX != 0.0)
         {
-          if(deltaX != 0.0)
-          {
-            object_node_->velocity.twist.linear.x = deltaX / deltaT;
-          } else {
-            object_node_->velocity.twist.linear.x = 0.0;
-          }
-          if(deltaY != 0.0)
-          {
-            object_node_->velocity.twist.linear.y = deltaY / deltaT;
-          } else {
-            object_node_->velocity.twist.linear.y = 0.0;
-          }
-          if(deltaZ != 0.0)
-          {
-            object_node_->velocity.twist.linear.z = deltaZ / deltaT;
-          } else {
-            object_node_->velocity.twist.linear.z = 0.0;
-          }
+          object_node_->velocity.twist.linear.x = deltaX / deltaT;
         } else {
-          object_node_->velocity.twist.linear.x = NAN;
-          object_node_->velocity.twist.linear.y = NAN;
-          object_node_->velocity.twist.linear.z = NAN;
+          object_node_->velocity.twist.linear.x = 0.0;
         }
-
-        object_node_->position.pose.position.x = t.getX();
-        object_node_->position.pose.position.y = t.getY();
-        object_node_->position.pose.position.z = t.getZ();
-
-        object_node_->position.pose.orientation.x = 0.0;
-        object_node_->position.pose.orientation.y = 0.0;
-        object_node_->position.pose.orientation.z = 0.0;
-        object_node_->position.pose.orientation.w = 1.0;
-
-        object_node_->last_observation.data = now;
-
-        if (!use_mesh_)
+        if(deltaY != 0.0)
         {
-          for (auto& property : object_node_->properties)
-          {
-            if (property.name == "aabb")
-              property.data = to_string(msg->dimensions.x) + "," + to_string(msg->dimensions.y) + "," + to_string(msg->dimensions.z);
-          }
+          object_node_->velocity.twist.linear.y = deltaY / deltaT;
+        } else {
+          object_node_->velocity.twist.linear.y = 0.0;
         }
-        changes.nodes_to_update.push_back(*object_node_);
-        Header header;
+        if(deltaZ != 0.0)
+        {
+          object_node_->velocity.twist.linear.z = deltaZ / deltaT;
+        } else {
+          object_node_->velocity.twist.linear.z = 0.0;
+        }
+      } else {
+        object_node_->velocity.twist.linear.x = NAN;
+        object_node_->velocity.twist.linear.y = NAN;
+        object_node_->velocity.twist.linear.z = NAN;
+      }
+
+      object_node_->position.pose.position.x = tx;
+      object_node_->position.pose.position.y = ty;
+      object_node_->position.pose.position.z = tz;
+
+      object_node_->position.pose.orientation.x = rx;
+      object_node_->position.pose.orientation.y = ry;
+      object_node_->position.pose.orientation.z = rz;
+      object_node_->position.pose.orientation.w = rw;
+
+      object_node_->last_observation.data = header.stamp;
+
+      if (!use_mesh_)
+      {
+        for (auto& property : object_node_->properties)
+        {
+          if (property.name == "aabb")
+            property.data = to_string(msg->dimensions.x) + "," + to_string(msg->dimensions.y) + "," + to_string(msg->dimensions.z);
+        }
+      }
+
+      changes.nodes_to_update.push_back(*object_node_);
+      if(transformed == true)
         header.frame_id = global_frame_id_;
-        header.stamp = msg->header.stamp;
-        ctx_->worlds()[output_world_].update(header, changes);
-      }
-      catch (tf::TransformException &ex) {
-        NODELET_WARN("[%s] Exception occured : %s",ctx_->name().c_str(), ex.what());
-      }
+      ctx_->worlds()[output_world_].update(header, changes);
     }
   }
 }

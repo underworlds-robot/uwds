@@ -10,11 +10,12 @@ using namespace uwds_msgs;
 namespace uwds {
   class GetTimelineService : public Service<GetTimeline::Request, GetTimeline::Response>
   {
+  public:
     GetTimelineService(NodeHandlePtr nh, ClientPtr client, WorldsPtr worlds):Service<GetTimeline::Request, GetTimeline::Response>(nh, client, "uwds/get_timeline")
     {
       worlds_ = worlds;
     }
-
+  protected:
     void fillResponse(GetTimeline::Request& req, GetTimeline::Response& res)
     {
       if(req.ctxt.world == "uwds")
@@ -42,6 +43,8 @@ namespace uwds {
 
     WorldsPtr worlds_;
   };
+
+  typedef boost::shared_ptr<GetTimelineService> GetTimelineServicePtr;
 }
 
 #endif

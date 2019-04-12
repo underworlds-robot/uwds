@@ -1,7 +1,7 @@
 from world_proxy import WorldProxy
 
 class WorldsProxy(object):
-    
+
     def __init__(self, client, meshes):
         self.__client = client
         self.__meshes = meshes
@@ -14,3 +14,6 @@ class WorldsProxy(object):
 
     def close(self):
         self.__worlds.clear()
+
+    def has(self, world_name):
+        return True if world_name in self.__worlds else False

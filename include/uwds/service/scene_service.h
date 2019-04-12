@@ -10,11 +10,12 @@ using namespace uwds_msgs;
 namespace uwds {
   class GetSceneService : public Service<GetScene::Request, GetScene::Response>
   {
+  public:
     GetSceneService(NodeHandlePtr nh, ClientPtr client, WorldsPtr worlds):Service<GetScene::Request, GetScene::Response>(nh, client, "uwds/get_scene")
     {
       worlds_ = worlds;
     }
-
+  protected:
     void fillResponse(GetScene::Request& req, GetScene::Response& res)
     {
       if(req.ctxt.world == "uwds")
@@ -42,6 +43,8 @@ namespace uwds {
 
     WorldsPtr worlds_;
   };
+
+  typedef boost::shared_ptr<GetSceneService> GetSceneServicePtr;
 }
 
 #endif
