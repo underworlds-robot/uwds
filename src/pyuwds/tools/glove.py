@@ -70,7 +70,10 @@ class GloveManager:
         return word in self.word_to_vector
 
     def cosine_similarity(self, vector1, vector2):
-        return (1.0 - distance.cosine(vector1, vector2))
+        try:
+            return (1.0 - distance.cosine(vector1, vector2))
+        except:
+            0.0
 
     def sentence_vector(self, sentence):
         ponderation = 0

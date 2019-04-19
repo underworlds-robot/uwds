@@ -16,7 +16,7 @@ class TimelineViewer(ReconfigurableClient):
         """
         self.__text_pub = {}
         self.__overlay_name = rospy.get_param("~overlay_name", "timeline viewer")
-        super(OverlaytextSituationPublisher, self).__init__("timeline_viewer", READER)
+        super(TimelineViewer, self).__init__("timeline_viewer", READER)
 
         rospy.Timer(rospy.Duration(1/30.0), self.handleTimer)
 
@@ -25,8 +25,14 @@ class TimelineViewer(ReconfigurableClient):
         """
         #rospy.loginfo("reconfigure")
         text = OverlayText()
+
         text.action = 1
-        self.text_pub.publish(text)
+        for world_name in worlds_names:
+            scene = self.ctx.worlds()[world_name].scene()
+            timeline = self.ctx.worlds()[world_name].timeline()
+            if world_name not in self.__text_pub:
+                self.__text_pub[world_name] = rospy.Publisher(world_name+"/timeline", OverlayText, queue_size=2)
+            self.__text_pub[world_name].publish(text)
         pass
 
     def onSubscribeChanges(self, world_name):
@@ -50,7 +56,7 @@ class TimelineViewer(ReconfigurableClient):
     def publishOverlaytext(self, world_name):
         """
         """
-        situations_text = " <"+world_name+"> "+self.overlay_name +"\n\r"
+        situations_text = " <"+world_name+"> "+self.__overlay_name +"\n\r"
         situations_text += "- facts\n\r"
         situations_text += "id : description\n\r"
         situations_text += "----------------\n\r"
@@ -95,8 +101,9 @@ class TimelineViewer(ReconfigurableClient):
         text.fg_color = ColorRGBA(25 / 255.0, 1.0, 240.0 / 255.0, 1.0)
         text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.2)
 
-        if world_name not in self.text_pub:
-        self.text_pub.publish(text)
+        if world_name not in self.__text_pub:
+            self.__text_pub[world_name] = rospy.Publisher(world_name+"/timeline", OverlayText, queue_size=2)
+        self.__text_pub[world_name].publish(text)
 
 if __name__ == '__main__':
     rospy.init_node("timeline_viewer")
