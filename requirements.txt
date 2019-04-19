@@ -1,2 +1,4 @@
 uuid
+numpy
+scipy
 pygraphviz

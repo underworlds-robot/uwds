@@ -8,15 +8,15 @@ from jsk_rviz_plugins.msg import OverlayText
 from std_msgs.msg import ColorRGBA
 
 
-class OverlaytextSituationPublisher(ReconfigurableClient):
+class TimelineViewer(ReconfigurableClient):
     """
     """
     def __init__(self):
         """
         """
-        self.text_pub = rospy.Publisher('situations_overlay', OverlayText, queue_size=1)
-        self.overlay_name = rospy.get_param("~overlay_name", "TIMELINE")
-        super(OverlaytextSituationPublisher, self).__init__("overlaytext_situation_publisher", READER)
+        self.__text_pub = {}
+        self.__overlay_name = rospy.get_param("~overlay_name", "timeline viewer")
+        super(OverlaytextSituationPublisher, self).__init__("timeline_viewer", READER)
 
         rospy.Timer(rospy.Duration(1/30.0), self.handleTimer)
 
@@ -43,8 +43,6 @@ class OverlaytextSituationPublisher(ReconfigurableClient):
         """
         """
         pass
-        #if len(invalidations.situation_ids_updated) > 0:
-        #    self.publishOverlaytext(world_name, header, invalidations)
 
     def handleTimer(self, event):
         self.publishOverlaytext(self.input_worlds[0])
@@ -52,7 +50,7 @@ class OverlaytextSituationPublisher(ReconfigurableClient):
     def publishOverlaytext(self, world_name):
         """
         """
-        situations_text = self.overlay_name +"\n\r"
+        situations_text = " <"+world_name+"> "+self.overlay_name +"\n\r"
         situations_text += "- facts\n\r"
         situations_text += "id : description\n\r"
         situations_text += "----------------\n\r"
@@ -96,9 +94,11 @@ class OverlaytextSituationPublisher(ReconfigurableClient):
         text.text = situations_text
         text.fg_color = ColorRGBA(25 / 255.0, 1.0, 240.0 / 255.0, 1.0)
         text.bg_color = ColorRGBA(0.0, 0.0, 0.0, 0.2)
+
+        if world_name not in self.text_pub:
         self.text_pub.publish(text)
 
 if __name__ == '__main__':
-    rospy.init_node("overlaytext_situation_publisher")
-    ovtextpub = OverlaytextSituationPublisher()
+    rospy.init_node("timeline_viewer")
+    viewer = TimelineViewer()
     rospy.spin()
