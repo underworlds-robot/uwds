@@ -7,6 +7,8 @@
   <arg name="nodelet_manager" default="uwds_nodelet_manager"/>
   <arg name="launch-prefix" default=""/>
 
+  <arg name="start_kb_lite" default="false"/>
+
   <node name="$(arg nodelet_manager)"
         pkg="nodelet" type="nodelet"
         args="manager"
@@ -25,4 +27,18 @@
       verbose: true
     </rosparam>
   </node>
+
+  <node name="uwds_kb_lite"
+        pkg="uwds" type="uwds_kb_lite.py"
+        respawn="$(arg respawn)"
+        output="$(arg output)"
+        launch-prefix="$(arg launch-prefix)"
+        if="$(arg start_kb_lite)">
+    <rosparam subst_value="true">
+      data_dir: $(arg data_dir)
+      match_threshold: $(arg match_threshold)
+      verbose: $(arg verbose)
+    </rosparam>
+  </node>
+
 </launch>

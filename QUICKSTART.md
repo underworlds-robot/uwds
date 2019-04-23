@@ -17,30 +17,32 @@ This architecture allow developers to design high level reasoning in the same mo
 
 It can be viewed as a set of distributed world states that share the same data-structure : A scene graph (that is actually a tree) where each node referent his parent with a relative position, velocity and acceleration (with they respective covariances); a timeline of situations (event or temporal predicates that can represent actions or facts for example) and the meshes that are centrally stored and served on-demand.
 
-### Documentation
+## Installation instructions
 
-Documentations can be found here :
-* [API Documentation]()
-* [MSG Documentation]()
-
-## Installation instructions (tested on ROS Kinetic)
-
-First install the dependencies with :
-```
-sudo apt-get install assimp-utils ros-$ROS_DISTRO-pose-cov-ops ros-$ROS_DISTRO-jsk-recognition-msgs ros-$ROS_DISTRO-jsk-visualization-msgs ros-$ROS_DISTRO-jsk-visualization
-sudo pip install pygraphviz uuid
-```
-Then clone and build the catkin package :
+Follow the following instructions :
 ```
 cd catkin_ws/src
-git clone https://github.com/underworlds-robot/uwds_msgs.git
 git clone https://github.com/underworlds-robot/uwds.git
-cd ..
-catkin_make
-source devel/setup.bash
+cd uwds
+./download_data.sh
+./install_dependencies.sh
+cd ../.. && catkin_make
 ```
 
 Note : A Docker is available [here](https://github.com/underworlds-robot/uwds_dockerfile)
+
+### Documentation
+
+Documentations can be build by performing the following command :
+
+```
+cd catkin_ws/src/uwds
+rosdoc_lite .
+cd catkin_ws/src/uwds_msgs
+rosdoc_lite .
+```
+
+Each atomic structure (e.g. the nodes, situations and meshes) have a set of properties that store valuable data for reasoning and geometric computation. To know which property are present in the system, please refer to this [page](#).
 
 ## First launch
 
@@ -191,6 +193,7 @@ This line will lazzely create a proxy for the world `robot/env` that will fetch 
 
 #### Reader example
 
+In this second example we will see how to connect to a world a access the data-structure.
 ```c++
 #include <ros/ros.h>
 #include <uwds/uwds.h>
@@ -233,7 +236,41 @@ int main(int argc, char **argv)
 
 ```
 
+In this second example, we have a `READER` readers are clients that read the data-structure without sending data to Underworlds, they are usefull for introspection purposes, to bind the Underworlds output to an external system or to implement GUI.
+
+The important thing here is how we connect to a world :
+```c++
+
+ctx_->worlds()["robot/env_filtered"].connect(bind(&ReaderExample::onChanges, this, _1, _2, _3))
+
+```
+
+To connect to a specific world, we only need to connect a callback function to the given world proxy by calling the connect function. Remember, the data-structure have been fetched at the creation of the proxy and is maintained by the system. When changes are received, after the update of the data-structure, the callback function is called by Underworlds allowing to perform some computation when there is a change in the data-structure.
+
+To know which element have been updated/deleted an Invalidations message is send as parameter to the callback. Note that here because we connect the callback to class member, we need to bind it, this is not required when using static functions.
+
+So then we need to implement the callback function, here it's just some screen log:
+
+```c++
+void onChanges(string world_name, Header header, Invalidations invalidations)
+{
+  Changes changes;
+  auto& scene = ctx_->worlds()["robot/env"].scene();
+  for(const auto& node_id : invalidations.node_ids_updated)
+  {
+    if(regex_match(scene.nodes()[node_id].name, regex_))
+    {
+      changes.nodes_to_update.push_back(scene.nodes()[node_id]);
+    }
+  }
+  ctx_->worlds()["robot/env_filtered"].update(changes);
+}
+```
+
+
 #### Filter example
+
+This third c++ example will show you how to use wrtiting and reading capabilities to implement a `FILTER`, to keep the example simple we will use a regex to filter the nodes of the scene.
 
 ```c++
 #include <ros/ros.h>
