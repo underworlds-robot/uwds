@@ -23,13 +23,10 @@ class TimelineViewer(ReconfigurableClient):
     def onReconfigure(self, worlds_names):
         """
         """
-        #rospy.loginfo("reconfigure")
         text = OverlayText()
 
         text.action = 1
         for world_name in worlds_names:
-            scene = self.ctx.worlds()[world_name].scene()
-            timeline = self.ctx.worlds()[world_name].timeline()
             if world_name not in self.__text_pub:
                 self.__text_pub[world_name] = rospy.Publisher(world_name+"/timeline", OverlayText, queue_size=2)
             self.__text_pub[world_name].publish(text)

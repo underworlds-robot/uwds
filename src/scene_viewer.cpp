@@ -137,24 +137,18 @@ namespace uwds
       {
         const auto& mesh = ctx_->worlds()[world].meshes()[mesh_id];
 
-        boost::shared_ptr<Marker> marker = boost::make_shared<Marker>();
-        if (node.parent == scene.rootID())
-          marker->header.frame_id = global_frame_id_;
-        else
-          marker->header.frame_id = world + "/" + scene.nodes()[node.parent].id;
-        marker->header.stamp = stamp;
+        boost::shared_ptr<Marker> marker;
         if (marker_id_map_.count(world+mesh_id)==0) {
+          marker = boost::make_shared<Marker>();
           marker_id_map_.emplace(world+mesh_id, last_marker_id_++);
-        }
-        marker->id = marker_id_map_.at(world+mesh_id);
-        marker->action = Marker::ADD;
-        marker->type = Marker::TRIANGLE_LIST;
-        marker->pose = node.position.pose;
-        marker->scale.x = 1.0;
-        marker->scale.y = 1.0;
-        marker->scale.z = 1.0;
+          marker->id = marker_id_map_.at(world+mesh_id);
+          marker->action = Marker::ADD;
+          marker->type = Marker::TRIANGLE_LIST;
+          marker->pose = node.position.pose;
+          marker->scale.x = 1.0;
+          marker->scale.y = 1.0;
+          marker->scale.z = 1.0;
 
-        if(marker_map_.count(world+mesh_id) == 0) {
           for (const auto& triangle : mesh.triangles)
           {
             if(triangle.vertex_indices.size()==3)
@@ -202,6 +196,11 @@ namespace uwds
         }
         marker = marker_map_.at(world+mesh_id);
         marker->pose = node.position.pose;
+        marker->header.stamp = stamp;
+        if (node.parent == scene.rootID())
+          marker->header.frame_id = global_frame_id_;
+        else
+          marker->header.frame_id = world + "/" + scene.nodes()[node.parent].id;
         markers.push_back(*marker);
       } catch (exception& e){
         ROS_WARN("Exception occurred while creating marker for mesh <%s>: %s ", mesh_id.c_str(), e.what());

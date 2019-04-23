@@ -9,8 +9,10 @@ from pyuwds.types.nodes import CAMERA, MESH, ENTITY
 from pyuwds.types.situations import FACT, ACTION, GENERIC, INTERNAL
 from pyuwds.tools.glove import GloveManager
 
+
 def getDictValue(elem):
     return elem[1]
+
 
 class UwdsKBLite(UwdsClient):
     def __init__(self):
@@ -73,10 +75,9 @@ class UwdsKBLite(UwdsClient):
                         if score > node_id_to_score[subject]:
                             node_id_to_score[subject] = score
 
-        match = sorted(node_id_to_score.items(), reverse=True ,key=getDictValue)
+        match = sorted(node_id_to_score.items(), reverse=True, key=getDictValue)
 
         for id, score in match:
-            print id + " : " +str(score)
             if score > self.__match_threshold:
                 result.append(id)
             else:

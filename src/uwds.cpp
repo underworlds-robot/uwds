@@ -21,14 +21,7 @@ namespace uwds
     meshes_proxy_ = boost::make_shared<MeshesProxy>(nh_, pnh_, client_);
     worlds_proxy_ = boost::make_shared<WorldsProxy>(nh_, pnh_, client_, meshes_proxy_);
     topology_proxy_ = boost::make_shared<TopologyProxy>(nh_, pnh_, client_);
-    /*
-    ros::AsyncSpinner spinner(0);
-    if(spinner.canStart())
-    {
-      spinner.start();
-      ROS_INFO("[%s::init] Async spinner started !", client_->name.c_str());
-    }
-    */
+
     ROS_INFO("[%s::init] Underworlds client ready !", client_->name.c_str());
   }
 
@@ -41,8 +34,6 @@ namespace uwds
   }
 
   Meshes& UnderworldsProxy::meshes() {return meshes_proxy_->meshes();}
-
-  //Client& UnderworldsProxy::client() {return *client_;}
 
   string UnderworldsProxy::name() {return client_->name;}
 

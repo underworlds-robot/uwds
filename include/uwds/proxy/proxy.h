@@ -9,10 +9,13 @@ using namespace std;
 using namespace uwds_msgs;
 
 namespace uwds {
-
+  // for covenience
   typedef boost::shared_ptr<ros::NodeHandle> NodeHandlePtr;
   typedef boost::shared_ptr<ros::ServiceClient> ServiceClientPtr;
 
+  /** @brief
+   * This class ease the creation of ROS based proxies.
+   */
   template<typename ServiceMessage, typename... RequestParameters>
   class ServiceProxy
   {
@@ -61,7 +64,9 @@ namespace uwds {
     ServiceClientPtr service_client_;
   };
 
-
+  /** @brief
+   * This class ease the creation of ROS based proxies that manage local data-structure.
+   */
   template<class Data, class GetDataSrv, class Returns = Invalidations, typename... Parameters>
   class DataProxy : public ServiceProxy<GetDataSrv, Parameters... >
   {
