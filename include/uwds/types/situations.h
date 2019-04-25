@@ -130,7 +130,7 @@ namespace uwds {
        * @param property_name The property name to test
        * @param property_data The property data to test
        */
-      vector<SituationPtr> byProperty(const string& property_name, const string& property_data)
+      vector<SituationPtr> byProperty(const string& property_name, const string& property_data="")
       {
         vector<SituationPtr> situations;
         string property;
@@ -138,8 +138,9 @@ namespace uwds {
         for(const auto& situation : *this)
         {
           string property = getSituationProperty(situation->id, property_name);
-          if(property == property_data)
-            situations.push_back(situation);
+          if(property_data != "")
+            if(property == property_data)
+              situations.push_back(situation);
         }
         this->unlock();
         return situations;
@@ -150,7 +151,7 @@ namespace uwds {
        *
        * @param description The description to test
        */
-      vector<SituationPtr> by_description(const string& description)
+      vector<SituationPtr> byDescription(const string& description)
       {
         vector<SituationPtr> situations;
         this->lock();
@@ -170,7 +171,7 @@ namespace uwds {
        *
        * @param type The type to test
        */
-      vector<SituationPtr> by_type(const SituationType& type)
+      vector<SituationPtr> byType(const SituationType& type)
       {
         vector<SituationPtr> situations;
         this->lock();

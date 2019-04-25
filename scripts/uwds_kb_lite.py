@@ -29,10 +29,10 @@ class UwdsKBLite(UwdsClient):
     def onChanges(self, world_name, header, invalidations):
         pass
 
-    def clean_sentence(self, label):
-        label = label.replace("_"," ").replace("."," ").replace("-"," ").lower()
+    def clean_sentence(self, sentence):
+        sentence = sentence.replace("_"," ").replace("."," ").replace("-"," ").lower()
         result = []
-        for word in label.split(" "):
+        for word in sentence.split(" "):
             try:
                 test = int(word)
             except ValueError:
@@ -40,11 +40,11 @@ class UwdsKBLite(UwdsClient):
         first = True
         for word in result:
             if first is True:
-                label = word
+                sentence = word
                 first = False
             else:
-                label += " " + word
-        return label
+                sentence += " " + word
+        return sentence
 
     def match(self, sentence1, sentence2):
         clean_sentence1 = self.clean_sentence(sentence1)

@@ -22,7 +22,7 @@ class GloveManager:
                     insert = False
                 if record[0] in keep:
                     insert = True
-                i+=1
+                i += 1
                 if insert:
                     token = record[0]
                     self.word_to_vector[token] = np.array(record[1:], dtype=np.float64)

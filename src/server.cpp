@@ -11,7 +11,6 @@ namespace uwds
     pnh_ = boost::make_shared<ros::NodeHandle>(getMTPrivateNodeHandle());
     pnh_->param<bool>("verbose", verbose_, false);
     ctx_ = boost::make_shared<Underworlds>(nh_, pnh_);
-
   }
 }
 

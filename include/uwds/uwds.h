@@ -29,7 +29,6 @@
 #include <uwds_msgs/Invalidations.h>
 #include <uwds_msgs/Changes.h>
 #include <uwds_msgs/ChangesInContextStamped.h>
-#include <uwds_msgs/MeshTriangle.h>
 #include <uwds_msgs/Mesh.h>
 #include <std_msgs/ColorRGBA.h>
 

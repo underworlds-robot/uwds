@@ -21,17 +21,18 @@ This package comes with a set of clients that allow the robot to have HRI center
 
 Here is the list of clients and they usage:
 
-- **SimpleObjectProvider** : Allow to bind one BoundingBox object detection from [jsk_recognition]() stack.
-- **ArObjectProvider** : Allow to use ar_tags for object detection and recognition based on  [ar_track_alvar]() package.
-- **TimelineViewer** : Allow to visualize into Rviz the timelines of the connected worlds.
-- **WorldMerger** : Allow to gather perception data from multiple worlds into one world state.
-- **SceneViewer** : Allow to visualize the connected worlds into Rviz.
+- **SimpleObjectProvider** : Allow to bind one BoundingBox object detection from [jsk_recognition](https://github.com/jsk-ros-pkg/jsk_recognition) stack.
+- **ArObjectProvider** : Allow to use ar_tags for object detection and recognition based on  [ar_track_alvar](https://wiki.ros.org/ar_track_alvar) package.
+- **TimelineViewer** : Allow to visualize into Rviz the timelines of the connected worlds by publishing an OverlayText.
+- **WorldMerger** : Allow to gather perception data from multiple worlds into one merged world state, this client transform also perception data from sensor frame to global frame.
+- **SceneViewer** : Allow to visualize the connected worlds into Rviz by publishing MarkerArray and BoundingBoxArray for each world.
 - **EnvProvider** : Allow to load a scene into the given world from an Assimp compatible 3D file.
-- **RegexFilter** : Allow to filter the nodes based on a regex.
-- **PhysicsMonitor** : Allow to anchor perception data into a simulation-based physically consistent world where perspective-independent predicates (*isOn*, *isIn*) are computed and actions (*Pick*, *Place*, *Release*) are inferred by analyzing physical violations.
+- **RegexFilter** : Allow to filter the nodes of a scene based on a regex.
+- **PhysicsReasoner** : Allow to anchor perception data into a simulation-based physically consistent world where perspective-independent predicates (*isOn(object,object)*, *isIn(object,object)*) are computed on corrected bbox and actions (*Pick(object)*, *Place(object)*, *Release(object)*) are inferred by analyzing physical violations.
 - **UwdsKnowledgeBase** : Allow to fetch Underworlds data structure IDs by performing a SPARQL-like query to an external ontology based reasoner that share the same domain than the descriptions computed by the system.
-- **UwdsKBLite** : Allow to fetch Underworlds data structure IDs by performing a semantic matching with the Underworlds data-structure and the given sentence, based on global word vector representation.
-- **BeliefsFilter** : Allow to compute the perspective of the humans(e.g. the predicate *isVisible*) and estimate their beliefs state based on the robot current beliefs.
+- **UwdsKBLite** : Allow to fetch Underworlds data structure IDs by performing a semantic matching with the Underworlds data-structure and the given NL query, based on global word vector representation.
+- **VisibilityMonitor** : Compute the predicate *isVisibleBy(object,camera)* for each camera in the scene by using graphical rendering (offscreen rendering possible).
+- **BeliefsFilter** : Allow to infer an estimation of the human beliefs about the environment from the robot current beliefs.
 
 Follow the quick start guide to learn how to use *Underworlds* :
 
