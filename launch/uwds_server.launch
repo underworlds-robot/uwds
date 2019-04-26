@@ -7,6 +7,9 @@
   <arg name="nodelet_manager" default="uwds_nodelet_manager"/>
   <arg name="launch-prefix" default=""/>
 
+  <arg name="verbose" default="false"/>
+  <arg name="data_dir" value="$(find uwds)/res/data"/>
+  <arg name="match_threshold" value="0.85"/>
   <arg name="start_kb_lite" default="false"/>
 
   <node name="$(arg nodelet_manager)"
