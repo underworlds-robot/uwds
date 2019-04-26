@@ -365,8 +365,8 @@ class PhysicsReasoner(ReconfigurableClient):
             else:
                 changes.nodes_to_update.append(node)
 
-        for contact in self.p.getContactPoints():
-            pass
+        # for contact in p.getContactPoints():
+        #     pass
 
         now = rospy.Time.now()
         for node1_id in self.simulated_node_ids:
