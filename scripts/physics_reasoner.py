@@ -97,7 +97,7 @@ class PhysicsReasoner(ReconfigurableClient):
         self.isOnTop = {}
         self.isContaining = {}
 
-        super(PhysicsFilter, self).__init__("gravity_filter", FILTER)
+        super(PhysicsReasoner, self).__init__("gravity_filter", FILTER)
 
         self.timer = rospy.Timer(rospy.Duration(1.0/self.reasoning_frequency), self.reasoningCallback)
 
