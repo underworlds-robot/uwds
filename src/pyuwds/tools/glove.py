@@ -72,7 +72,7 @@ class GloveManager:
     def cosine_similarity(self, vector1, vector2):
         try:
             return (1.0 - distance.cosine(vector1, vector2))
-        except:
+        except ValueError:
             0.0
 
     def sentence_vector(self, sentence):
@@ -101,7 +101,11 @@ class GloveManager:
             return 0.0
 
     def get_embedding_matrix(self):
-        pass #TODO
+        embedding_matrix = np.zeros((self.vocabulary_size, self.vector_dim))
+        for word, i in self.word_to_index.items():
+            vector = self.get_vector(word)
+            embedding_matrix[i] = vector
+        return embedding_matrix
 
     def get_evaluated_sentence(self, sentence):
         first_word = True

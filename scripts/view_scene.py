@@ -26,21 +26,17 @@ if __name__ == '__main__':
     request = uwds_msgs.srv.GetSceneRequest()
     request.ctxt.world = args.world
     response = get_scene_client(request)
-
     parent_map = {}
-    node_names_map = {}
-    nodes_map = {}
+    node_map = {}
     for node in response.nodes:
-        G.add_node(node.name, fontcolor="black")
-        node_names_map[node.id] = node.name
-        nodes_map[node.id] = node
+        G.add_node(node.id, fontcolor="black", label=node.name)
         if node.parent != "":
             parent_map[node.id] = node.parent
+            node_map[node.id] = node
     for node_id, parent_id in parent_map.items():
-        edge_from = node_names_map[parent_id]
-        edge_to = node_names_map[node_id]
-        duration = rospy.Time.now() - node.last_observation.data
-        time_str = ""
+        edge_from = parent_id
+        edge_to = node_id
         G.add_edge(edge_from, edge_to)
+
     G.layout(prog='dot')
     G.draw("scene.pdf")

@@ -55,6 +55,10 @@ namespace uwds
                       return;
           }
         }
+        if (type != FIXED)
+        {
+          
+        }
         //TODO apply transform
       }
     }

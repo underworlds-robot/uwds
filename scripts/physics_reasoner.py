@@ -586,7 +586,7 @@ class PhysicsReasoner(ReconfigurableClient):
         x2, y2, z2 = bb2_max
         x3, y3, z3 = bb2_min
 
-        if prev is False:
+        if prev is True:
             if z1 > z2 - 2*EPSILON:
                 return False
 
