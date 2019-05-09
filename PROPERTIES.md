@@ -6,11 +6,11 @@ In order to be extendable Underworlds store the optional informations of the nod
 ### Nodes properties
 
 |Property name| Property data format | NodeType | description |
-|---|---|---|---|---|
+|---|---|---|---|
 | aabb\* | x_dim,y_dim,z_dim | MESH | The AABB of the node |
 | meshes  | mesh_id,mesh_id,...,mesh_id | MESH  | The list of the meshes UUID attached to this node |
 | octrees  | octree_id,octree_id,...,octree_id | MESH  | The list of the octrees UUID attached to this node |
-| fov\*  | fov | CAMERA | The horizontal filed of view of the camera |
+| hfov\*  | hfov | CAMERA | The horizontal field of view of the camera |
 | aspect\*  | aspect  | CAMERA | The aspect ratio of the camera |
 | up  | x_dim,y_dim_,z_dim | CAMERA | The up vector of the camera |
 
