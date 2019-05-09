@@ -215,25 +215,9 @@ namespace uwds
     std_msgs::Header bbox_header;
     bbox.header.stamp = stamp;
     bbox.header.frame_id = global_frame_id_;
-    try
-    {
-      tf::StampedTransform transform;
-      tf_listener_.lookupTransform(global_frame_id_, world+"/"+node.id,
-                               ros::Time(), transform);
 
-      tf::Vector3 t = transform.getOrigin();
-      tf::Quaternion q = transform.getRotation();
-      bbox.pose.position.x = t.getX();
-      bbox.pose.position.y = t.getY();
-      bbox.pose.position.z = t.getZ();
+    bbox.pose = ctx_->worlds()[world].scene().getWorldPose(node.id);
 
-      bbox.pose.orientation.x = q.getX();
-      bbox.pose.orientation.y = q.getY();
-      bbox.pose.orientation.z = q.getZ();
-      bbox.pose.orientation.w = q.getW();
-    } catch(exception& e){
-      bbox.header.frame_id = world+"/"+node.name;
-    }
     for(const auto& property : node.properties)
     {
       if (property.name == "aabb")

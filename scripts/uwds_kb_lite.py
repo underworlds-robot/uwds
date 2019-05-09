@@ -9,7 +9,6 @@ from pyuwds.types.nodes import CAMERA, MESH, ENTITY
 from pyuwds.types.situations import FACT, ACTION, GENERIC, INTERNAL
 from pyuwds.tools.glove import GloveManager
 
-
 def getDictValue(elem):
     return elem[1]
 
@@ -17,20 +16,21 @@ def getDictValue(elem):
 class UwdsKBLite(UwdsClient):
     def __init__(self):
         super(UwdsKBLite, self).__init__("uwds_knowledge_base", READER)
-        data_dir = rospy.get_param("~data_dir", "")
+        self.__data_dir = rospy.get_param("~data_dir", "")
         self.__match_threshold = rospy.get_param("~match_threshold", 0.85)
         words_to_keep = rospy.get_param("~words_to_keep", "in on under above was below").split(" ")
         dim = rospy.get_param("~dim", 300)
         stoplist = rospy.get_param("~stop_list", 50)
-        self.__glove = GloveManager(data_dir+"/glove/glove.6B."+str(dim)+"d.txt", stoplist=stoplist, keep=words_to_keep)
+        self.__glove = GloveManager(self.__data_dir+"/glove/glove.6B."+str(dim)+"d.txt", stoplist=stoplist, keep=words_to_keep)
         rospy.loginfo("["+self.ctx.name()+"::queryKnowledgeBase] Underworlds KB ready !")
-        self.__query_service = rospy.Service("uwds/query_knowledge_base", QueryInContext, self.handleQuery)
+        self.__query_service = rospy.Service("uwds/query_knowledge_base", QueryInContext, self.handle_query)
+        self.__latent_dim = rospy.get_param("~latent_dim", 128)
 
     def onChanges(self, world_name, header, invalidations):
         pass
 
     def clean_sentence(self, sentence):
-        sentence = sentence.replace("_"," ").replace("."," ").replace("-"," ").lower()
+        sentence = sentence.replace("_", " ").replace(".", " ").replace("-", " ").lower()
         result = []
         for word in sentence.split(" "):
             try:
@@ -54,7 +54,7 @@ class UwdsKBLite(UwdsClient):
             print "similarity("+clean_sentence1+" , "+clean_sentence2+") = "+ str(similarity)
         return similarity
 
-    def queryKnowledgeBase(self, world_name, query):
+    def query_knowledge_base(self, world_name, query):
         """
         """
         scene = self.ctx.worlds()[world_name].scene()
@@ -84,15 +84,6 @@ class UwdsKBLite(UwdsClient):
                 return result
         return result
 
-    def handleQuery(self, req):
-        """
-        """
-        try:
-            result = self.queryKnowledgeBase(req.ctxt.world, req.query)
-            return result, True, ""
-        except Exception as e:
-            rospy.logwarn("["+self.ctx.name()+"::queryKnowledgeBase] Exception occurred : "+str(e))
-            return [], False, str(e)
 
 if __name__ == '__main__':
     rospy.init_node("uwds_kb_lite", anonymous=False)

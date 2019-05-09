@@ -463,7 +463,7 @@ class PhysicsReasoner(ReconfigurableClient):
                         label += "_" + word
                 self.bullet_node_id_map[node_id] = p.loadURDF(label+".urdf", position, orientation)
                 rospy.loginfo("[%s::updateBulletNodeNodes] "+label+".urdf' loaded successfully", self.ctx.name())
-                p.changeDynamics(self.bullet_node_id_map[node_id], -1, frictionAnchor=1, rollingFriction=1.0, spinningFriction=1.0, lateralFriction=1.0)
+                p.changeDynamics(self.bullet_node_id_map[node_id], -1, rollingFriction=0.9, spinningFriction=0.9)
                 self.simulated_node_ids.append(node_id)
                 if node_id not in self.node_action_state:
                     self.node_action_state[node_id] = PLACED
@@ -586,18 +586,17 @@ class PhysicsReasoner(ReconfigurableClient):
         x2, y2, z2 = bb2_max
         x3, y3, z3 = bb2_min
 
-        if prev is True:
-            if z1 > z2 - 2*EPSILON:
-                return False
+        if z1 > z2 - 2 * EPSILON:
+            return False
 
-            if z1 < z3 + EPSILON:
-                return False
-        else:
-            if z1 > z2 - EPSILON :
-                return False
-
-            if z1 < z3 :
-                return False
+        if z1 < z3 - EPSILON:
+            return False
+        # else:
+        #     if z1 > z2:
+        #         return False
+        #
+        #     if z1 < z3 - EPSILON:
+        #         return False
 
         return self.weakly_cont(self.bb_footprint(bb1), self.bb_footprint(bb2), prev)
 

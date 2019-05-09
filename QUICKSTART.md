@@ -36,13 +36,10 @@ Note : A Docker is available [here](https://github.com/underworlds-robot/uwds_do
 Documentations can be build by performing the following command :
 
 ```
-cd catkin_ws/src/uwds
-rosdoc_lite .
-cd catkin_ws/src/uwds_msgs
-rosdoc_lite .
+./generate_documentation.sh
 ```
 
-Each atomic structure (e.g. the nodes, situations and meshes) have a set of properties that store valuable data for reasoning and geometric computation. To know which property are present in the system, please refer to this [page](#).
+Each atomic structure (e.g. the nodes, situations and meshes) have a set of properties that store valuable data for reasoning and geometric computation. To know which property are present in the system, please refer to this [page](PROPERTIES.md).
 
 ## First launch
 

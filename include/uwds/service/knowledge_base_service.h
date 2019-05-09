@@ -40,7 +40,7 @@ namespace uwds {
   protected:
     void fillResponse(QueryInContext::Request& req, QueryInContext::Response& res)
     {
-      if ((*worlds_).has(req.ctxt.world))
+      if (!(*worlds_).has(req.ctxt.world))
       {
         auto& scene = (*worlds_)[req.ctxt.world].scene();
         auto& timeline = (*worlds_)[req.ctxt.world].timeline();
