@@ -118,3 +118,10 @@ class GloveManager:
                 else:
                     eval_sentence += " " + word
         return eval_sentence
+
+    def tokenize_sentence(self, sentence):
+        tokens = []
+        for word in sentence.split(" "):
+            if self.has(word):
+                tokens.append(self.get_vector(word))
+        return tokens
