@@ -34,6 +34,7 @@ namespace uwds
 
   void SceneViewer::publishVisualization(const std::string world, const ros::Time stamp)
   {
+    ROS_INFO("test");
     std_msgs::Header header;
     header.stamp = stamp;
     header.frame_id = global_frame_id_;
@@ -43,8 +44,6 @@ namespace uwds
     bboxes.header = header;
     auto& scene = ctx_->worlds()[world].scene();
     auto& meshes = ctx_->meshes();
-    scene.lock();
-    meshes.lock();
     for (const auto& node_ptr : scene.nodes())
     {
       Node node = *node_ptr;
@@ -99,8 +98,6 @@ namespace uwds
 
     if (bboxes_publisher_map_.count(world) > 0 && bboxes.boxes.size() > 0)
       bboxes_publisher_map_.at(world)->publish(bboxes);
-    scene.unlock();
-    meshes.unlock();
   }
 
   void SceneViewer::onTimer(const ros::TimerEvent& event) {
