@@ -12,7 +12,7 @@
   <arg name="verbose" default="true"/>
   <arg name="data_dir" value="$(find uwds_knowledge_base)/res/data/uwds_en2sq_dataset/res/data"/>
   <arg name="robot_pkg_base" default="~/openrobots"/>
-  <arg name="ontology_path" default="$(find uwds_knowledge_base)/res/owl/underworlds.owl"/>
+  <arg name="ontology_path" default="$(find uwds_knowledge_base)/res/owl/commonsense.oro.owl"/>
 
   <node name="uwds_server"
         pkg="nodelet" type="nodelet"
