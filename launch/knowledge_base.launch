@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="output" default="screen"/>
+  <arg name="respawn" default="false"/>
+  <arg name="start_manager" default="false"/>
+  <arg name="start_server" default="false"/>
+  <arg name="nodelet_manager" default=""/>
+  <arg name="launch-prefix" default=""/>
+
+  <arg name="oro_host" default="localhost"/>
+  <arg name="oro_port" default="6969"/>
+  <arg name="verbose" default="true"/>
+  <arg name="data_dir" value="$(find uwds_knowledge_base)/res/data/uwds_en2sq_dataset/res/data"/>
+  <arg name="robot_pkg_base" default="~/openrobots"/>
+  <arg name="ontology_path" default="$(find uwds_knowledge_base)/res/owl/underworlds.owl"/>
+
+  <node name="uwds_server"
+        pkg="nodelet" type="nodelet"
+        args="load uwds/UwdsServerNodelet $(arg nodelet_manager)"
+        respawn="$(arg respawn)"
+        output="$(arg output)"
+        launch-prefix="$(arg launch-prefix)"
+        if="$(arg start_server)"/>
+
+  <node name="oro_launcher"
+        pkg="uwds" type="launch_oro.py"
+        respawn="$(arg respawn)"
+        output="$(arg output)"
+        launch-prefix="$(arg launch-prefix)">
+    <rosparam subst_value="true">
+      robot_pkg_base: $(arg robot_pkg_base)
+      verbose : $(arg verbose)
+    </rosparam>
+  </node>
+
+  <node name="uwds_knowledge_base"
+        pkg="uwds" type="uwds_knowledge_base.py"
+        respawn="$(arg respawn)"
+        output="$(arg output)"
+        launch-prefix="$(arg launch-prefix)">
+    <rosparam subst_value="true">
+      data_dir : $(arg data_dir)
+      verbose : $(arg verbose)
+      ontology_path: $(arg ontology_path)
+    </rosparam>
+  </node>
+
+</launch>
