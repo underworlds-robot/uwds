@@ -56,6 +56,6 @@ if __name__ == '__main__':
                 if property.name == "predicate" or property.name == "action":
                     label = property.data
             if edge_from != "" and edge_to != "":
-                G.add_edge(edge_from, edge_to, label=label)
+                G.add_edge(edge_from, edge_to, label=situation.description + "\r\n predicate : " + label )
     G.layout(prog='dot')
     G.draw("world.pdf")

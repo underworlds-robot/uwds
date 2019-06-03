@@ -84,6 +84,10 @@ class UwdsKBLite(UwdsClient):
                 return result
         return result
 
+    def handle_query(self, req):
+        return self.query_knowledge_base(req.ctxt.world, req.query), True, ""
+
+
 
 if __name__ == '__main__':
     rospy.init_node("uwds_kb_lite", anonymous=False)
