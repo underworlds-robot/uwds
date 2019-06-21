@@ -18,7 +18,7 @@ class VisibilityMonitor(ReconfigurableClient):
     def __init__(self):
         """
         """
-        self.ressource_folder = rospy.get_param("~ressource_folder")
+        self.ressource_folder = rospy.get_param("~ressource_folder", "")
         p.connect(p.DIRECT) # Initialize bullet non-graphical version
         p.setAdditionalSearchPath(self.ressource_folder)
         self.urdf_available = {}
@@ -225,4 +225,4 @@ class VisibilityMonitor(ReconfigurableClient):
 if __name__ == '__main__':
     rospy.init_node("visibility_monitor")
     vm = VisibilityMonitor()
-    rospy.spin()
+rospy.spin()

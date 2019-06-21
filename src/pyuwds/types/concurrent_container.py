@@ -28,6 +28,10 @@ class ConcurrentContainer(object):
                 del self.__map[id]
         self._unlock()
 
+    def delete(self, id):
+        if self.has(id):
+            del self.__map[id]
+
     def is_empty(self):
         return self.get_size() > 0
 

@@ -126,6 +126,43 @@ namespace uwds {
         }
       }
 
+      virtual void remove(const string id)
+      {
+        if(this->has(id)){
+          lock();
+          string parent_id = (*this)[id].parent;
+          vector<int> position;
+          int i=0;
+          Node node = (*this)[parent_id];
+          for (const auto& child : node.children)
+            if(child == id)
+              position.push_back(i);
+          for (const auto& pos : position)
+              node.children.erase(node.children.begin()+pos);
+          this->update(node.id, node);
+          unlock();
+        }
+      }
+
+      virtual void remove(const vector<string> ids)
+      {
+        lock();
+        for(const string id : ids)
+          if(this->has(id)){
+            string parent_id = (*this)[id].parent;
+            vector<int> position;
+            int i=0;
+            Node node = (*this)[parent_id];
+            for (const auto& child : node.children)
+              if(child == id)
+                position.push_back(i);
+            for (const auto& pos : position)
+                node.children.erase(node.children.begin()+pos);
+            this->update(node.id, node);
+          }
+        unlock();
+      }
+
       /** @brief
        * This method update a set of nodes (or create them if new)
        *
