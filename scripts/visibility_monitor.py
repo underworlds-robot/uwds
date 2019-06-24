@@ -18,7 +18,7 @@ class VisibilityMonitor(ReconfigurableClient):
     def __init__(self):
         """
         """
-        self.ressource_folder = rospy.get_param("~ressource_folder")
+        self.ressource_folder = rospy.get_param("~ressource_folder", "")
         p.connect(p.DIRECT) # Initialize bullet non-graphical version
         p.setAdditionalSearchPath(self.ressource_folder)
         self.urdf_available = {}
@@ -27,7 +27,7 @@ class VisibilityMonitor(ReconfigurableClient):
         self.min_treshold = rospy.get_param("~min_treshold", 0.4)
         self.width = rospy.get_param("~width", 480/8)
         self.height = rospy.get_param("~height", 360/8)
-        super(VisibilityMonitor, self).__init__(self, "visibility_monitor", FILTER)
+        super(VisibilityMonitor, self).__init__("visibility_monitor", FILTER)
 
     def onReconfigure(self, worlds):
         """
@@ -70,7 +70,7 @@ class VisibilityMonitor(ReconfigurableClient):
                         changes.situations_to_update.append(situation)
                     evaluated.append(node.id)
 
-        for node in self.cx.worlds()[world_name].scene().nodes():
+        for node in self.ctx.worlds()[world_name].scene().nodes():
             if node.type == CAMERA:
                 if (rospy.Time() - node.last_observation.data).to_sec() > 1.0:
                     situations = self.updateSituations(world_name, header, node.id, {})
@@ -91,10 +91,10 @@ class VisibilityMonitor(ReconfigurableClient):
             orientation = [camera_node.position.pose.orientation.x, camera_node.position.pose.orientation.y, camera_node.position.pose.orientation.z, camera_node.position.pose.orientation.w]
             euler = tf.transformations.euler_from_quaternion(orientation)
             view_matrix = p.computeViewMatrixFromYawPitchRoll(position, -0.5, math.degrees(euler[2]), math.degrees(euler[1]), math.degrees(euler[1]), 2)
-            fov = float(self.ctx.worlds()[world_name].scene().get_node_property(camera_id, "hfov"))
-            clipnear = float(self.ctx.worlds()[world_name].scene().get_node_property(camera_id, "clipnear"))
-            clipfar = float(self.ctx.worlds()[world_name].scene().get_node_property(camera_id, "clipfar"))
-            aspect = float(self.ctx.worlds()[world_name].scene().get_node_property(camera_id, "aspect"))
+            fov = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "hfov"))
+            clipnear = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "clipnear"))
+            clipfar = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "clipfar"))
+            aspect = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "aspect"))
             proj_matrix = p.computeProjectionMatrixFOV(40.0, aspect, clipnear, clipfar)
             width, height, rgb, depth, seg = p.getCameraImage(self.width, self.height, viewMatrix=view_matrix, projectionMatrix=proj_matrix, flags = p.ER_SEGMENTATION_MASK_OBJECT_AND_LINKINDEX)
             max_nb_pixel = 0
@@ -151,9 +151,9 @@ class VisibilityMonitor(ReconfigurableClient):
         situations_ids_ended = []
         for situation in self.ctx.worlds()[world_name].timeline().situations():
             if situation.end.data == rospy.Time(0):
-                if self.ctx.worlds()[world_name].timeline().get_situation_property(situation.id, "predicate") == "isVisible":
-                    subject_id = self.ctx.worlds()[world_name].timeline().get_situation_property(situation.id, "subject")
-                    object_id = self.ctx.worlds()[world_name].timeline().get_situation_property(situation.id, "object")
+                if self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "predicate") == "isVisible":
+                    subject_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "subject")
+                    object_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "object")
                     if camera_id == subject_id:
                         if object_id in visibilities:
                             situation.confidence = visibilities[object_id]
@@ -225,4 +225,4 @@ class VisibilityMonitor(ReconfigurableClient):
 if __name__ == '__main__':
     rospy.init_node("visibility_monitor")
     vm = VisibilityMonitor()
-    rospy.spin()
+rospy.spin()

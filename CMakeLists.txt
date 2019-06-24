@@ -13,12 +13,13 @@ find_package(catkin REQUIRED COMPONENTS
   nodelet
   pluginlib
   rostime
-	urdf
+  urdf
   uwds_msgs
-	geometry_msgs
-	sensor_msgs
-	jsk_recognition_msgs
-	visualization_msgs
+  geometry_msgs
+  sensor_msgs
+  jsk_recognition_msgs
+  visualization_msgs
+  ar_track_alvar_msgs
   tf
   tf2_ros
   pose_cov_ops
@@ -64,12 +65,13 @@ include_directories(
    src/tools/model_loader.cpp
    src/uwds.cpp
    src/server.cpp
-	 src/uwds_client_nodelet.cpp
-	 src/reconfigurable_client.cpp
-	 src/uwds_provider.cpp
-	 src/env_provider.cpp
-	 src/scene_viewer.cpp
+   src/uwds_client_nodelet.cpp
+   src/reconfigurable_client.cpp
+   src/uwds_provider.cpp
+   src/env_provider.cpp
+   src/scene_viewer.cpp
    src/world_merger.cpp
+   src/ar_objects_provider.cpp
    src/simple_object_provider.cpp
 )
 

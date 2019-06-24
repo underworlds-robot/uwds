@@ -20,40 +20,74 @@ namespace uwds
                               const Header& header,
                               const Invalidations& invalidations)
   {
+    changes_mutex_.lock();
+    try{
     auto& scene = ctx_->worlds()[world].scene();
     auto& timeline = ctx_->worlds()[world].timeline();
     auto& meshes = ctx_->worlds()[world].meshes();
 
-    changes_mutex_.lock();
+    for(const string& id : invalidations.node_ids_deleted)
+    {
+      try{
+        ROS_WARN("trying to delete <%s> node", id.c_str());
+        if(scene.nodes().has(id)){
+          ROS_WARN("%s is in scene !", id.c_str());
+          bool insert = false;
+          for (uint i=0; i < changes_to_send_.nodes_to_delete.size(); ++i)
+          {
+            if (changes_to_send_.nodes_to_delete[i] == id)
+              insert = true;
+          }
+          if(!insert) changes_to_send_.nodes_to_delete.push_back(id);
+        }
+        ROS_WARN("sending to delete <%s> node", id.c_str());
+      } catch (exception& e) {
+        ROS_WARN("[%s::onChanges] Error occured while deleting node %s : %s", ctx_->name().c_str(), id.c_str(), e.what());
+      }
+    }
+
     for(const string& id : invalidations.node_ids_updated)
     {
-      if(scene.nodes().has(id)) {
-        if (scene.nodes()[id].name != "root")
-        {
-          bool insert = false;
-          bool transformed = false;
-          if(header.frame_id!="" && header.frame_id != global_frame_id_)
+      try{
+        ROS_WARN("trying to merge <%s> node", id.c_str());
+        if(scene.nodes().has(id))
+          if (scene.nodes()[id].name != "root")
           {
-            vector<Node> match = scene.getNodesByName(header.frame_id);
-            if(match.size() > 0)
+            ROS_WARN("trying to transform <%s> node", id.c_str());
+            Node node = Node(scene.nodes()[id]);
+            ROS_WARN("copying node <%s>", id.c_str());
+            bool insert = false;
+            bool transformed = false;
+
+            if(header.frame_id!="" && header.frame_id != global_frame_id_)
             {
-              if(match.size() > 1)
+              NODELET_WARN("start get node by name");
+              vector<Node> match = scene.getNodesByName(header.frame_id);
+              NODELET_WARN("end get node by name");
+              if(match.size() > 0)
               {
-                NODELET_WARN("[%s::onChanges] Multiple nodes matching '%s' frame. Parenting to the first one.", ctx_->name().c_str(), header.frame_id.c_str());
-              }
-              scene.nodes()[id].parent = match[0].id;
-              transformed = true;
-            } else {
-              geometry_msgs::TransformStamped transformStamped;
-              tf2::Stamped<tf2::Transform> temp;
-              geometry_msgs::PoseStamped sensor_pose;
+                NODELET_WARN("transform %s node with uwds", id.c_str());
+                if(match.size() > 1)
+                {
+                  NODELET_WARN("[%s::onChanges] Multiple nodes matching '%s' frame. Parenting to the first one.", ctx_->name().c_str(), header.frame_id.c_str());
+                }
+                node.parent = match[0].id;
+                transformed = true;
+              } else {
               try {
+                NODELET_WARN("transform %s node with tf", id.c_str());
+                geometry_msgs::TransformStamped transformStamped;
+                tf2::Stamped<tf2::Transform> temp;
+                geometry_msgs::PoseStamped sensor_pose;
+
                 transformStamped = tf_buffer_->lookupTransform(header.frame_id, global_frame_id_, ros::Time(0));
                 tf2::fromMsg(transformStamped, temp);
                 tf2::toMsg(temp, sensor_pose);
-                pose_cov_ops::inverseCompose(scene.nodes()[id].position.pose, sensor_pose.pose, scene.nodes()[id].position.pose);
+
+                pose_cov_ops::inverseCompose(node.position.pose, sensor_pose.pose, node.position.pose);
                 transformed = true;
-              } catch(tf2::TransformException& e) {
+                ROS_WARN("transformed node <%s> with tf", id.c_str());
+              } catch(exception& e) {
                 ROS_WARN("[%s::onChanges] Error occured while transforming node into world frame : %s",ctx_->name().c_str(), e.what());
               }
             }
@@ -62,18 +96,15 @@ namespace uwds
           }
           if (transformed)
           {
-            for (uint i=0; i < changes_to_send_.nodes_to_update.size(); ++i) {
-              if (changes_to_send_.nodes_to_update[i].id == id)
-              {
-                changes_to_send_.nodes_to_update[i] = scene.nodes()[id];
-                insert = true;
-              }
-            }
-            if(!insert) changes_to_send_.nodes_to_update.push_back(scene.nodes()[id]);
+            changes_to_send_.nodes_to_update.push_back(node);
+            ROS_WARN("sending to update <%s> node", id.c_str());
           }
         }
+      } catch(exception& e){
+       ROS_WARN("[%s::onChanges] Error occured while transforming node %s : %s", ctx_->name().c_str(), id.c_str(), e.what());
       }
     }
+
     for(const string& id : invalidations.situation_ids_updated)
     {
       bool insert = false;
@@ -89,6 +120,7 @@ namespace uwds
       if(timeline.situations().has(id))
         if(!insert) changes_to_send_.situations_to_update.push_back(timeline.situations()[id]);
     }
+
     for(const std::string& id : invalidations.mesh_ids_updated)
     {
       bool insert = false;
@@ -103,17 +135,6 @@ namespace uwds
       }
       if(meshes.has(id))
         if(!insert) changes_to_send_.meshes_to_update.push_back(meshes[id]);
-    }
-
-    for(const string& id : invalidations.node_ids_deleted)
-    {
-      bool insert = false;
-      for (uint i=0; i < changes_to_send_.nodes_to_delete.size(); ++i)
-      {
-        if (changes_to_send_.nodes_to_delete[i] == id)
-          insert = true;
-      }
-      if(!insert) changes_to_send_.nodes_to_delete.push_back(id);
     }
 
     for(const string& id : invalidations.situation_ids_deleted)
@@ -137,8 +158,12 @@ namespace uwds
       }
       if(!insert) changes_to_send_.meshes_to_delete.push_back(id);
     }
+    } catch (exception& e) {
+      ROS_WARN("[%s::onChanges] Error occured : %s", ctx_->name().c_str(), e.what());
+    }
     changes_mutex_.unlock();
   }
+
 
   void WorldMerger::onTimer(const ros::TimerEvent& event)
   {
