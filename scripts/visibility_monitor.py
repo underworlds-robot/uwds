@@ -9,6 +9,7 @@ import pybullet as p
 import pybullet_data
 from pyuwds.reconfigurable_client import ReconfigurableClient
 from uwds_msgs.msg import Changes, Situation, Property
+from std_msgs.msg import Header
 from pyuwds.types.nodes import MESH, CAMERA
 from pyuwds.types.situations import FACT
 from pyuwds.uwds import FILTER
@@ -19,7 +20,11 @@ class VisibilityMonitor(ReconfigurableClient):
         """
         """
         self.ressource_folder = rospy.get_param("~ressource_folder", "")
-        p.connect(p.DIRECT) # Initialize bullet non-graphical version
+        use_gui = rospy.get_param("~use_gui", True)
+        if use_gui is True:
+            p.connect(p.GUI) # Initialize bullet graphical version
+        else:
+            p.connect(p.DIRECT) # Initialize bullet non-graphical version
         p.setAdditionalSearchPath(self.ressource_folder)
         self.urdf_available = {}
         self.node_id_map = {}
@@ -32,6 +37,19 @@ class VisibilityMonitor(ReconfigurableClient):
     def onReconfigure(self, worlds):
         """
         """
+        # if len(worlds) > 0:
+        #     if len(self.ctx.worlds()[worlds[0]].scene().nodes()) > 0:
+        #         changes = Changes()
+        #         header = Header()
+        #         header.frame_id = self.global_frame_id
+        #         header.stamp = rospy.Time.now()
+        #         for node in self.ctx.worlds()[worlds[0]].scene().nodes():
+        #             changes.nodes_to_update.append(node)
+        #         for situation in self.ctx.worlds()[worlds[0]].timeline().situations():
+        #             changes.situations_to_update.append(situation)
+        #
+        #         self.ctx.worlds()[worlds[0]].update(changes)
+
 
     def onSubscribeChanges(self, world_name):
         """
@@ -47,16 +65,35 @@ class VisibilityMonitor(ReconfigurableClient):
         """
         """
         changes = self.monitor(world_name, header, invalidations)
-        if len(changes.situations_to_update) > 0:
-            self.ctx.worlds()[world_name+"_visibilities"].update(header, changes)
-            rospy.loginfo("[%s::onChanges] Changes send (%d situations) in world <%s>", self.node_name, len(changes.situations_to_update), "visibilities")
+        if changes is not None:
+            if len(changes.nodes_to_update) > 0 or len(changes.nodes_to_delete) > 0 or len(changes.situations_to_update) > 0 or len(changes.situations_to_delete) > 0:
+                if len(changes.situations_to_delete) > 0:
+                    self.ctx.worlds()[world_name].timeline().remove(changes.situations_to_delete)
+                self.ctx.worlds()[world_name+"_visibilities"].update(changes, header)
+        #rospy.loginfo("[%s::onChanges] Changes send (%d situations) in world <%s>", self.ctx.name(), len(changes.situations_to_update), world_name+"_visibilities")
 
     def monitor(self, world_name, header, invalidations):
         """
         """
+        situations_to_delete = []
         changes = Changes()
         for node_id in invalidations.node_ids_updated:
             self.updateBulletNodes(world_name, node_id)
+            changes.nodes_to_update.append(self.ctx.worlds()[world_name].scene().nodes()[node_id])
+        #print "reverse node id map : "+ str(self.reverse_node_id_map)
+        for node_id in invalidations.node_ids_deleted:
+            for situation in self.ctx.worlds()[world_name].timeline().situations():
+                if node_id == self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "subject") or node_id == self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "object"):
+                    print "delete : " + situation.description
+                    situations_to_delete.append(situation.id)
+                    changes.situations_to_delete.append(situation.id)
+            changes.nodes_to_delete.append(node_id)
+
+        for sit_id in invalidations.situation_ids_updated:
+            changes.situations_to_update.append(self.ctx.worlds()[world_name].timeline().situations()[sit_id])
+
+        for sit_id in invalidations.situation_ids_deleted:
+            changes.situations_to_delete.append(sit_id)
 
         evaluated = []
         not_evaluated = []
@@ -72,10 +109,11 @@ class VisibilityMonitor(ReconfigurableClient):
 
         for node in self.ctx.worlds()[world_name].scene().nodes():
             if node.type == CAMERA:
-                if (rospy.Time() - node.last_observation.data).to_sec() > 1.0:
+                if (rospy.Time() - node.last_observation.data).to_sec() > 2.0:
                     situations = self.updateSituations(world_name, header, node.id, {})
                     for situation in situations:
                         changes.situations_to_update.append(situation)
+
         return changes
 
     def computeVisibilities(self, world_name, camera_id):
@@ -84,20 +122,18 @@ class VisibilityMonitor(ReconfigurableClient):
         visibilities = {}
         mean_distances_from_center = {}
         nb_pixel = {}
-        relative_sizes = {}
         if camera_id in self.ctx.worlds()[world_name].scene().nodes():
             camera_node = self.ctx.worlds()[world_name].scene().nodes()[camera_id]
             position = [camera_node.position.pose.position.x, camera_node.position.pose.position.y, camera_node.position.pose.position.z]
             orientation = [camera_node.position.pose.orientation.x, camera_node.position.pose.orientation.y, camera_node.position.pose.orientation.z, camera_node.position.pose.orientation.w]
             euler = tf.transformations.euler_from_quaternion(orientation)
-            view_matrix = p.computeViewMatrixFromYawPitchRoll(position, -0.5, math.degrees(euler[2]), math.degrees(euler[1]), math.degrees(euler[1]), 2)
+            view_matrix = p.computeViewMatrixFromYawPitchRoll(position, 0.7, math.degrees(euler[2]), math.degrees(euler[1]), math.degrees(euler[0]), 2)
             fov = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "hfov"))
             clipnear = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "clipnear"))
             clipfar = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "clipfar"))
             aspect = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "aspect"))
-            proj_matrix = p.computeProjectionMatrixFOV(40.0, aspect, clipnear, clipfar)
+            proj_matrix = p.computeProjectionMatrixFOV(90, aspect, clipnear, clipfar)
             width, height, rgb, depth, seg = p.getCameraImage(self.width, self.height, viewMatrix=view_matrix, projectionMatrix=proj_matrix, flags = p.ER_SEGMENTATION_MASK_OBJECT_AND_LINKINDEX)
-            max_nb_pixel = 0
             background_nb_pixel = 0
             max_visibility = 0
             r = min(width, height)
@@ -108,12 +144,12 @@ class VisibilityMonitor(ReconfigurableClient):
                         bullet_id = pixel & ((1 << 24)-1)
                         if bullet_id in self.reverse_node_id_map:
                             uwds_id = self.reverse_node_id_map[bullet_id]
+                            #print "compute visibilities for " +self.ctx.worlds()[world_name].scene().nodes()[uwds_id].name
                             if uwds_id != self.ctx.worlds()[world_name].scene().root_id():
                                 if uwds_id not in mean_distances_from_center:
                                     mean_distances_from_center[uwds_id] = 0.0
-                                line_dist = (line-(line/2.0))
+                                # line_dist = (line-(line/2.0))
                                 col_dist = (col-(col/2.0))
-                                #dist_from_center = math.sqrt(line_dist*line_dist+col_dist*col_dist)
                                 dist_from_center = math.sqrt(col_dist*col_dist)
                                 mean_distances_from_center[uwds_id] += dist_from_center
                                 if uwds_id not in nb_pixel:
@@ -128,17 +164,18 @@ class VisibilityMonitor(ReconfigurableClient):
                         background_nb_pixel += 1.0
 
             if len(mean_distances_from_center) > 0:
-                print "camera <%s> :" % self.worlds[world_name].scene.nodes[camera_id].name
+                #print "camera <%s> :" % self.ctx.worlds()[world_name].scene().nodes()[camera_id].name
                 for node_id, mean_dist in mean_distances_from_center.items():
                     mean_distances_from_center[node_id] = mean_dist / nb_pixel[node_id]
-                    camera_node = self.worlds[world_name].scene.nodes[camera_id]
-                    object_node = self.worlds[world_name].scene.nodes[node_id]
+                    camera_node = self.ctx.worlds()[world_name].scene().nodes()[camera_id]
+                    object_node = self.ctx.worlds()[world_name].scene().nodes()[node_id]
                     if mean_distances_from_center[node_id] < r:
                         visibilities[node_id] = 1 - mean_distances_from_center[node_id]/r
                     else:
                         visibilities[node_id] = 0
                     if visibilities[node_id] > self.min_treshold:
-                        print " - see object <%s> with %5f confidence" % (object_node.name, visibilities[node_id])
+                        pass
+                        #print " - see object <%s> with %5f confidence" % (object_node.name, visibilities[node_id])
                     else:
                         del visibilities[node_id]
         return visibilities
@@ -149,50 +186,55 @@ class VisibilityMonitor(ReconfigurableClient):
         situations = []
         situations_to_update = []
         situations_ids_ended = []
+        #print "size timeline : " + str(len(self.ctx.worlds()[world_name].timeline().situations()))
         for situation in self.ctx.worlds()[world_name].timeline().situations():
-            if situation.end.data == rospy.Time(0):
-                if self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "predicate") == "isVisible":
-                    subject_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "subject")
-                    object_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "object")
-                    if camera_id == subject_id:
-                        if object_id in visibilities:
-                            situation.confidence = visibilities[object_id]
-                            print "update : %s with %f confidence" % (situation.description, visibilities[object_id])
-                            del visibilities[object_id]
-                            situations_to_update.append(situation)
-                        else:
-                            situation.end.data = header.stamp
-                            print "end : %s" % situation.description
-                            situations_ids_ended.append(situation.id)
-                        situations.append(situation)
-
+            #if situation.end.data == rospy.Time(0):
+            if self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "predicate") == "isVisibleBy":
+                subject_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "subject")
+                object_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "object")
+                assert subject_id != ""
+                #print 'test lol'
+                if camera_id == subject_id:
+                    #print 'test'
+                    if object_id in visibilities:
+                        situation.confidence = visibilities[object_id]
+                        #print "update : %s with %f confidence" % (situation.description, visibilities[object_id])
+                        del visibilities[object_id]
+                        situations_to_update.append(situation)
+                    else:
+                        situation.end.data = header.stamp
+                        situation.description.replace("is", "was")
+                        print "end : %s" % situation.description
+                        situations_ids_ended.append(situation.id)
+                    situations.append(situation)
+        #print "size visibilities :" +str(visibilities)
         for id_seen, visibility_score in visibilities.items():
             situation = Situation()
             situation.id = str(uuid.uuid4())
             situation.type = FACT
-            situation.description = self.worlds[world_name].scene.nodes[id_seen].name + " is visible by " + self.worlds[world_name].scene.nodes[camera_id].name
+            situation.description = self.ctx.worlds()[world_name].scene().nodes()[id_seen].name + " is visible by " + self.ctx.worlds()[world_name].scene().nodes()[camera_id].name
             predicate = Property()
             predicate.name = "predicate"
             predicate.data = "isVisibleBy"
             situation.properties.append(predicate)
             subject = Property()
             subject.name = "subject"
-            subject.data = camera_id
+            subject.data = id_seen
             situation.properties.append(subject)
             object = Property()
             object.name = "object"
-            object.data = id_seen
+            object.data = camera_id
             situation.properties.append(object)
             situation.confidence = visibility_score
             situation.start.data = header.stamp
             situation.end.data = rospy.Time(0)
-            if self.verbose:
-                print "start : %s" % situation.description
+            #if self.verbose:
+            print "start : %s" % situation.description
             situations_to_update.append(situation)
             situations.append(situation)
 
-        #self.ctx.worlds()[world_name].timeline().update(situations_to_update)
-        #self.ctx.worlds()[world_name].timeline().remove(situations_ids_ended)
+        self.ctx.worlds()[world_name].timeline().update(situations_to_update)
+        self.ctx.worlds()[world_name].timeline().remove(situations_ids_ended)
         return situations
 
     def updateBulletNodes(self, world_name, node_id):
@@ -209,6 +251,7 @@ class VisibilityMonitor(ReconfigurableClient):
             if node_id not in self.node_id_map:
                 try:
                     self.node_id_map[node_id] = p.loadURDF(node.name+".urdf", position, orientation)
+                    self.reverse_node_id_map[self.node_id_map[node_id]] = node_id
                     rospy.loginfo("[%s::updateBulletNodes] "+node.name+".urdf' loaded successfully", self.node_name)
                 except Exception as e:
                     self.node_id_map[node_id] = -1

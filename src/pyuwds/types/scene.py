@@ -21,8 +21,9 @@ class Scene:
         return [n.id for n in nodes if n.name != "root"]
 
     def remove(self, ids):
-        self.__nodes.remove(ids)
-        return ids
+        removed = []
+        removed = self.__nodes.remove(ids)
+        return removed
 
     def root_id(self):
         return self.__root_id

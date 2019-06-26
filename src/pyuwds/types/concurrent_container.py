@@ -23,10 +23,13 @@ class ConcurrentContainer(object):
 
     def remove(self, ids):
         self._lock()
+        removed = []
         for id in ids:
             if self.has(id):
                 del self.__map[id]
+                removed.append(id)
         self._unlock()
+        return removed
 
     def delete(self, id):
         if self.has(id):
@@ -50,7 +53,8 @@ class ConcurrentContainer(object):
         return len(self.__map)
 
     def __getitem__(self, key):
-        return self.__map[key]
+        if key in self.__map:
+            return self.__map[key]
 
     def __setitem__(self, key, item):
         self.__map[key] = item

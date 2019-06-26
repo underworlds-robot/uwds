@@ -86,24 +86,26 @@ class WorldProxy(object):
             self.__on_changes(self.__world_name, msg.header, inv)
 
     def update(self, changes, header=None):
-        if header is None:
-            header = Header(stamp=rospy.Time.now(), frame_id=self.__global_frame_id)
-        if not self.__ever_connected:
-            if not self.__ever_send_changes:
-                self.advertise_connection_to_remote(Connection.WRITE, Connection.CONNECT)
-                self.__ever_send_changes = True
-            msg = ChangesInContextStamped()
-            msg.ctxt.client = self.__client
-            msg.ctxt.world = self.__world_name
-            msg.header = header
-            msg.changes = changes
+        if len(changes.nodes_to_update) > 0 or len(changes.situations_to_update) or len(changes.nodes_to_delete) > 0 or len(changes.situations_to_delete) > 0:
+            if header is None:
+                header = Header(stamp=rospy.Time.now(), frame_id=self.__global_frame_id)
+            if not self.__ever_connected:
+                if not self.__ever_send_changes:
+                    self.advertise_connection_to_remote(Connection.WRITE, Connection.CONNECT)
+                    self.__ever_send_changes = True
+                msg = ChangesInContextStamped()
+                msg.ctxt.client = self.__client
+                msg.ctxt.world = self.__world_name
+                msg.header = header
+                msg.changes = changes
 
-            while self.__changes_publisher.get_num_connections() < 1:
-                rospy.sleep(0.15)
-            self.__changes_publisher.publish(msg)
-            return True
-        else:
-            return False
+                # while self.__changes_publisher.get_num_connections() < 1:
+                #     rospy.sleep(0.15)
+                self.__changes_publisher.publish(msg)
+                return True
+            else:
+                return False
+        return False
 
     def advertise_connection_to_remote(self, connection_type, action):
         advertise_connection_response = self.__advertise_connection_proxy.call(connection_type, action)

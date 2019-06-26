@@ -29,9 +29,9 @@ namespace uwds
     for(const string& id : invalidations.node_ids_deleted)
     {
       try{
-        ROS_WARN("trying to delete <%s> node", id.c_str());
+        //ROS_WARN("trying to delete <%s> node", id.c_str());
         if(scene.nodes().has(id)){
-          ROS_WARN("%s is in scene !", id.c_str());
+          //ROS_WARN("%s is in scene !", id.c_str());
           bool insert = false;
           for (uint i=0; i < changes_to_send_.nodes_to_delete.size(); ++i)
           {
@@ -40,33 +40,33 @@ namespace uwds
           }
           if(!insert) changes_to_send_.nodes_to_delete.push_back(id);
         }
-        ROS_WARN("sending to delete <%s> node", id.c_str());
+        //ROS_WARN("sending to delete <%s> node", id.c_str());
       } catch (exception& e) {
-        ROS_WARN("[%s::onChanges] Error occured while deleting node %s : %s", ctx_->name().c_str(), id.c_str(), e.what());
+        //ROS_WARN("[%s::onChanges] Error occured while deleting node %s : %s", ctx_->name().c_str(), id.c_str(), e.what());
       }
     }
 
     for(const string& id : invalidations.node_ids_updated)
     {
       try{
-        ROS_WARN("trying to merge <%s> node", id.c_str());
+        //ROS_WARN("trying to merge <%s> node", id.c_str());
         if(scene.nodes().has(id))
           if (scene.nodes()[id].name != "root")
           {
-            ROS_WARN("trying to transform <%s> node", id.c_str());
+            //ROS_WARN("trying to transform <%s> node", id.c_str());
             Node node = Node(scene.nodes()[id]);
-            ROS_WARN("copying node <%s>", id.c_str());
+            //ROS_WARN("copying node <%s>", id.c_str());
             bool insert = false;
             bool transformed = false;
 
             if(header.frame_id!="" && header.frame_id != global_frame_id_)
             {
-              NODELET_WARN("start get node by name");
+              //NODELET_WARN("start get node by name");
               vector<Node> match = scene.getNodesByName(header.frame_id);
-              NODELET_WARN("end get node by name");
+              //NODELET_WARN("end get node by name");
               if(match.size() > 0)
               {
-                NODELET_WARN("transform %s node with uwds", id.c_str());
+                //NODELET_WARN("transform %s node with uwds", id.c_str());
                 if(match.size() > 1)
                 {
                   NODELET_WARN("[%s::onChanges] Multiple nodes matching '%s' frame. Parenting to the first one.", ctx_->name().c_str(), header.frame_id.c_str());
@@ -75,7 +75,7 @@ namespace uwds
                 transformed = true;
               } else {
               try {
-                NODELET_WARN("transform %s node with tf", id.c_str());
+                //NODELET_WARN("transform %s node with tf", id.c_str());
                 geometry_msgs::TransformStamped transformStamped;
                 tf2::Stamped<tf2::Transform> temp;
                 geometry_msgs::PoseStamped sensor_pose;
@@ -86,7 +86,7 @@ namespace uwds
 
                 pose_cov_ops::inverseCompose(node.position.pose, sensor_pose.pose, node.position.pose);
                 transformed = true;
-                ROS_WARN("transformed node <%s> with tf", id.c_str());
+                //ROS_WARN("transformed node <%s> with tf", id.c_str());
               } catch(exception& e) {
                 ROS_WARN("[%s::onChanges] Error occured while transforming node into world frame : %s",ctx_->name().c_str(), e.what());
               }
@@ -97,7 +97,7 @@ namespace uwds
           if (transformed)
           {
             changes_to_send_.nodes_to_update.push_back(node);
-            ROS_WARN("sending to update <%s> node", id.c_str());
+            //ROS_WARN("sending to update <%s> node", id.c_str());
           }
         }
       } catch(exception& e){

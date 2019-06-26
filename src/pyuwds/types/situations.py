@@ -15,12 +15,13 @@ class Situations(ConcurrentContainer):
     def update(self, situations):
         super(Situations, self).update([s.id for s in situations], situations)
 
-    def get_situation_property(self, node_id, property_name):
+    def get_situation_property(self, situation_id, property_name):
         self._lock()
-        for property in self[node_id].properties:
-            if property.name == property_name:
-                self._unlock()
-                return property.data
+        if situation_id in self:
+            for property in self[situation_id].properties:
+                if property.name == property_name:
+                    self._unlock()
+                    return property.data
         self._unlock()
         return ""
 

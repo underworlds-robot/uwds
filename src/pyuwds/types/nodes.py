@@ -15,6 +15,7 @@ class Nodes(ConcurrentContainer):
         super(Nodes, self).update([n.id for n in nodes], nodes)
 
     def remove(self, node_ids):
+        removed = []
         for node_id in node_ids:
             if node_id in self:
                 parent_node = self[self[node_id].parent]
@@ -26,6 +27,8 @@ class Nodes(ConcurrentContainer):
                     del parent_node.children[id]
                 self.update([parent_node])
                 self.delete(node_id)
+                removed.append(node_id)
+        return removed
 
     def get_node_property(self, node_id, property_name):
         self._lock()
