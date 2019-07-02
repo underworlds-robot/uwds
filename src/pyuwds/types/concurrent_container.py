@@ -34,6 +34,8 @@ class ConcurrentContainer(object):
     def delete(self, id):
         if self.has(id):
             del self.__map[id]
+            return True
+        return False
 
     def is_empty(self):
         return self.get_size() > 0

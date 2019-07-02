@@ -21,7 +21,7 @@ class Timeline(object):
     def remove(self, situation_ids):
         removed = []
         removed = self.__situations.remove(situation_ids)
-        return removed
+        return situation_ids
 
     def reset(self, origin):
         self.__origin = origin

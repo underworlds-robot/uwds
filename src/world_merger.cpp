@@ -42,7 +42,7 @@ namespace uwds
         }
         //ROS_WARN("sending to delete <%s> node", id.c_str());
       } catch (exception& e) {
-        //ROS_WARN("[%s::onChanges] Error occured while deleting node %s : %s", ctx_->name().c_str(), id.c_str(), e.what());
+        ROS_WARN("[%s::onChanges] Error occured while deleting node %s : %s", ctx_->name().c_str(), id.c_str(), e.what());
       }
     }
 

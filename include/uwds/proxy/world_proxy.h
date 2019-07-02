@@ -131,8 +131,18 @@ namespace uwds {
       //ROS_WARN("%s : received %d nodes to delete from <%s>", client_->name.c_str(), (int)msg->changes.nodes_to_delete.size(), msg->ctxt.world.c_str());
       invalidations.node_ids_deleted = scene().remove(msg->changes.nodes_to_delete);
       invalidations.node_ids_updated = scene().update(msg->changes.nodes_to_update);
-      invalidations.situation_ids_deleted = timeline().remove(msg->changes.situations_to_delete);
+
       invalidations.situation_ids_updated = timeline().update(msg->changes.situations_to_update);
+
+      for (const auto sit : timeline().situations())
+      {
+        if (sit->end.data != ros::Time(0))
+          msg->changes.situations_to_delete.push_back(sit->id);
+      }
+
+      invalidations.situation_ids_deleted = timeline().remove(msg->changes.situations_to_delete);
+
+
       invalidations.mesh_ids_deleted = msg->changes.meshes_to_delete;
       meshes().remove(msg->changes.meshes_to_delete);
       invalidations.mesh_ids_updated = meshes().update(msg->changes.meshes_to_update);

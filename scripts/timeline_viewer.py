@@ -18,7 +18,7 @@ class TimelineViewer(ReconfigurableClient):
         self.__overlay_name = rospy.get_param("~overlay_name", "timeline viewer")
         super(TimelineViewer, self).__init__("timeline_viewer", READER)
 
-        rospy.Timer(rospy.Duration(1/30.0), self.handleTimer)
+        #rospy.Timer(rospy.Duration(1/30.0), self.handleTimer)
 
     def onReconfigure(self, worlds_names):
         """
@@ -45,7 +45,7 @@ class TimelineViewer(ReconfigurableClient):
     def onChanges(self, world_name, header, invalidations):
         """
         """
-        pass
+        self.publishOverlaytext(world_name)
 
     def handleTimer(self, event):
         self.publishOverlaytext(self.input_worlds[0])

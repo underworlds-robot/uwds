@@ -32,24 +32,14 @@ class VisibilityMonitor(ReconfigurableClient):
         self.min_treshold = rospy.get_param("~min_treshold", 0.4)
         self.width = rospy.get_param("~width", 480/8)
         self.height = rospy.get_param("~height", 360/8)
+        self.visibilities_situations = {}
         super(VisibilityMonitor, self).__init__("visibility_monitor", FILTER)
+
 
     def onReconfigure(self, worlds):
         """
         """
-        # if len(worlds) > 0:
-        #     if len(self.ctx.worlds()[worlds[0]].scene().nodes()) > 0:
-        #         changes = Changes()
-        #         header = Header()
-        #         header.frame_id = self.global_frame_id
-        #         header.stamp = rospy.Time.now()
-        #         for node in self.ctx.worlds()[worlds[0]].scene().nodes():
-        #             changes.nodes_to_update.append(node)
-        #         for situation in self.ctx.worlds()[worlds[0]].timeline().situations():
-        #             changes.situations_to_update.append(situation)
-        #
-        #         self.ctx.worlds()[worlds[0]].update(changes)
-
+        pass
 
     def onSubscribeChanges(self, world_name):
         """
@@ -67,26 +57,25 @@ class VisibilityMonitor(ReconfigurableClient):
         changes = self.monitor(world_name, header, invalidations)
         if changes is not None:
             if len(changes.nodes_to_update) > 0 or len(changes.nodes_to_delete) > 0 or len(changes.situations_to_update) > 0 or len(changes.situations_to_delete) > 0:
-                if len(changes.situations_to_delete) > 0:
-                    self.ctx.worlds()[world_name].timeline().remove(changes.situations_to_delete)
                 self.ctx.worlds()[world_name+"_visibilities"].update(changes, header)
-        #rospy.loginfo("[%s::onChanges] Changes send (%d situations) in world <%s>", self.ctx.name(), len(changes.situations_to_update), world_name+"_visibilities")
 
     def monitor(self, world_name, header, invalidations):
         """
         """
-        situations_to_delete = []
         changes = Changes()
+
         for node_id in invalidations.node_ids_updated:
             self.updateBulletNodes(world_name, node_id)
             changes.nodes_to_update.append(self.ctx.worlds()[world_name].scene().nodes()[node_id])
-        #print "reverse node id map : "+ str(self.reverse_node_id_map)
+
         for node_id in invalidations.node_ids_deleted:
             for situation in self.ctx.worlds()[world_name].timeline().situations():
-                if node_id == self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "subject") or node_id == self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "object"):
-                    print "delete : " + situation.description
-                    situations_to_delete.append(situation.id)
+                #if self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "predicate") == "isVisibleBy":
+                object_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "object")
+                subject_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "subject")
+                if node_id == object_id or node_id == subject_id:
                     changes.situations_to_delete.append(situation.id)
+                    print "delete : %s" % situation.description
             changes.nodes_to_delete.append(node_id)
 
         for sit_id in invalidations.situation_ids_updated:
@@ -95,25 +84,55 @@ class VisibilityMonitor(ReconfigurableClient):
         for sit_id in invalidations.situation_ids_deleted:
             changes.situations_to_delete.append(sit_id)
 
-        evaluated = []
-        not_evaluated = []
-        for node in self.ctx.worlds()[world_name].scene().nodes():
-            #if node_id in invalidations.node_ids_updated:
-            if node.type == CAMERA:
-                if node.id in invalidations.node_ids_updated:
-                    visibilities = self.computeVisibilities(world_name, node.id)
-                    situations = self.updateSituations(world_name, header, node.id, visibilities)
-                    for situation in situations:
-                        changes.situations_to_update.append(situation)
-                    evaluated.append(node.id)
+        #self.ctx.worlds()[world_name].timeline().update(changes.situations_to_update)
+        #self.ctx.worlds()[world_name].timeline().remove(changes.situations_to_delete)
 
         for node in self.ctx.worlds()[world_name].scene().nodes():
             if node.type == CAMERA:
-                if (rospy.Time() - node.last_observation.data).to_sec() > 2.0:
-                    situations = self.updateSituations(world_name, header, node.id, {})
-                    for situation in situations:
-                        changes.situations_to_update.append(situation)
+                if (rospy.Time.now() - node.last_update.data).to_sec() > 1.0:
+                    for situation in self.ctx.worlds()[world_name].timeline().situations():
+                        if self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "predicate") == "isVisibleBy":
+                            camera_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "object")
+                            id_seen = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "subject")
+                            if node.id == camera_id or node.id == id_seen:
+                                changes.situations_to_delete.append(situation.id)
+                                print "delete : %s" % situation.description
+                                if id_seen+camera_id in self.visibilities_situations:
+                                    del self.visibilities_situations[id_seen+camera_id]
+                else:
+                    visibilities_ = self.computeVisibilities(world_name, node.id)
+                    for object_seen in self.ctx.worlds()[world_name].scene().nodes():
+                        if object_seen.id in visibilities_:
+                            if object_seen.id+node.id not in self.visibilities_situations:
+                                situation = Situation()
+                                situation.id = str(uuid.uuid4())
+                                situation.type = FACT
+                                situation.description = object_seen.name + " is visible by " + node.name
+                                predicate = Property()
+                                predicate.name = "predicate"
+                                predicate.data = "isVisibleBy"
+                                situation.properties.append(predicate)
+                                subject = Property()
+                                subject.name = "subject"
+                                subject.data = object_seen.id
+                                situation.properties.append(subject)
+                                object = Property()
+                                object.name = "object"
+                                object.data = node.id
+                                situation.properties.append(object)
+                                situation.confidence = visibilities_[object_seen.id]
+                                situation.start.data = header.stamp
+                                situation.end.data = rospy.Time(0)
+                                print "start : %s" % situation.description
+                                changes.situations_to_update.append(situation)
+                                self.visibilities_situations[object_seen.id+node.id] = situation
+                        else:
+                            if object_seen.id+node.id in self.visibilities_situations:
+                                changes.situations_to_delete.append(self.visibilities_situations[object_seen.id+node.id].id)
+                                del self.visibilities_situations[object_seen.id+node.id]
 
+        self.ctx.worlds()[world_name].timeline().update(changes.situations_to_update)
+        self.ctx.worlds()[world_name].timeline().remove(changes.situations_to_delete)
         return changes
 
     def computeVisibilities(self, world_name, camera_id):
@@ -132,7 +151,7 @@ class VisibilityMonitor(ReconfigurableClient):
             clipnear = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "clipnear"))
             clipfar = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "clipfar"))
             aspect = float(self.ctx.worlds()[world_name].scene().nodes().get_node_property(camera_id, "aspect"))
-            proj_matrix = p.computeProjectionMatrixFOV(90, aspect, clipnear, clipfar)
+            proj_matrix = p.computeProjectionMatrixFOV(fov, aspect, clipnear, clipfar)
             width, height, rgb, depth, seg = p.getCameraImage(self.width, self.height, viewMatrix=view_matrix, projectionMatrix=proj_matrix, flags = p.ER_SEGMENTATION_MASK_OBJECT_AND_LINKINDEX)
             background_nb_pixel = 0
             max_visibility = 0
@@ -179,63 +198,6 @@ class VisibilityMonitor(ReconfigurableClient):
                     else:
                         del visibilities[node_id]
         return visibilities
-
-    def updateSituations(self, world_name, header, camera_id, visibilities):
-        """
-        """
-        situations = []
-        situations_to_update = []
-        situations_ids_ended = []
-        #print "size timeline : " + str(len(self.ctx.worlds()[world_name].timeline().situations()))
-        for situation in self.ctx.worlds()[world_name].timeline().situations():
-            #if situation.end.data == rospy.Time(0):
-            if self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "predicate") == "isVisibleBy":
-                subject_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "subject")
-                object_id = self.ctx.worlds()[world_name].timeline().situations().get_situation_property(situation.id, "object")
-                assert subject_id != ""
-                #print 'test lol'
-                if camera_id == subject_id:
-                    #print 'test'
-                    if object_id in visibilities:
-                        situation.confidence = visibilities[object_id]
-                        #print "update : %s with %f confidence" % (situation.description, visibilities[object_id])
-                        del visibilities[object_id]
-                        situations_to_update.append(situation)
-                    else:
-                        situation.end.data = header.stamp
-                        situation.description.replace("is", "was")
-                        print "end : %s" % situation.description
-                        situations_ids_ended.append(situation.id)
-                    situations.append(situation)
-        #print "size visibilities :" +str(visibilities)
-        for id_seen, visibility_score in visibilities.items():
-            situation = Situation()
-            situation.id = str(uuid.uuid4())
-            situation.type = FACT
-            situation.description = self.ctx.worlds()[world_name].scene().nodes()[id_seen].name + " is visible by " + self.ctx.worlds()[world_name].scene().nodes()[camera_id].name
-            predicate = Property()
-            predicate.name = "predicate"
-            predicate.data = "isVisibleBy"
-            situation.properties.append(predicate)
-            subject = Property()
-            subject.name = "subject"
-            subject.data = id_seen
-            situation.properties.append(subject)
-            object = Property()
-            object.name = "object"
-            object.data = camera_id
-            situation.properties.append(object)
-            situation.confidence = visibility_score
-            situation.start.data = header.stamp
-            situation.end.data = rospy.Time(0)
-            #if self.verbose:
-            print "start : %s" % situation.description
-            situations_to_update.append(situation)
-            situations.append(situation)
-
-        self.ctx.worlds()[world_name].timeline().update(situations_to_update)
-        self.ctx.worlds()[world_name].timeline().remove(situations_ids_ended)
-        return situations
 
     def updateBulletNodes(self, world_name, node_id):
         """ This function load the urdf corresponding to the uwds node and set it in the environment

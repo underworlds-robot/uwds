@@ -76,8 +76,16 @@ class WorldProxy(object):
         inv.node_ids_deleted = self.scene().remove(msg.changes.nodes_to_delete)
         inv.node_ids_updated = self.scene().update(msg.changes.nodes_to_update)
 
-        inv.situation_ids_deleted = self.timeline().remove(msg.changes.situations_to_delete)
         inv.situation_ids_updated = self.timeline().update(msg.changes.situations_to_update)
+
+        for sit in self.timeline().situations():
+            if sit.end.data != rospy.Time(0):
+                msg.changes.situations_to_delete.append(sit.id)
+
+        inv.situation_ids_deleted = self.timeline().remove(msg.changes.situations_to_delete)
+
+        print ": nb sit in timeline " +str(len(self.timeline().situations()))
+
         inv.mesh_ids_deleted = msg.changes.meshes_to_delete
         self.meshes().remove(msg.changes.meshes_to_delete)
         u = self.meshes().update(msg.changes.meshes_to_update)

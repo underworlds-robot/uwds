@@ -45,7 +45,7 @@ catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp nodelet pluginlib rostime tf tf2_ros pose_cov_ops
+  CATKIN_DEPENDS roscpp nodelet pluginlib rostime tf tf2_ros pose_cov_ops uwds_msgs
 )
 
 ###########
