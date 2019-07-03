@@ -85,7 +85,7 @@ namespace uwds
         {
           tf::StampedTransform transform;
           tf_listener_.lookupTransform(global_frame_id_, object_name_,
-                                   ros::Time(), transform);
+                                   ros::Time(0), transform);
           tf::Vector3 t = transform.getOrigin();
           tf::Quaternion q = transform.getRotation();
           tx = t.getX();
