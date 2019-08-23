@@ -84,8 +84,6 @@ class WorldProxy(object):
 
         inv.situation_ids_deleted = self.timeline().remove(msg.changes.situations_to_delete)
 
-        print ": nb sit in timeline " +str(len(self.timeline().situations()))
-
         inv.mesh_ids_deleted = msg.changes.meshes_to_delete
         self.meshes().remove(msg.changes.meshes_to_delete)
         u = self.meshes().update(msg.changes.meshes_to_update)
