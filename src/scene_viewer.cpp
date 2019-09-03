@@ -34,7 +34,7 @@ namespace uwds
 
   void SceneViewer::publishVisualization(const std::string world, const ros::Time stamp)
   {
-    ROS_INFO("test");
+    //ROS_INFO("test");
     std_msgs::Header header;
     header.stamp = stamp;
     header.frame_id = global_frame_id_;
@@ -226,6 +226,13 @@ namespace uwds
           bbox.dimensions.x = atof(aabb_data[0].c_str());
           bbox.dimensions.y = atof(aabb_data[1].c_str());
           bbox.dimensions.z = atof(aabb_data[2].c_str());
+
+          if(bbox.dimensions.x == 0.0)
+            bbox.dimensions.x = 0.001;
+          if(bbox.dimensions.y == 0.0)
+            bbox.dimensions.y = 0.001;
+          if(bbox.dimensions.z == 0.0)
+            bbox.dimensions.z = 0.001;
         }
       }
     }
