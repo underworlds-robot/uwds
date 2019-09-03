@@ -167,22 +167,19 @@ namespace uwds
 
   void WorldMerger::onTimer(const ros::TimerEvent& event)
   {
-    for (const auto& world : input_worlds_)
-    {
-      Header header;
-      header.stamp = ros::Time::now();
-      header.frame_id = global_frame_id_;
-      changes_mutex_.lock();
-      ctx_->worlds()[output_world_].update(header, changes_to_send_);
-      changes_to_send_.nodes_to_update.clear();
-      changes_to_send_.situations_to_update.clear();
-      changes_to_send_.meshes_to_update.clear();
-      changes_to_send_.nodes_to_delete.clear();
-      changes_to_send_.situations_to_delete.clear();
-      changes_to_send_.meshes_to_delete.clear();
-      changes_mutex_.unlock();
-      if(verbose_)NODELET_INFO("[%s::onChanges] Send changes to world <%s>", ctx_->name().c_str(), output_world_.c_str());
-    }
+    Header header;
+    header.stamp = ros::Time::now();
+    header.frame_id = global_frame_id_;
+    changes_mutex_.lock();
+    ctx_->worlds()[output_world_].update(header, changes_to_send_);
+    changes_to_send_.nodes_to_update.clear();
+    changes_to_send_.situations_to_update.clear();
+    changes_to_send_.meshes_to_update.clear();
+    changes_to_send_.nodes_to_delete.clear();
+    changes_to_send_.situations_to_delete.clear();
+    changes_to_send_.meshes_to_delete.clear();
+    changes_mutex_.unlock();
+    if(verbose_)NODELET_INFO("[%s::onChanges] Send changes to world <%s>", ctx_->name().c_str(), output_world_.c_str());
   }
 }
 
