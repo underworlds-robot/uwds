@@ -29,7 +29,7 @@ namespace uwds
     for(const string& id : invalidations.node_ids_deleted)
     {
       try{
-        ROS_WARN("trying to delete <%s> node", id.c_str());
+        //ROS_WARN("trying to delete <%s> node", id.c_str());
         if(scene.nodes().has(id)){
           //ROS_WARN("%s is in scene !", id.c_str());
           bool insert = false;
@@ -40,7 +40,7 @@ namespace uwds
           }
           if(!insert) changes_to_send_.nodes_to_delete.push_back(id);
         }
-        ROS_WARN("sending to delete <%s> node", id.c_str());
+        //ROS_WARN("sending to delete <%s> node", id.c_str());
       } catch (exception& e) {
         ROS_WARN("[%s::onChanges] Error occured while deleting node %s : %s", ctx_->name().c_str(), id.c_str(), e.what());
       }
@@ -69,7 +69,7 @@ namespace uwds
                 //NODELET_WARN("transform %s node with uwds", id.c_str());
                 if(match.size() > 1)
                 {
-                  //NODELET_WARN("[%s::onChanges] Multiple nodes matching '%s' frame. Parenting to the first one.", ctx_->name().c_str(), header.frame_id.c_str());
+                  NODELET_WARN("[%s::onChanges] Multiple nodes matching '%s' frame. Parenting to the first one.", ctx_->name().c_str(), header.frame_id.c_str());
                 }
                 node.parent = match[0].id;
                 transformed = true;
