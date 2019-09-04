@@ -29,6 +29,7 @@ class ReconfigurableClient(UwdsClient):
         self.reconfigure(input_worlds.split(" "))
         self.__reconfigure_service_server = rospy.Service(client_name+"/reconfigure_inputs", ReconfigureInputs, self.reconfigureInputs)
         self.__list_inputs_service_server = rospy.Service(client_name+"/list_inputs", List, self.listInputs)
+        rospy.loginfo("[{}::init] Underworlds client ready !".format(self.ctx.name()))
 
     def reconfigure(self, inputs):
         if len(inputs) > 1 and self.__use_single_input:
