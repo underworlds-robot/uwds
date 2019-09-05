@@ -274,6 +274,7 @@ namespace uwds {
       }
       Changes changes;
       changes.nodes_to_update = nodes_imported;
+      changes.meshes_to_update = meshes_imported;
       update(changes);
       return true;
     }
