@@ -42,5 +42,5 @@ Follow the quick start guide to learn how to use *Underworlds* :
 
 ---
 ### References
-
+[Simulation-based physics reasoning for consistent scene estimation in anHRI context](https://academia.skadge.org/publis/sallami2019simulation.pdf)
 [UNDERWORLDS : Cascading Situation Assessment for Robots](https://academia.skadge.org/publis/lemaignan2018underworlds.pdf)
