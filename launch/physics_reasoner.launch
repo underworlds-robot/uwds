@@ -8,7 +8,7 @@
   <arg name="launch-prefix" default=""/>
 
   <arg name="default_inputs" default="robot/env"/>
-  <arg name="ressource_folder" default="$(find uwds)/res/urdf/"/>
+  <arg name="ressource_folder" default="$(find uwds)/res/urdf"/>
   <arg name="time_step" default="0.005"/>
   <arg name="simulation_step" default="0.08"/>
   <arg name="use_gui" default="true"/>

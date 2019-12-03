@@ -3,7 +3,7 @@
 <link name="green_cylinder">
     <visual>
       <geometry>
-        <mesh filename="package://laas_objects/res/obj/green_cylinder.obj"/>
+        <mesh filename="package://uwds/res/obj/green_cylinder.obj"/>
       </geometry>
       <origin rpy="1.57075 0 0" xyz="0 0 0"/>
       <material name="green">

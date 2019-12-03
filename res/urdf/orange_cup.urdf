@@ -3,7 +3,7 @@
 <link name="orange_cup">
     <visual>
       <geometry>
-        <mesh filename="package://laas_objects/res/obj/orange_cup.obj"/>
+        <mesh filename="package://uwds/res/obj/orange_cup.obj"/>
       </geometry>
       <origin rpy="1.57075 0 0" xyz="0 0 0"/>
       <material name="orange">
